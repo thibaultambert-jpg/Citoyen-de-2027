@@ -21,6 +21,7 @@ data class CorePackContent(
     val candidates: List<Candidate>,
     val mandates: List<Mandate> = emptyList(),
     val votes: List<Vote> = emptyList(),
+    val speeches: List<Speech> = emptyList(),
 ) {
     init {
         require(info.id == DataPackInfo.CORE) { "Not a core pack: ${info.id}" }
@@ -28,5 +29,6 @@ data class CorePackContent(
         require(ids.size == candidates.size) { "Duplicate candidate ids" }
         require(mandates.all { it.candidateId in ids }) { "Mandate of an unknown candidate" }
         require(votes.all { it.candidateId in ids }) { "Vote of an unknown candidate" }
+        require(speeches.all { it.candidateId in ids }) { "Speech of an unknown candidate" }
     }
 }

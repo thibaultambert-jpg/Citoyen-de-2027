@@ -4,6 +4,7 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.Vote
 import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.model.VoteFilterOptions
@@ -18,6 +19,7 @@ sealed interface CandidateUiState {
         val dataInfo: DataPackInfo?,
         val mandates: List<Mandate> = emptyList(),
         val votes: VotesState = VotesState(),
+        val speeches: List<Speech> = emptyList(),
     ) : CandidateUiState
 }
 

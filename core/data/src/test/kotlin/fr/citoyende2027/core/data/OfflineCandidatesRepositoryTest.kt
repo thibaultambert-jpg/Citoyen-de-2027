@@ -39,5 +39,8 @@ class OfflineCandidatesRepositoryTest {
         repository.observeVotes(FictionalCandidates.candidateA.id).test {
             assertEquals(FictionalCandidates.votes, awaitItem())
         }
+        repository.observeSpeeches(FictionalCandidates.candidateA.id).test {
+            assertEquals(FictionalCandidates.speeches, awaitItem())
+        }
     }
 }

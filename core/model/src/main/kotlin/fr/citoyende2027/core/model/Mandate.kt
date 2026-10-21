@@ -47,3 +47,24 @@ data class Vote(
     val ballotUrl: String,
     val source: SourceRef,
 )
+
+enum class SpeechKind {
+    /** Intervention in a plenary sitting (European Parliament). */
+    PLENARY_SPEECH,
+
+    /** Official statement listed by vie-publique.fr (DILA). */
+    OFFICIAL_STATEMENT,
+}
+
+/** A speech: metadata and official link only, never the full text (AGENTS.md §6). */
+data class Speech(
+    val id: String,
+    val candidateId: CandidateId,
+    val kind: SpeechKind,
+    val body: Body?,
+    val date: LocalDate,
+    val title: String,
+    val detail: String?,
+    val url: String,
+    val source: SourceRef,
+)

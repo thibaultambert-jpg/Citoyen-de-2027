@@ -45,6 +45,8 @@ class CorePackDaoTest {
             .map { it.asEntity() },
         votes = FictionalCandidates.votes.filter { v -> candidates.any { it.id == v.candidateId } }
             .map { it.asEntity() },
+        speeches = FictionalCandidates.speeches.filter { s -> candidates.any { it.id == s.candidateId } }
+            .map { it.asEntity() },
     )
 
     @Test
@@ -57,6 +59,7 @@ class CorePackDaoTest {
         val a = FictionalCandidates.candidateA.id.value
         assertEquals(FictionalCandidates.mandates, dao.observeMandates(a).first().map { it.asModel() })
         assertEquals(FictionalCandidates.votes, dao.observeVotes(a).first().map { it.asModel() })
+        assertEquals(FictionalCandidates.speeches, dao.observeSpeeches(a).first().map { it.asModel() })
     }
 
     @Test

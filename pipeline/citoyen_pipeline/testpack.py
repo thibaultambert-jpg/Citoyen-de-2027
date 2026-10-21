@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from citoyen_pipeline.build import write_core_pack
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.inputs import load_candidates, load_identities
-from citoyen_pipeline.model import Body, CorePack, Mandate, Source, Vote
+from citoyen_pipeline.model import Body, CorePack, Mandate, Source, Speech, Vote
 from citoyen_pipeline.sign import build_manifest, pack_entry, public_key_b64, sign
 
 TEST_SEED = bytes(range(32))
@@ -56,14 +56,28 @@ def build(out: Path) -> dict[str, str]:
             ballot_subject="AMENDMENT",
         )
     ]
+    speeches = [
+        Speech(
+            "fictif-a-discours-1",
+            "fictif-a",
+            "OFFICIAL_STATEMENT",
+            None,
+            date(2025, 6, 1),
+            "Déclaration fictive",
+            "Interview — Média fictif",
+            "https://example.invalid/discours-1",
+            fake.id,
+        )
+    ]
     pack = CorePack(
         GENERATED_ON,
         policy,
         sources + [fake],
         candidates,
-        compute_coverage(candidates, identities, mandates, votes),
+        compute_coverage(candidates, identities, mandates, votes, speeches),
         mandates,
         votes,
+        speeches,
     )
     out.mkdir(parents=True, exist_ok=True)
     pack_file = out / "core.sqlite"

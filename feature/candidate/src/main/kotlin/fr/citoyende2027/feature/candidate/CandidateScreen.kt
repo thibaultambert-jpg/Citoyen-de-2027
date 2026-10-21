@@ -42,6 +42,7 @@ import fr.citoyende2027.core.ui.DataDateBanner
 import fr.citoyende2027.core.ui.SourceButton
 import fr.citoyende2027.feature.candidate.tab.MandatesTab
 import fr.citoyende2027.feature.candidate.tab.SourcesTab
+import fr.citoyende2027.feature.candidate.tab.SpeechesTab
 import fr.citoyende2027.feature.candidate.tab.VotesTab
 
 @Composable
@@ -103,20 +104,32 @@ private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (V
             )
         }
     }
+    when (CandidateSheetTab.entries[selected]) {
+        CandidateSheetTab.OVERVIEW -> ScrollableTab { OverviewTab(state.candidate) }
+
+        CandidateSheetTab.MANDATES -> MandatesTab(state.mandates)
+
+        CandidateSheetTab.VOTES -> VotesTab(state.votes, onVoteFilterChange)
+
+        CandidateSheetTab.SPEECHES -> SpeechesTab(state.speeches)
+
+        CandidateSheetTab.SOURCES -> SourcesTab(state)
+
+        // Programmes and their comparison with votes arrive with J4.
+        CandidateSheetTab.PROGRAM, CandidateSheetTab.PROGRAM_AND_VOTES ->
+            ScrollableTab { Text(stringResource(DesignR.string.core_designsystem_coming_soon)) }
+    }
+}
+
+@Composable
+private fun ScrollableTab(content: @Composable () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        when (CandidateSheetTab.entries[selected]) {
-            CandidateSheetTab.OVERVIEW -> OverviewTab(candidate)
-
-            // Delivered in later milestones (J3–J4).
-            else -> Text(stringResource(DesignR.string.core_designsystem_coming_soon))
-        }
-    }
+    ) { content() }
 }
 
 @Composable

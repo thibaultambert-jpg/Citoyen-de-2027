@@ -9,6 +9,7 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.Vote
 import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.testing.FictionalCandidates
@@ -43,6 +44,9 @@ class CandidateViewModelTest {
 
         override fun observeVotes(id: CandidateId): Flow<List<Vote>> =
             flowOf(FictionalCandidates.votes.filter { it.candidateId == id })
+
+        override fun observeSpeeches(id: CandidateId): Flow<List<Speech>> =
+            flowOf(FictionalCandidates.speeches.filter { it.candidateId == id })
     }
 
     private fun viewModel(id: String) =
@@ -92,7 +96,9 @@ class CandidateViewModelTest {
     @Test
     fun `mandates are exposed`() = runTest {
         viewModel(FictionalCandidates.candidateA.id.value).uiState.test {
-            assertEquals(FictionalCandidates.mandates, (awaitSettled() as CandidateUiState.Ready).mandates)
+            val state = awaitSettled() as CandidateUiState.Ready
+            assertEquals(FictionalCandidates.mandates, state.mandates)
+            assertEquals(FictionalCandidates.speeches, state.speeches)
         }
     }
 

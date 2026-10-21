@@ -21,7 +21,12 @@
           "validated_on": {"type": "string", "format": "date"},
           "an_id": {"type": "string", "minLength": 1},
           "senat_id": {"type": "string", "minLength": 1},
-          "pe_id": {"type": "string", "minLength": 1}
+          "pe_id": {"type": "string", "minLength": 1},
+          "vie_publique_name": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Exact speaker name used by vie-publique.fr, checked by hand for homonyms"
+          }
         }
       }
     }

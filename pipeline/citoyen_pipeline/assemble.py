@@ -13,7 +13,7 @@ from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import check_identities
 from citoyen_pipeline.inputs import load_candidates, load_identities
 from citoyen_pipeline.model import CorePack, Identity, SourceExtract
-from citoyen_pipeline.sources import assemblee, parlement_europeen, rne, senat
+from citoyen_pipeline.sources import assemblee, discours, parlement_europeen, rne, senat
 
 
 @dataclass(frozen=True)
@@ -36,6 +36,12 @@ ADAPTERS = (
         parlement_europeen.fetch,
         parlement_europeen.extract,
     ),
+    Adapter(
+        "discours",
+        lambda ids: any(i.vie_publique_name for i in ids),
+        lambda c, _: discours.fetch(c),
+        discours.extract,
+    ),
 )
 
 
@@ -54,6 +60,12 @@ def fetch_all(inputs: Path, cache: Cache) -> list[str]:
 
 
 def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
+    return assemble_with_review(inputs, cache, generated_on)[0]
+
+
+def assemble_with_review(
+    inputs: Path, cache: Cache, generated_on: date
+) -> tuple[CorePack, dict[str, list[str]]]:
     policy_date, candidates, status_sources, identities = load_inputs(inputs)
     combined = SourceExtract(sources=list(status_sources))
     for adapter in ADAPTERS:
@@ -63,17 +75,23 @@ def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
             combined.people += part.people
             combined.mandates += part.mandates
             combined.votes += part.votes
+            combined.speeches += part.speeches
+            combined.review.update(part.review)
     # Every identifier written by hand must agree with its official source (AGENTS.md §7.2).
     check_identities(identities, combined.people)
-    return CorePack(
+    pack = CorePack(
         generated_on=generated_on,
         inclusion_policy_date=policy_date,
         sources=_unique(combined.sources),
         candidates=candidates,
-        coverage=compute_coverage(candidates, identities, combined.mandates, combined.votes),
+        coverage=compute_coverage(
+            candidates, identities, combined.mandates, combined.votes, combined.speeches
+        ),
         mandates=combined.mandates,
         votes=combined.votes,
+        speeches=combined.speeches,
     )
+    return pack, combined.review
 
 
 def inputs_digest(inputs: Path, cache: Cache) -> str:

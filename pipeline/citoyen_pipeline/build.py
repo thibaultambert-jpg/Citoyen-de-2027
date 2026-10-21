@@ -41,6 +41,17 @@ CREATE TABLE mandates (
     end_date TEXT,
     source_id TEXT NOT NULL REFERENCES sources(id)
 );
+CREATE TABLE speeches (
+    id TEXT PRIMARY KEY NOT NULL,
+    candidate_id TEXT NOT NULL REFERENCES candidates(id),
+    kind TEXT NOT NULL,
+    body TEXT,
+    speech_date TEXT NOT NULL,
+    title TEXT NOT NULL,
+    detail TEXT,
+    url TEXT NOT NULL,
+    source_id TEXT NOT NULL REFERENCES sources(id)
+);
 CREATE TABLE votes (
     id TEXT PRIMARY KEY NOT NULL,
     candidate_id TEXT NOT NULL REFERENCES candidates(id),
@@ -66,6 +77,7 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
         {c.status_source_id for c in pack.candidates}
         | {m.source_id for m in pack.mandates}
         | {v.source_id for v in pack.votes}
+        | {s.source_id for s in pack.speeches}
     )
     known = {s.id for s in pack.sources}
     if missing := referenced - known:
@@ -135,6 +147,23 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
                     v.source_id,
                 )
                 for v in sorted(pack.votes, key=lambda v: v.id)
+            ],
+        )
+        db.executemany(
+            "INSERT INTO speeches VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    s.id,
+                    s.candidate_id,
+                    s.kind,
+                    s.body.value if s.body else None,
+                    s.speech_date.isoformat(),
+                    s.title,
+                    s.detail,
+                    s.url,
+                    s.source_id,
+                )
+                for s in sorted(pack.speeches, key=lambda s: s.id)
             ],
         )
         db.commit()

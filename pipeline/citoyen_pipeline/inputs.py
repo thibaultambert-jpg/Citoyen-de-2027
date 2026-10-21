@@ -76,6 +76,7 @@ def load_identities(path: Path, candidate_ids: set[str]) -> list[Identity]:
                 an_id=item.get("an_id"),
                 senat_id=item.get("senat_id"),
                 pe_id=item.get("pe_id"),
+                vie_publique_name=item.get("vie_publique_name"),
             )
         )
     linked = [i.candidate_id for i in identities]

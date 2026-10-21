@@ -12,6 +12,8 @@ import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.SpeechKind
 import fr.citoyende2027.core.model.Vote
 import java.time.LocalDate
 
@@ -106,7 +108,21 @@ object FictionalCandidates {
         ),
     )
 
-    val corePack = CorePackContent(packInfo, all, mandates, votes)
+    val speeches = listOf(
+        Speech(
+            id = "fictif-a-discours-1",
+            candidateId = candidateA.id,
+            kind = SpeechKind.OFFICIAL_STATEMENT,
+            body = null,
+            date = LocalDate.of(2025, 6, 1),
+            title = "Déclaration fictive",
+            detail = "Interview — Média fictif",
+            url = "https://example.invalid/discours-1",
+            source = source,
+        ),
+    )
+
+    val corePack = CorePackContent(packInfo, all, mandates, votes, speeches)
 
     private fun coverage(vararg levels: Pair<CoverageFacet, CoverageLevel>) = DataCoverage(levels.toMap())
 }

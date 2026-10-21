@@ -10,7 +10,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 from citoyen_pipeline import testpack
-from citoyen_pipeline.assemble import assemble, fetch_all, inputs_digest
+from citoyen_pipeline.assemble import assemble_with_review, fetch_all, inputs_digest
 from citoyen_pipeline.build import pack_version, write_core_pack
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.sign import build_manifest, pack_entry, private_key_from_env, public_key_b64, sign
@@ -31,7 +31,7 @@ def cmd_fetch(args) -> int:
 
 def cmd_pack(args) -> int:
     inputs, out, cache = Path(args.inputs), Path(args.out), Cache(Path(args.cache))
-    pack = assemble(inputs, cache, _generated_on())
+    pack, review = assemble_with_review(inputs, cache, _generated_on())
     if not pack.candidates and not args.allow_empty:
         print("inputs/candidates.yaml is empty: nothing to publish (use --allow-empty to build anyway).")
         return 2
@@ -39,7 +39,7 @@ def cmd_pack(args) -> int:
     pack_file = out / "core.sqlite"
     write_core_pack(pack, version, pack_file)
     used = {m.source_id for m in pack.mandates} | {v.source_id for v in pack.votes}
-    used |= {c.status_source_id for c in pack.candidates}
+    used |= {c.status_source_id for c in pack.candidates} | {s.source_id for s in pack.speeches}
     sources = [
         {"name": s.name, "url": s.url, "retrieved_on": s.retrieved_on.isoformat(), "license": s.license}
         for s in sorted(pack.sources, key=lambda s: s.id)
@@ -56,12 +56,15 @@ def cmd_pack(args) -> int:
             c.id: {
                 "mandates": sum(m.candidate_id == c.id for m in pack.mandates),
                 "votes": sum(v.candidate_id == c.id for v in pack.votes),
+                "speeches": sum(s.candidate_id == c.id for s in pack.speeches),
                 "coverage": {
                     f.value: lvl.value for (cid, f), lvl in sorted(pack.coverage.items()) if cid == c.id
                 },
             }
             for c in pack.candidates
         },
+        # To check by hand before publishing (e.g. homonyms behind a vie-publique.fr name).
+        "review": review,
     }
     (out / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     key = private_key_from_env()

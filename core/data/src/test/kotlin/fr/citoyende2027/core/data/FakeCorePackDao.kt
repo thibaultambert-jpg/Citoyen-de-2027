@@ -6,6 +6,7 @@ import fr.citoyende2027.core.database.model.CandidateEntity
 import fr.citoyende2027.core.database.model.CandidateWithCoverage
 import fr.citoyende2027.core.database.model.DataPackEntity
 import fr.citoyende2027.core.database.model.MandateEntity
+import fr.citoyende2027.core.database.model.SpeechEntity
 import fr.citoyende2027.core.database.model.VoteEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ internal class FakeCorePackDao : CorePackDao {
     override suspend fun deleteCandidates() {
         mandates.value = emptyList()
         votes.value = emptyList()
+        speeches.value = emptyList()
         coverage.value = emptyList()
         candidates.value = emptyList()
     }
@@ -47,6 +49,14 @@ internal class FakeCorePackDao : CorePackDao {
 
     val mandates = MutableStateFlow<List<MandateEntity>>(emptyList())
     val votes = MutableStateFlow<List<VoteEntity>>(emptyList())
+    val speeches = MutableStateFlow<List<SpeechEntity>>(emptyList())
+
+    override suspend fun insertSpeeches(speeches: List<SpeechEntity>) {
+        this.speeches.value += speeches
+    }
+
+    override fun observeSpeeches(candidateId: String): Flow<List<SpeechEntity>> =
+        speeches.map { list -> list.filter { it.candidateId == candidateId } }
 
     override suspend fun insertMandates(mandates: List<MandateEntity>) {
         this.mandates.value += mandates

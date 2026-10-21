@@ -17,7 +17,7 @@ import json
 from datetime import UTC, datetime
 
 from citoyen_pipeline.fetch import Cache
-from citoyen_pipeline.model import Body, Identity, Mandate, PersonFacts, Source, SourceExtract, Vote
+from citoyen_pipeline.model import Body, Identity, Mandate, PersonFacts, Source, SourceExtract, Speech, Vote
 from citoyen_pipeline.sources.common import as_list, parse_date, text
 
 API = "https://data.europarl.europa.eu/api/v2"
@@ -35,6 +35,10 @@ def mep_url(mep_id: str) -> str:
 
 def meetings_url(year: int, offset: int = 0) -> str:
     return f"{API}/meetings?year={year}&{FORMAT}&offset={offset}&limit={PAGE}"
+
+
+def speeches_url(mep_id: str, offset: int = 0) -> str:
+    return f"{API}/speeches?person-id={mep_id}&{FORMAT}&offset={offset}&limit={PAGE}"
 
 
 def decisions_url(meeting: str, offset: int = 0) -> str:
@@ -86,6 +90,8 @@ def fetch(cache: Cache, identities: list[Identity]) -> None:
             entry = cache.fetch(f"pe/mep-{identity.pe_id}.json", mep_url(identity.pe_id), refresh=True)
             mep = as_list(_load(cache, entry.key).get("data"))[0]
             years |= _years(_mandates(mep))
+            # /speeches?person-id= : plenary interventions (verified 2026-10-21, ELI event ids).
+            _pages(cache, f"pe/speeches-{identity.pe_id}", lambda o, m=identity.pe_id: speeches_url(m, o))
     for year in sorted(years):
         for meeting in _pages(cache, f"pe/meetings-{year}", lambda offset, y=year: meetings_url(y, offset)):
             meeting_id = text(meeting.get("activity_id")) or ""
@@ -141,6 +147,7 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
                 )
             )
         years |= _years(mandates)
+        result.speeches.extend(_speeches(cache, mep_id, identity, result))
 
     persons = {f"person/{mep_id}": identity for mep_id, identity in linked.items()}
     for year in sorted(years):
@@ -165,6 +172,42 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
                 result.sources.append(source)
                 result.votes.extend(votes)
     return result
+
+
+def _speeches(cache: Cache, mep_id: str, identity: Identity, result: SourceExtract) -> list[Speech]:
+    prefix = f"pe/speeches-{mep_id}"
+    if not cache.has(f"{prefix}-0.json"):
+        return []
+    first = cache.entry(f"{prefix}-0.json")
+    source = Source(
+        id=f"pe-speeches-{mep_id}",
+        name="Parlement européen — interventions en séance plénière (API Open Data)",
+        url=first.url,
+        retrieved_on=first.retrieved_date,
+        license=LICENSE,
+    )
+    speeches = []
+    for item in _cached_pages(cache, prefix):
+        event, day = text(item.get("id")), parse_date(item.get("activity_date"))
+        if not (event and day):
+            continue
+        labels = item.get("activity_label") or {}
+        speeches.append(
+            Speech(
+                id=f"pe-{text(item.get('activity_id')) or event}-{mep_id}",
+                candidate_id=identity.candidate_id,
+                kind="PLENARY_SPEECH",
+                body=Body.PE,
+                speech_date=day,
+                title=text(labels.get("fr")) or text(labels.get("mul")) or event,
+                detail=None,
+                url=SITE + event,
+                source_id=source.id,
+            )
+        )
+    if speeches:
+        result.sources.append(source)
+    return speeches
 
 
 def _cached_pages(cache: Cache, prefix: str) -> list[dict]:

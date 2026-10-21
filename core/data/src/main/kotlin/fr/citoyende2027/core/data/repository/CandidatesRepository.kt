@@ -6,6 +6,7 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.Vote
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,9 @@ interface CandidatesRepository {
 
     /** Recorded votes, most recent first. */
     fun observeVotes(id: CandidateId): Flow<List<Vote>>
+
+    /** Speeches (metadata and links), most recent first. */
+    fun observeSpeeches(id: CandidateId): Flow<List<Speech>>
 }
 
 internal class OfflineCandidatesRepository @Inject constructor(private val dao: CorePackDao) : CandidatesRepository {
@@ -35,4 +39,13 @@ internal class OfflineCandidatesRepository @Inject constructor(private val dao: 
         dao.observeCandidate(id.value).map { it?.asModel() }
 
     override fun observeCorePackInfo(): Flow<DataPackInfo?> = dao.observePack(DataPackInfo.CORE).map { it?.asModel() }
+
+    override fun observeMandates(id: CandidateId): Flow<List<Mandate>> =
+        dao.observeMandates(id.value).map { list -> list.map { it.asModel() } }
+
+    override fun observeVotes(id: CandidateId): Flow<List<Vote>> =
+        dao.observeVotes(id.value).map { list -> list.map { it.asModel() } }
+
+    override fun observeSpeeches(id: CandidateId): Flow<List<Speech>> =
+        dao.observeSpeeches(id.value).map { list -> list.mapNotNull { it.asModel() } }
 }

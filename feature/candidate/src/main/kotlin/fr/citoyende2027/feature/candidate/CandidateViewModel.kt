@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.citoyende2027.core.data.repository.CandidatesRepository
 import fr.citoyende2027.core.model.CandidateId
+import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.Vote
 import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.model.VoteFilterOptions
 import fr.citoyende2027.feature.candidate.navigation.CandidateRoute
@@ -25,13 +28,18 @@ class CandidateViewModel @Inject constructor(
     private val candidateId = CandidateId(checkNotNull(savedStateHandle.get<String>(CandidateRoute.ID_ARG)))
     private val voteFilter = MutableStateFlow(VoteFilter())
 
+    private val facts = combine(
+        candidatesRepository.observeMandates(candidateId),
+        candidatesRepository.observeVotes(candidateId),
+        candidatesRepository.observeSpeeches(candidateId),
+    ) { mandates, votes, speeches -> Facts(mandates, votes, speeches) }
+
     val uiState: StateFlow<CandidateUiState> = combine(
         candidatesRepository.observeCandidate(candidateId),
         candidatesRepository.observeCorePackInfo(),
-        candidatesRepository.observeMandates(candidateId),
-        candidatesRepository.observeVotes(candidateId),
+        facts,
         voteFilter,
-    ) { candidate, info, mandates, votes, filter ->
+    ) { candidate, info, (mandates, votes, speeches), filter ->
         if (candidate == null) {
             CandidateUiState.NotFound
         } else {
@@ -46,6 +54,7 @@ class CandidateViewModel @Inject constructor(
                     options = VoteFilterOptions.of(votes),
                     allSources = votes.map { it.source }.distinct(),
                 ),
+                speeches = speeches,
             )
         }
     }.stateIn(
@@ -55,4 +64,6 @@ class CandidateViewModel @Inject constructor(
     )
 
     fun onVoteFilterChange(filter: VoteFilter) = voteFilter.update { filter }
+
+    private data class Facts(val mandates: List<Mandate>, val votes: List<Vote>, val speeches: List<Speech>)
 }

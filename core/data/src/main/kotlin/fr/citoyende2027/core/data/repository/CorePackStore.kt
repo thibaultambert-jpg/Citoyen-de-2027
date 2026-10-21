@@ -20,5 +20,6 @@ class CorePackStore @Inject internal constructor(private val dao: CorePackDao) {
         coverage = content.candidates.flatMap { it.coverageEntities() },
         mandates = content.mandates.map { it.asEntity() },
         votes = content.votes.map { it.asEntity() },
+        speeches = content.speeches.map { it.asEntity() },
     )
 }

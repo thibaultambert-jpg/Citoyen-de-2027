@@ -14,6 +14,8 @@ import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.SpeechKind
 import fr.citoyende2027.core.model.Vote
 import java.io.File
 import java.time.LocalDate
@@ -95,13 +97,30 @@ class CorePackReader @Inject constructor() {
                     source = sources.getValue(it.getString(10)),
                 )
             }
+            val speeches = db.query(
+                "SELECT id, candidate_id, kind, body, speech_date, title, detail, url, source_id FROM speeches",
+            ) { row ->
+                SpeechKind.entries.firstOrNull { it.name == row.getString(2) }?.let { kind ->
+                    Speech(
+                        id = row.getString(0),
+                        candidateId = CandidateId(row.getString(1)),
+                        kind = kind,
+                        body = row.getStringOrNull(3)?.let(Body::valueOf),
+                        date = LocalDate.parse(row.getString(4)),
+                        title = row.getString(5),
+                        detail = row.getStringOrNull(6),
+                        url = row.getString(7),
+                        source = sources.getValue(row.getString(8)),
+                    )
+                }
+            }.filterNotNull()
             val info = DataPackInfo(
                 id = DataPackInfo.CORE,
                 version = version,
                 generatedOn = LocalDate.parse(meta.getValue("generated_on")),
                 isFictional = false,
             )
-            return CorePackContent(info, candidates, mandates, votes)
+            return CorePackContent(info, candidates, mandates, votes, speeches)
         } finally {
             db.close()
         }

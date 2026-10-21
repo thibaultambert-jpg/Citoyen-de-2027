@@ -10,6 +10,7 @@ import fr.citoyende2027.core.database.model.CandidateEntity
 import fr.citoyende2027.core.database.model.CandidateWithCoverage
 import fr.citoyende2027.core.database.model.DataPackEntity
 import fr.citoyende2027.core.database.model.MandateEntity
+import fr.citoyende2027.core.database.model.SpeechEntity
 import fr.citoyende2027.core.database.model.VoteEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -48,6 +49,12 @@ interface CorePackDao {
     @Insert
     suspend fun insertVotes(votes: List<VoteEntity>)
 
+    @Insert
+    suspend fun insertSpeeches(speeches: List<SpeechEntity>)
+
+    @Query("SELECT * FROM speeches WHERE candidate_id = :candidateId ORDER BY speech_date DESC")
+    fun observeSpeeches(candidateId: String): Flow<List<SpeechEntity>>
+
     @Query("SELECT * FROM mandates WHERE candidate_id = :candidateId ORDER BY start_date DESC")
     fun observeMandates(candidateId: String): Flow<List<MandateEntity>>
 
@@ -65,6 +72,7 @@ interface CorePackDao {
         coverage: List<CandidateCoverageEntity>,
         mandates: List<MandateEntity> = emptyList(),
         votes: List<VoteEntity> = emptyList(),
+        speeches: List<SpeechEntity> = emptyList(),
     ) {
         // Coverage, mandates and votes are removed with their candidate (ON DELETE CASCADE).
         deleteCandidates()
@@ -72,6 +80,7 @@ interface CorePackDao {
         insertCoverage(coverage)
         insertMandates(mandates)
         insertVotes(votes)
+        insertSpeeches(speeches)
         upsertPack(pack)
     }
 }

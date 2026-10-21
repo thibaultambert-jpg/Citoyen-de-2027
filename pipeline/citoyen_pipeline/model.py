@@ -65,6 +65,9 @@ class Identity:
     an_id: str | None = None
     senat_id: str | None = None
     pe_id: str | None = None
+    # Exact speaker name on vie-publique.fr. That source has no identifier: this alias is validated by
+    # hand (no homonym), and the build report lists the titles found under it for review.
+    vie_publique_name: str | None = None
 
     def ids(self) -> dict[Body, str]:
         pairs = {Body.AN: self.an_id, Body.SENAT: self.senat_id, Body.PE: self.pe_id}
@@ -110,6 +113,21 @@ class PersonFacts:
     birth_date: date | None
 
 
+@dataclass(frozen=True)
+class Speech:
+    """A speech: plenary intervention (PE) or official statement (vie-publique.fr). Metadata and link only."""
+
+    id: str
+    candidate_id: str
+    kind: str  # PLENARY_SPEECH or OFFICIAL_STATEMENT
+    body: Body | None
+    speech_date: date
+    title: str
+    detail: str | None
+    url: str
+    source_id: str
+
+
 @dataclass
 class SourceExtract:
     """Output of one source adapter."""
@@ -118,6 +136,9 @@ class SourceExtract:
     people: list[PersonFacts] = field(default_factory=list)
     mandates: list[Mandate] = field(default_factory=list)
     votes: list[Vote] = field(default_factory=list)
+    speeches: list[Speech] = field(default_factory=list)
+    # Human-review notes added to report.json (never shown in the app).
+    review: dict[str, list[str]] = field(default_factory=dict)
 
 
 @dataclass
@@ -129,3 +150,4 @@ class CorePack:
     coverage: dict[tuple[str, Facet], Level]
     mandates: list[Mandate]
     votes: list[Vote]
+    speeches: list[Speech] = field(default_factory=list)

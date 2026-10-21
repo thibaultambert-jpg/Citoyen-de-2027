@@ -11,6 +11,8 @@ import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.SpeechKind
 import fr.citoyende2027.core.model.Vote
 
 fun CandidateWithCoverage.asModel(): Candidate {
@@ -122,3 +124,31 @@ fun VoteEntity.asModel() = Vote(
     ballotUrl = ballotUrl,
     source = source.asModel(),
 )
+
+fun Speech.asEntity() = SpeechEntity(
+    id = id,
+    candidateId = candidateId.value,
+    kind = kind.name,
+    body = body?.name,
+    date = date,
+    title = title,
+    detail = detail,
+    url = url,
+    source = source.asEmbedded(),
+)
+
+/** Null for a kind this version of the app does not know: such rows are not shown. */
+fun SpeechEntity.asModel(): Speech? {
+    val kind = SpeechKind.entries.firstOrNull { it.name == kind } ?: return null
+    return Speech(
+        id = id,
+        candidateId = CandidateId(candidateId),
+        kind = kind,
+        body = body?.let { name -> Body.entries.firstOrNull { it.name == name } },
+        date = date,
+        title = title,
+        detail = detail,
+        url = url,
+        source = source.asModel(),
+    )
+}

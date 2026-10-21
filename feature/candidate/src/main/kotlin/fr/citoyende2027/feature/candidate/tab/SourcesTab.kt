@@ -26,7 +26,8 @@ import fr.citoyende2027.feature.candidate.R
 @Composable
 internal fun SourcesTab(state: CandidateUiState.Ready, modifier: Modifier = Modifier) {
     val sources = (
-        listOf(state.candidate.statusSource) + state.mandates.map { it.source } + state.votes.allSources
+        listOf(state.candidate.statusSource) + state.mandates.map { it.source } + state.votes.allSources +
+            state.speeches.map { it.source }
         ).distinct().sortedBy { it.name }
     LazyColumn(
         modifier = modifier.fillMaxSize(),

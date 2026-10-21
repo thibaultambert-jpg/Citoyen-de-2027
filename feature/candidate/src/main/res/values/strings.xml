@@ -33,6 +33,11 @@
     <string name="feature_candidate_vote_official_link">Voir le scrutin officiel</string>
     <string name="feature_candidate_position_other">Autre</string>
 
+    <string name="feature_candidate_speeches_scope">Interventions en séance du Parlement européen et discours officiels référencés par vie-publique.fr : titre, date et lien vers le texte officiel. Les interventions à l’Assemblée nationale et au Sénat ne sont pas encore intégrées.</string>
+    <string name="feature_candidate_speeches_plenary">Interventions en séance</string>
+    <string name="feature_candidate_speeches_statements">Discours et déclarations officiels</string>
+    <string name="feature_candidate_speech_official_link">Lire sur le site officiel</string>
+
     <string name="feature_candidate_method_title">Méthode</string>
     <string name="feature_candidate_method_text">Les informations de cette fiche proviennent uniquement des sources officielles listées ci-dessous, sans reformulation. Les identifiants officiels de chaque candidat sont rattachés à la main puis vérifiés automatiquement : nom et date de naissance doivent correspondre dans la source. Les votes sont affichés tels que publiés par chaque assemblée.</string>
     <string name="feature_candidate_sources_title">Sources</string>

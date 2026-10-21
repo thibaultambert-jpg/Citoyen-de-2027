@@ -329,3 +329,71 @@ def test_assemble_end_to_end_with_identity_check(cache, fixtures):
     assert {v.candidate_id for v in pack.votes} == {"fictif-a"}
     assert pack.coverage[("fictif-a", Facet.VOTES)] == Level.AVAILABLE
     assert pack.coverage[("fictif-b", Facet.VOTES)] == Level.NOT_APPLICABLE
+
+
+def test_vie_publique_statements_require_the_validated_name(tmp_path):
+    from citoyen_pipeline.sources import discours
+
+    cache = Cache(tmp_path / "vp")
+    items = [
+        {
+            "id": "1",
+            "titre": "Déclaration fictive",
+            "url": "https://www.vie-publique.fr/discours/1-fictif",
+            "prononciation": "2026-10-19",
+            "intervenants": [{"nom": "Alpha Exemple", "qualite": "Qualité fictive"}],
+            "type_document": "Interview",
+            "media": "Média fictif",
+        },
+        {
+            "id": "2",
+            "titre": "Autre déclaration",
+            "url": "https://www.vie-publique.fr/discours/2-fictif",
+            "prononciation": "2026-10-20",
+            "intervenants": [{"nom": "Alpha Exempl", "qualite": "Autre"}],  # near miss: never attached
+        },
+    ]
+    cache.put("vie-publique/discours.json", discours.URL, json.dumps(items).encode(), "2026-10-21")
+
+    without_alias = Identity("fictif-a", "Exemple", "Alpha", date(1970, 1, 1))
+    assert discours.extract(cache, [without_alias]).speeches == []
+
+    with_alias = replace(without_alias, vie_publique_name="Alpha Exemple")
+    extract = discours.extract(cache, [with_alias])
+    assert [(s.title, s.kind, s.detail) for s in extract.speeches] == [
+        ("Déclaration fictive", "OFFICIAL_STATEMENT", "Interview — Média fictif")
+    ]
+    assert extract.review == {"vie_publique_name:Alpha Exemple": ["Qualité fictive"]}
+
+
+def test_parlement_europeen_plenary_speeches(tmp_path):
+    from citoyen_pipeline.sources import parlement_europeen as pe
+
+    cache = Cache(tmp_path / "pe")
+    identity = Identity("fictif-a", "Exemple", "Alpha", date(1970, 1, 1), pe_id="1")
+    cache.put(
+        "pe/mep-1.json",
+        pe.mep_url("1"),
+        json.dumps({"data": [{"familyName": "Exemple", "bday": "1970-01-01", "hasMembership": []}]}).encode(),
+        "2026-10-01",
+    )
+    speeches = {
+        "data": [
+            {
+                "id": "eli/dl/event/MTG-PL-2025-01-20-OTH-1",
+                "activity_id": "MTG-PL-2025-01-20-OTH-1",
+                "activity_date": "2025-01-20",
+                "activity_label": {"fr": "Débat fictif (débat)"},
+            }
+        ]
+    }
+    cache.put("pe/speeches-1-0.json", pe.speeches_url("1"), json.dumps(speeches).encode(), "2026-10-01")
+
+    extract = pe.extract(cache, [identity])
+    assert [(s.title, s.body, s.url) for s in extract.speeches] == [
+        (
+            "Débat fictif (débat)",
+            Body.PE,
+            "https://data.europarl.europa.eu/eli/dl/event/MTG-PL-2025-01-20-OTH-1",
+        )
+    ]

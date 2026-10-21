@@ -9,6 +9,7 @@ import fr.citoyende2027.core.database.model.CandidateCoverageEntity
 import fr.citoyende2027.core.database.model.CandidateEntity
 import fr.citoyende2027.core.database.model.DataPackEntity
 import fr.citoyende2027.core.database.model.MandateEntity
+import fr.citoyende2027.core.database.model.SpeechEntity
 import fr.citoyende2027.core.database.model.VoteEntity
 import java.time.LocalDate
 
@@ -19,6 +20,7 @@ import java.time.LocalDate
         DataPackEntity::class,
         MandateEntity::class,
         VoteEntity::class,
+        SpeechEntity::class,
     ],
     version = 3,
     exportSchema = true,

@@ -108,3 +108,27 @@ data class VoteEntity(
     @ColumnInfo(name = "ballot_url") val ballotUrl: String,
     @Embedded(prefix = "source_") val source: SourceEmbedded,
 )
+
+@Entity(
+    tableName = "speeches",
+    foreignKeys = [
+        ForeignKey(
+            entity = CandidateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["candidate_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("candidate_id")],
+)
+data class SpeechEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val kind: String,
+    val body: String?,
+    @ColumnInfo(name = "speech_date") val date: LocalDate,
+    val title: String,
+    val detail: String?,
+    val url: String,
+    @Embedded(prefix = "source_") val source: SourceEmbedded,
+)
