@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import fr.citoyende2027.core.designsystem.R as DesignR
 import fr.citoyende2027.core.designsystem.theme.CitoyenTheme
@@ -79,13 +80,15 @@ class CandidateSheetParityTest {
         FictionalCandidates.all.forEach { current ->
             candidate = current
             CandidateSheetTab.entries.forEach { tab ->
-                composeRule.onNodeWithText(context.getString(tab.label)).performClick()
+                composeRule.onNodeWithText(context.getString(tab.label)).performScrollTo().performClick()
                 composeRule.waitForIdle()
             }
-            composeRule.onNodeWithText(context.getString(CandidateSheetTab.OVERVIEW.label)).performClick()
+            composeRule.onNodeWithText(
+                context.getString(CandidateSheetTab.OVERVIEW.label),
+            ).performScrollTo().performClick()
         }
         candidate = FictionalCandidates.candidateA
-        composeRule.onNodeWithText(context.getString(CandidateSheetTab.PROGRAM.label)).performClick()
+        composeRule.onNodeWithText(context.getString(CandidateSheetTab.PROGRAM.label)).performScrollTo().performClick()
         composeRule.onNodeWithText(context.getString(CoreUiR.string.core_ui_program_status_complete)).assertExists()
     }
 
