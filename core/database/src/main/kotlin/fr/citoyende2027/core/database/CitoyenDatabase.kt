@@ -9,6 +9,9 @@ import fr.citoyende2027.core.database.model.CandidateCoverageEntity
 import fr.citoyende2027.core.database.model.CandidateEntity
 import fr.citoyende2027.core.database.model.ChunkThemeEntity
 import fr.citoyende2027.core.database.model.DataPackEntity
+import fr.citoyende2027.core.database.model.LegalArticleEntity
+import fr.citoyende2027.core.database.model.LegalFtsEntity
+import fr.citoyende2027.core.database.model.LegalTextEntity
 import fr.citoyende2027.core.database.model.MandateEntity
 import fr.citoyende2027.core.database.model.ProgramChunkEntity
 import fr.citoyende2027.core.database.model.ProgramDocumentEntity
@@ -33,8 +36,11 @@ import java.time.LocalDate
         ProgramDocumentEntity::class,
         ProgramChunkEntity::class,
         ChunkThemeEntity::class,
+        LegalTextEntity::class,
+        LegalArticleEntity::class,
+        LegalFtsEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class)

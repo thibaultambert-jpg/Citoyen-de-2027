@@ -9,10 +9,13 @@ import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.LegalArticle
+import fr.citoyende2027.core.model.LegalText
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.ProgramChunk
 import fr.citoyende2027.core.model.ProgramDocument
 import fr.citoyende2027.core.model.ProgramStatus
+import fr.citoyende2027.core.model.SearchText
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
@@ -235,3 +238,35 @@ fun programStatusOf(value: String?): ProgramStatus =
 
 fun programStatusEntity(candidateId: CandidateId, status: ProgramStatus) =
     ProgramStatusEntity(candidateId = candidateId.value, status = status.name)
+
+fun LegalText.asEntity() = LegalTextEntity(id = id, title = title, position = position, source = source.asEmbedded())
+
+fun LegalTextEntity.asModel() = LegalText(id = id, title = title, position = position, source = source.asModel())
+
+fun LegalArticle.asEntity() = LegalArticleEntity(
+    id = id,
+    textId = textId,
+    ordinal = ordinal,
+    number = number,
+    headingPath = headingPath.joinToString(HEADING_SEPARATOR),
+    body = text,
+    inForceSince = inForceSince,
+    url = url,
+)
+
+fun LegalArticleEntity.asModel() = LegalArticle(
+    id = id,
+    textId = textId,
+    ordinal = ordinal,
+    number = number,
+    headingPath = headingPath.split(HEADING_SEPARATOR).filter { it.isNotEmpty() },
+    text = body,
+    inForceSince = inForceSince,
+    url = url,
+)
+
+/** Indexed text: number, headings and body, normalised like every query (see SearchText). */
+fun LegalArticle.ftsEntity() = LegalFtsEntity(
+    articleId = id,
+    body = SearchText.normalize(listOf("article $number", headingPath.joinToString(" "), text).joinToString(" ")),
+)

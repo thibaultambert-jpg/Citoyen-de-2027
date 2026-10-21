@@ -13,6 +13,7 @@ data class DataPackInfo(
     companion object {
         const val CORE = "core"
         const val PROGRAMS = "programs"
+        const val LEGAL = "legal"
     }
 }
 

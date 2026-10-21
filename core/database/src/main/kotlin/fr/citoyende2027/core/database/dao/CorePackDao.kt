@@ -11,6 +11,10 @@ import fr.citoyende2027.core.database.model.CandidateWithCoverage
 import fr.citoyende2027.core.database.model.ChunkThemeEntity
 import fr.citoyende2027.core.database.model.ChunkWithThemes
 import fr.citoyende2027.core.database.model.DataPackEntity
+import fr.citoyende2027.core.database.model.LegalArticleEntity
+import fr.citoyende2027.core.database.model.LegalFtsEntity
+import fr.citoyende2027.core.database.model.LegalFtsMatch
+import fr.citoyende2027.core.database.model.LegalTextEntity
 import fr.citoyende2027.core.database.model.MandateEntity
 import fr.citoyende2027.core.database.model.ProgramChunkEntity
 import fr.citoyende2027.core.database.model.ProgramDocumentEntity
@@ -32,7 +36,15 @@ data class ProgramsRows(
     val chunkThemes: List<ChunkThemeEntity>,
 )
 
-/** Read and atomic replacement of the `core` and `programs` packs. */
+/** Rows of a `legal` pack; [fts] indexes [articles]. */
+data class LegalRows(
+    val pack: DataPackEntity,
+    val texts: List<LegalTextEntity>,
+    val articles: List<LegalArticleEntity>,
+    val fts: List<LegalFtsEntity>,
+)
+
+/** Read and atomic replacement of the `core`, `programs` and `legal` packs of one manifest. */
 @Dao
 interface CorePackDao {
     @Transaction
@@ -120,10 +132,43 @@ interface CorePackDao {
     @Upsert
     suspend fun upsertPack(pack: DataPackEntity)
 
+    @Query("SELECT * FROM legal_texts ORDER BY position, id")
+    fun observeLegalTexts(): Flow<List<LegalTextEntity>>
+
+    @Query("SELECT * FROM legal_articles WHERE text_id = :textId ORDER BY ordinal")
+    fun observeLegalArticles(textId: String): Flow<List<LegalArticleEntity>>
+
+    @Query("SELECT * FROM legal_texts")
+    suspend fun getLegalTexts(): List<LegalTextEntity>
+
+    @Query("SELECT * FROM legal_articles WHERE id IN (:ids)")
+    suspend fun getLegalArticles(ids: List<String>): List<LegalArticleEntity>
+
+    /** [match] is an FTS expression built by FullTextSearch.matchExpression (no user syntax). */
+    @Query(
+        "SELECT article_id, matchinfo(legal_fts, 'pcnalx') AS match_info FROM legal_fts WHERE legal_fts MATCH :match",
+    )
+    suspend fun searchLegal(match: String): List<LegalFtsMatch>
+
+    @Query("DELETE FROM legal_texts")
+    suspend fun deleteLegalTexts()
+
+    @Query("DELETE FROM legal_fts")
+    suspend fun deleteLegalFts()
+
+    @Insert
+    suspend fun insertLegalTexts(texts: List<LegalTextEntity>)
+
+    @Insert
+    suspend fun insertLegalArticles(articles: List<LegalArticleEntity>)
+
+    @Insert
+    suspend fun insertLegalFts(rows: List<LegalFtsEntity>)
+
     /**
-     * Replaces the `core` pack and the `programs` pack of the same manifest in one transaction:
-     * readers never see a half-written pack, nor programmes of another candidate list. A null
-     * [programs] removes any installed programme.
+     * Replaces the `core` pack and the `programs` and `legal` packs of the same manifest in one
+     * transaction: readers never see a half-written pack, nor programmes of another candidate list.
+     * A null [programs] or [legal] removes what was installed.
      */
     @Transaction
     suspend fun replaceCorePack(
@@ -136,12 +181,17 @@ interface CorePackDao {
         themes: List<ThemeEntity> = emptyList(),
         voteThemes: List<VoteThemeEntity> = emptyList(),
         programs: ProgramsRows? = null,
+        legal: LegalRows? = null,
     ) {
         // Everything attached to a candidate (coverage, mandates, votes and their themes, speeches,
         // programmes and their excerpts) is removed with it (ON DELETE CASCADE).
         deleteCandidates()
         deleteThemes()
         deletePack(DataPackInfo.PROGRAMS)
+        // Legal articles go with their text (ON DELETE CASCADE); the FTS table has no foreign key.
+        deleteLegalTexts()
+        deleteLegalFts()
+        deletePack(DataPackInfo.LEGAL)
         insertCandidates(candidates)
         insertCoverage(coverage)
         insertMandates(mandates)
@@ -156,6 +206,12 @@ interface CorePackDao {
             insertProgramChunks(programs.chunks)
             insertChunkThemes(programs.chunkThemes)
             upsertPack(programs.pack)
+        }
+        if (legal != null) {
+            insertLegalTexts(legal.texts)
+            insertLegalArticles(legal.articles)
+            insertLegalFts(legal.fts)
+            upsertPack(legal.pack)
         }
     }
 }

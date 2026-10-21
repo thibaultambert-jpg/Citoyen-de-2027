@@ -14,6 +14,7 @@ import fr.citoyende2027.core.data.pack.PackSynchronizer
 import fr.citoyende2027.core.data.pack.PackVerifier
 import fr.citoyende2027.core.data.repository.CorePackStore
 import fr.citoyende2027.core.database.CorePackReader
+import fr.citoyende2027.core.database.LegalPackReader
 import fr.citoyende2027.core.database.ProgramsPackReader
 import fr.citoyende2027.core.network.PackHttpClient
 import java.io.File
@@ -28,6 +29,7 @@ internal object PackModule {
         @ApplicationContext context: Context,
         coreReader: CorePackReader,
         programsReader: ProgramsPackReader,
+        legalReader: LegalPackReader,
         store: CorePackStore,
     ): PackRuntime = PackRuntime(
         BuildConfig.PACKS_PUBLIC_KEY.takeIf { it.isNotBlank() }?.let { key ->
@@ -35,6 +37,8 @@ internal object PackModule {
                 override fun readCore(file: File) = coreReader.read(file)
 
                 override fun readPrograms(file: File) = programsReader.read(file)
+
+                override fun readLegal(file: File) = legalReader.read(file)
             }
             PackInstaller(PackVerifier(key), reader, store, File(context.filesDir, "packs"))
         },

@@ -14,6 +14,9 @@ import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.LegalArticle
+import fr.citoyende2027.core.model.LegalPackContent
+import fr.citoyende2027.core.model.LegalText
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.ProgramChunk
 import fr.citoyende2027.core.model.ProgramDocument
@@ -199,6 +202,56 @@ class ProgramsPackReader @Inject constructor() {
                 isFictional = false,
             )
             return ProgramsPackContent(info, statuses, documents, chunks)
+        } finally {
+            db.close()
+        }
+    }
+}
+
+/** Reads a `legal` pack written by the pipeline (build.py, write_legal_pack). */
+class LegalPackReader @Inject constructor() {
+    fun read(file: File): LegalPackContent {
+        val db = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
+        try {
+            val meta = db.meta(DataPackInfo.LEGAL)
+            val version = meta.getValue("version")
+            val texts = db.query(
+                "SELECT id, title, position, url, source_name, retrieved_on, license FROM legal_texts",
+            ) {
+                LegalText(
+                    id = it.getString(0),
+                    title = it.getString(1),
+                    position = it.getInt(2),
+                    source = SourceRef(
+                        name = it.getString(4),
+                        url = it.getString(3),
+                        retrievedOn = LocalDate.parse(it.getString(5)),
+                        license = it.getString(6),
+                        packVersion = version,
+                    ),
+                )
+            }
+            val articles = db.query(
+                "SELECT id, text_id, ordinal, number, heading_path, body, in_force_since, url FROM legal_articles",
+            ) {
+                LegalArticle(
+                    id = it.getString(0),
+                    textId = it.getString(1),
+                    ordinal = it.getInt(2),
+                    number = it.getString(3),
+                    headingPath = it.getString(4).split(HEADING_SEPARATOR).filter(String::isNotEmpty),
+                    text = it.getString(5),
+                    inForceSince = it.getStringOrNull(6)?.let(LocalDate::parse),
+                    url = it.getString(7),
+                )
+            }
+            val info = DataPackInfo(
+                id = DataPackInfo.LEGAL,
+                version = version,
+                generatedOn = LocalDate.parse(meta.getValue("generated_on")),
+                isFictional = false,
+            )
+            return LegalPackContent(info, texts, articles)
         } finally {
             db.close()
         }

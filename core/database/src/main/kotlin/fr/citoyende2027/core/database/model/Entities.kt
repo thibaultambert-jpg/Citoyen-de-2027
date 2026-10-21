@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Fts4
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
@@ -248,4 +249,50 @@ data class ChunkWithThemes(
     @Embedded val chunk: ProgramChunkEntity,
     @Relation(parentColumn = "id", entityColumn = "chunk_id")
     val themes: List<ChunkThemeEntity>,
+)
+
+@Entity(tableName = "legal_texts")
+data class LegalTextEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    val position: Int,
+    @Embedded(prefix = "source_") val source: SourceEmbedded,
+)
+
+@Entity(
+    tableName = "legal_articles",
+    foreignKeys = [
+        ForeignKey(
+            entity = LegalTextEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["text_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("text_id")],
+)
+data class LegalArticleEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "text_id") val textId: String,
+    val ordinal: Int,
+    val number: String,
+    /** Headings separated by a line feed, as in the published pack. */
+    @ColumnInfo(name = "heading_path") val headingPath: String,
+    val body: String,
+    @ColumnInfo(name = "in_force_since") val inForceSince: LocalDate?,
+    val url: String,
+)
+
+/**
+ * Full-text index of the legal articles. The indexed text is normalised by the app (lower case, no
+ * diacritics) because `unicode61 remove_diacritics=2` needs SQLite 3.27, newer than API 29's.
+ */
+@Fts4(notIndexed = ["article_id"])
+@Entity(tableName = "legal_fts")
+data class LegalFtsEntity(@ColumnInfo(name = "article_id") val articleId: String, val body: String)
+
+/** One FTS match with its `matchinfo(legal_fts, 'pcnalx')` blob, for BM25 ranking. */
+data class LegalFtsMatch(
+    @ColumnInfo(name = "article_id") val articleId: String,
+    @ColumnInfo(name = "match_info") val matchInfo: ByteArray,
 )

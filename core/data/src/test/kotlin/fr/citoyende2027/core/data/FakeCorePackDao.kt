@@ -7,6 +7,10 @@ import fr.citoyende2027.core.database.model.CandidateWithCoverage
 import fr.citoyende2027.core.database.model.ChunkThemeEntity
 import fr.citoyende2027.core.database.model.ChunkWithThemes
 import fr.citoyende2027.core.database.model.DataPackEntity
+import fr.citoyende2027.core.database.model.LegalArticleEntity
+import fr.citoyende2027.core.database.model.LegalFtsEntity
+import fr.citoyende2027.core.database.model.LegalFtsMatch
+import fr.citoyende2027.core.database.model.LegalTextEntity
 import fr.citoyende2027.core.database.model.MandateEntity
 import fr.citoyende2027.core.database.model.ProgramChunkEntity
 import fr.citoyende2027.core.database.model.ProgramDocumentEntity
@@ -137,6 +141,47 @@ internal class FakeCorePackDao : CorePackDao {
 
     override suspend fun insertChunkThemes(tags: List<ChunkThemeEntity>) {
         chunkThemes.value += tags
+    }
+
+    private val legalTexts = MutableStateFlow<List<LegalTextEntity>>(emptyList())
+    private val legalArticles = MutableStateFlow<List<LegalArticleEntity>>(emptyList())
+    val legalFts = MutableStateFlow<List<LegalFtsEntity>>(emptyList())
+
+    /** FTS is SQLite's job (tested in :core:database): matches are given by the test. */
+    var legalMatches: (String) -> List<LegalFtsMatch> = { emptyList() }
+
+    override fun observeLegalTexts(): Flow<List<LegalTextEntity>> =
+        legalTexts.map { list -> list.sortedWith(compareBy({ it.position }, { it.id })) }
+
+    override fun observeLegalArticles(textId: String): Flow<List<LegalArticleEntity>> =
+        legalArticles.map { list -> list.filter { it.textId == textId }.sortedBy { it.ordinal } }
+
+    override suspend fun getLegalTexts(): List<LegalTextEntity> = legalTexts.value
+
+    override suspend fun getLegalArticles(ids: List<String>): List<LegalArticleEntity> =
+        legalArticles.value.filter { it.id in ids }
+
+    override suspend fun searchLegal(match: String): List<LegalFtsMatch> = legalMatches(match)
+
+    override suspend fun deleteLegalTexts() {
+        legalArticles.value = emptyList()
+        legalTexts.value = emptyList()
+    }
+
+    override suspend fun deleteLegalFts() {
+        legalFts.value = emptyList()
+    }
+
+    override suspend fun insertLegalTexts(texts: List<LegalTextEntity>) {
+        legalTexts.value += texts
+    }
+
+    override suspend fun insertLegalArticles(articles: List<LegalArticleEntity>) {
+        legalArticles.value += articles
+    }
+
+    override suspend fun insertLegalFts(rows: List<LegalFtsEntity>) {
+        legalFts.value += rows
     }
 
     override suspend fun upsertPack(pack: DataPackEntity) {

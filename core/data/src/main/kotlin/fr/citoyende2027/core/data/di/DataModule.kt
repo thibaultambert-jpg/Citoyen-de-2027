@@ -13,7 +13,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import fr.citoyende2027.core.data.repository.CandidatesRepository
 import fr.citoyende2027.core.data.repository.DataStoreUserPreferencesRepository
+import fr.citoyende2027.core.data.repository.LegalRepository
 import fr.citoyende2027.core.data.repository.OfflineCandidatesRepository
+import fr.citoyende2027.core.data.repository.OfflineLegalRepository
 import fr.citoyende2027.core.data.repository.UserPreferencesRepository
 import javax.inject.Singleton
 
@@ -22,6 +24,9 @@ import javax.inject.Singleton
 internal abstract class DataModule {
     @Binds
     abstract fun bindsCandidatesRepository(impl: OfflineCandidatesRepository): CandidatesRepository
+
+    @Binds
+    abstract fun bindsLegalRepository(impl: OfflineLegalRepository): LegalRepository
 
     @Binds
     abstract fun bindsUserPreferencesRepository(impl: DataStoreUserPreferencesRepository): UserPreferencesRepository

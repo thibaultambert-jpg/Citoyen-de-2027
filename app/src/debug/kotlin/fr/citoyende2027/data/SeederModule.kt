@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import fr.citoyende2027.core.data.repository.CorePackStore
 import fr.citoyende2027.core.testing.FictionalCandidates
+import fr.citoyende2027.core.testing.FictionalLegal
 import javax.inject.Inject
 
 /**
@@ -18,7 +19,7 @@ internal class DebugDataSeeder @Inject constructor(
 ) : StartupDataSeeder {
     override suspend fun seedIfNeeded() {
         if (!embedded.install() && !corePackStore.hasCorePack()) {
-            corePackStore.install(FictionalCandidates.corePack, FictionalCandidates.programsPack)
+            corePackStore.install(FictionalCandidates.corePack, FictionalCandidates.programsPack, FictionalLegal.pack)
         }
     }
 }

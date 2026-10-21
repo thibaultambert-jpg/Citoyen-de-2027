@@ -3,6 +3,7 @@ package fr.citoyende2027.core.data.pack
 import fr.citoyende2027.core.data.repository.CorePackStore
 import fr.citoyende2027.core.model.CorePackContent
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.LegalPackContent
 import fr.citoyende2027.core.model.ProgramsPackContent
 import java.io.File
 
@@ -11,6 +12,8 @@ interface PackFileReader {
     fun readCore(file: File): CorePackContent
 
     fun readPrograms(file: File): ProgramsPackContent
+
+    fun readLegal(file: File): LegalPackContent
 }
 
 /** Supported `schema_version` of manifests and packs; must match the pipeline. */
@@ -22,7 +25,7 @@ sealed interface InstallResult {
     data object UpToDate : InstallResult
 }
 
-/** Packs of a verified manifest this app installs: `core` (required) and `programs`. */
+/** Packs of a verified manifest this app installs: `core` (required), `programs` and `legal`. */
 class InstallPlan(val manifest: PackManifest, val entries: List<PackEntry>) {
     fun entry(id: String): PackEntry? = entries.firstOrNull { it.id == id }
 }
@@ -30,7 +33,7 @@ class InstallPlan(val manifest: PackManifest, val entries: List<PackEntry>) {
 /**
  * Verifies then activates the packs of one signed manifest. Activation is atomic (one Room
  * transaction for all packs); the previous verified set is kept on disk so that [rollback] can
- * restore it (AGENTS.md §5). Packs of other kinds (e.g. `legal`, later) are ignored here.
+ * restore it (AGENTS.md §5). Packs of other kinds (e.g. models) are ignored here.
  */
 class PackInstaller(
     private val verifier: PackVerifier,
@@ -50,10 +53,10 @@ class PackInstaller(
             throw PackVerificationException("Unsupported manifest schema ${parsed.schemaVersion}")
         }
         val core = parsed.pack(DataPackInfo.CORE) ?: throw PackVerificationException("No core pack in manifest")
-        val programs = parsed.pack(DataPackInfo.PROGRAMS)
+        val optional = OPTIONAL_PACKS.mapNotNull(parsed::pack)
         val upToDate = core.version == store.installedVersion(DataPackInfo.CORE) &&
-            programs?.version == store.installedVersion(DataPackInfo.PROGRAMS)
-        return if (upToDate) null else InstallPlan(parsed, listOfNotNull(core, programs))
+            OPTIONAL_PACKS.all { id -> parsed.pack(id)?.version == store.installedVersion(id) }
+        return if (upToDate) null else InstallPlan(parsed, listOf(core) + optional)
     }
 
     /** Staging file where a pack of [plan] is written (downloads resume from it). */
@@ -82,7 +85,7 @@ class PackInstaller(
         val manifest = File(previous, MANIFEST)
         if (!manifest.exists()) return false
         val parsed = verifier.verifyManifest(manifest.readBytes(), File(previous, SIGNATURE).readBytes())
-        val entries = listOfNotNull(parsed.pack(DataPackInfo.CORE) ?: return false, parsed.pack(DataPackInfo.PROGRAMS))
+        val entries = listOf(parsed.pack(DataPackInfo.CORE) ?: return false) + OPTIONAL_PACKS.mapNotNull(parsed::pack)
         val resolved = entries.associateWith { File(previous, it.file) }
         resolved.forEach { (entry, file) -> verifier.verifyFile(file, entry) }
         activate(InstallPlan(parsed, entries), resolved)
@@ -97,8 +100,11 @@ class PackInstaller(
         val programs = plan.entry(DataPackInfo.PROGRAMS)?.let { entry ->
             reader.readPrograms(files.getValue(entry)).also { checkVersion(it.info, entry) }
         }
+        val legal = plan.entry(DataPackInfo.LEGAL)?.let { entry ->
+            reader.readLegal(files.getValue(entry)).also { checkVersion(it.info, entry) }
+        }
         try {
-            store.install(core, programs)
+            store.install(core, programs, legal)
         } catch (error: IllegalArgumentException) {
             throw PackVerificationException("Packs of the manifest do not match each other", error)
         }
@@ -130,5 +136,6 @@ class PackInstaller(
     private companion object {
         const val MANIFEST = "manifest.json"
         const val SIGNATURE = "manifest.json.sig"
+        val OPTIONAL_PACKS = listOf(DataPackInfo.PROGRAMS, DataPackInfo.LEGAL)
     }
 }

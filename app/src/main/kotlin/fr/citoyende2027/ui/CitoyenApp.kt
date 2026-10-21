@@ -22,6 +22,7 @@ import fr.citoyende2027.feature.candidates.navigation.CandidatesRoute
 import fr.citoyende2027.feature.candidates.navigation.candidatesScreen
 import fr.citoyende2027.feature.compare.navigation.compareScreen
 import fr.citoyende2027.feature.institutions.navigation.institutionsScreen
+import fr.citoyende2027.feature.institutions.navigation.navigateToLegalText
 import fr.citoyende2027.navigation.TopLevelDestination
 
 @Composable
@@ -56,7 +57,10 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
             candidateScreen(onBack = { navController.popBackStack() })
             compareScreen()
             askScreen()
-            institutionsScreen()
+            institutionsScreen(
+                onOpenText = navController::navigateToLegalText,
+                onBack = { navController.popBackStack() },
+            )
             aboutScreen()
         }
     }

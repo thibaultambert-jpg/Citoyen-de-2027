@@ -2,8 +2,10 @@ package fr.citoyende2027.core.data.pack
 
 import com.google.crypto.tink.subtle.Ed25519Sign
 import fr.citoyende2027.core.model.CorePackContent
+import fr.citoyende2027.core.model.LegalPackContent
 import fr.citoyende2027.core.model.ProgramsPackContent
 import fr.citoyende2027.core.testing.FictionalCandidates
+import fr.citoyende2027.core.testing.FictionalLegal
 import java.io.File
 import java.util.Base64
 
@@ -22,6 +24,7 @@ object TestPack {
     val publicKey: String get() = resource("test_public_key.txt").decodeToString().trim()
     const val VERSION = "2026-01-15+fixture"
     const val PROGRAMS_VERSION = "2026-01-15+programs-fixture"
+    const val LEGAL_VERSION = "2026-01-15+legal-fixture"
 
     private val signer = Ed25519Sign(ByteArray(32) { it.toByte() })
 
@@ -51,5 +54,10 @@ object TestPack {
         override fun readCore(file: File) = content(coreVersion(file))
 
         override fun readPrograms(file: File) = programsContent()
+
+        override fun readLegal(file: File) = legalContent()
     }
+
+    fun legalContent(version: String = LEGAL_VERSION): LegalPackContent =
+        FictionalLegal.pack.copy(info = FictionalLegal.info.copy(version = version, isFictional = false))
 }
