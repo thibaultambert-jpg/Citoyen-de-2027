@@ -33,5 +33,11 @@ class OfflineCandidatesRepositoryTest {
             assertEquals(FictionalCandidates.candidateB, awaitItem())
         }
         repository.observeCorePackInfo().test { assertEquals(FictionalCandidates.packInfo, awaitItem()) }
+        repository.observeMandates(FictionalCandidates.candidateA.id).test {
+            assertEquals(FictionalCandidates.mandates, awaitItem())
+        }
+        repository.observeVotes(FictionalCandidates.candidateA.id).test {
+            assertEquals(FictionalCandidates.votes, awaitItem())
+        }
     }
 }

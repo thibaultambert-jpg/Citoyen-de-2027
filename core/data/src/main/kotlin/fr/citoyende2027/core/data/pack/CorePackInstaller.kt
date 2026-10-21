@@ -11,7 +11,7 @@ fun interface CorePackFileReader {
 }
 
 /** Supported `schema_version` of manifests and packs; must match the pipeline. */
-const val SUPPORTED_PACK_SCHEMA = 1
+const val SUPPORTED_PACK_SCHEMA = 2
 
 sealed interface InstallResult {
     data class Installed(val version: String) : InstallResult

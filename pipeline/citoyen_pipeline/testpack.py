@@ -53,6 +53,7 @@ def build(out: Path) -> dict[str, str]:
             "pour",
             "https://example.invalid/scrutin-1",
             fake.id,
+            ballot_subject="AMENDMENT",
         )
     ]
     pack = CorePack(

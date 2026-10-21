@@ -103,6 +103,7 @@ data class VoteEntity(
     @ColumnInfo(name = "ballot_date") val ballotDate: LocalDate,
     @ColumnInfo(name = "ballot_title") val ballotTitle: String,
     @ColumnInfo(name = "ballot_type") val ballotType: String?,
+    @ColumnInfo(name = "ballot_subject") val ballotSubject: String?,
     val position: String,
     @ColumnInfo(name = "ballot_url") val ballotUrl: String,
     @Embedded(prefix = "source_") val source: SourceEmbedded,

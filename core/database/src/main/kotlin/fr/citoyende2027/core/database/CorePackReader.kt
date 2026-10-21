@@ -2,6 +2,7 @@ package fr.citoyende2027.core.database
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import fr.citoyende2027.core.model.BallotSubject
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.Candidate
@@ -75,8 +76,8 @@ class CorePackReader @Inject constructor() {
                 )
             }
             val votes = db.query(
-                "SELECT id, candidate_id, body, ballot_id, ballot_date, ballot_title, ballot_type, position, " +
-                    "ballot_url, source_id FROM votes",
+                "SELECT id, candidate_id, body, ballot_id, ballot_date, ballot_title, ballot_type, ballot_subject, " +
+                    "position, ballot_url, source_id FROM votes",
             ) {
                 Vote(
                     id = it.getString(0),
@@ -86,9 +87,12 @@ class CorePackReader @Inject constructor() {
                     ballotDate = LocalDate.parse(it.getString(4)),
                     ballotTitle = it.getString(5),
                     ballotType = it.getStringOrNull(6),
-                    position = it.getString(7),
-                    ballotUrl = it.getString(8),
-                    source = sources.getValue(it.getString(9)),
+                    ballotSubject = it.getStringOrNull(7)?.let { name ->
+                        BallotSubject.entries.firstOrNull { subject -> subject.name == name } ?: BallotSubject.OTHER
+                    },
+                    position = it.getString(8),
+                    ballotUrl = it.getString(9),
+                    source = sources.getValue(it.getString(10)),
                 )
             }
             val info = DataPackInfo(
@@ -116,6 +120,6 @@ class CorePackReader @Inject constructor() {
 
     companion object {
         /** Must match PACK_SCHEMA_VERSION in pipeline/citoyen_pipeline/__init__.py. */
-        const val SUPPORTED_SCHEMA_VERSION = 1
+        const val SUPPORTED_SCHEMA_VERSION = 2
     }
 }

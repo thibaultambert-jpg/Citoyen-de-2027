@@ -27,6 +27,7 @@ class Body(StrEnum):
     AN = "AN"
     SENAT = "SENAT"
     PE = "PE"
+    GOVERNMENT = "GOVERNMENT"
     LOCAL = "LOCAL"
 
 
@@ -95,6 +96,8 @@ class Vote:
     position: str
     ballot_url: str
     source_id: str
+    # AMENDMENT, ARTICLE, WHOLE_TEXT, MOTION or OTHER, from explicit title rules; None when unknown.
+    ballot_subject: str | None = None
 
 
 @dataclass(frozen=True)

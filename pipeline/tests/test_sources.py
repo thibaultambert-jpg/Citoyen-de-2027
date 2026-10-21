@@ -84,14 +84,22 @@ def cache(tmp_path) -> Cache:
         "election": {"lieu": {"departement": "Département fictif", "numCirco": "1"}},
     }
     autre_mandat = {"uid": "PM000002", "typeOrgane": "GP", "dateDebut": "2024-07-07"}
+    gouvernement = {
+        "uid": "PM000003",
+        "typeOrgane": "GOUVERNEMENT",
+        "dateDebut": "2020-01-01",
+        "dateFin": "2021-01-01",
+        "organes": {"organeRef": "PO000009"},
+    }
     cache.put(
         "an/acteurs.json.zip",
         assemblee.ACTEURS_URL,
         _zip(
             {
                 "json/acteur/PA000001.json": _acteur(
-                    "PA000001", "Exemple", "1970-01-01", [mandat_an, autre_mandat]
+                    "PA000001", "Exemple", "1970-01-01", [mandat_an, autre_mandat, gouvernement]
                 ),
+                "json/organe/PO000009.json": {"organe": {"uid": "PO000009", "libelleAbrege": "FICTIF"}},
                 f"json/acteur/{OTHER}.json": _acteur(OTHER, "Autre", "1960-01-01", mandat_an),
             }
         ),
@@ -166,8 +174,11 @@ def cache(tmp_path) -> Cache:
 
 def test_assemblee_keeps_only_linked_person_and_assembly_mandates(cache):
     extract = assemblee.extract(cache, [ALPHA])
-    assert [m.id for m in extract.mandates] == ["an-PM000001"]
+    assert [m.id for m in extract.mandates] == ["an-PM000001", "an-PM000003"]
     mandate = extract.mandates[0]
+    government = extract.mandates[1]
+    assert government.body == Body.GOVERNMENT
+    assert government.label == "Membre du Gouvernement (FICTIF)"
     assert mandate.body == Body.AN and mandate.end_date is None
     assert "17e législature" in mandate.label and "circonscription n° 1" in mandate.label
     check_identities([replace(ALPHA, senat_id=None)], extract.people)
@@ -188,6 +199,22 @@ def test_assemblee_votes_keep_published_positions_and_official_link(cache):
     }
     assert all(v.candidate_id == "fictif-a" for v in votes)
     assert votes[0].ballot_url.startswith("https://www.assemblee-nationale.fr/dyn/")
+
+
+@pytest.mark.parametrize(
+    ("title", "subject"),
+    [
+        ("l'amendement n° 15 de M. X à l'article premier", "AMENDMENT"),
+        ("les amendements identiques n° 3 et 4", "AMENDMENT"),
+        ("le sous-amendement n° 2", "OTHER"),
+        ("l'article 22 (examen prioritaire) du projet de loi", "ARTICLE"),
+        ("l’ensemble du projet de loi de finances", "WHOLE_TEXT"),
+        ("la motion de censure déposée en application de l'article 49", "MOTION"),
+        ("la déclaration du Gouvernement", "OTHER"),
+    ],
+)
+def test_ballot_subject_rules(title, subject):
+    assert assemblee.ballot_subject(title) == subject
 
 
 def test_assemblee_rejects_identity_with_other_birth_date(cache):
@@ -298,10 +325,7 @@ def test_assemble_end_to_end_with_identity_check(cache, fixtures):
 
     pack = assemble(fixtures, cache, date(2026, 10, 1))
     assert {c.id for c in pack.candidates} == {"fictif-a", "fictif-b", "fictif-c"}
-    assert {m.id for m in pack.mandates} == {
-        "an-PM000001",
-        "rne-conseiller-municipal-cm-" + pack.mandates[1].id[-12:],
-    }
+    assert sorted(m.body.value for m in pack.mandates) == ["AN", "GOVERNMENT", "LOCAL"]
     assert {v.candidate_id for v in pack.votes} == {"fictif-a"}
     assert pack.coverage[("fictif-a", Facet.VOTES)] == Level.AVAILABLE
     assert pack.coverage[("fictif-b", Facet.VOTES)] == Level.NOT_APPLICABLE

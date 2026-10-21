@@ -25,4 +25,25 @@
     <string name="core_ui_source_license">Licence : %1$s</string>
     <string name="core_ui_source_pack_version">Version des données : %1$s</string>
     <string name="core_ui_close">Fermer</string>
+
+    <string name="core_ui_body_an">Assemblée nationale</string>
+    <string name="core_ui_body_senat">Sénat</string>
+    <string name="core_ui_body_pe">Parlement européen</string>
+    <string name="core_ui_body_government">Gouvernement</string>
+    <string name="core_ui_body_local">Mandats locaux</string>
+
+    <string name="core_ui_subject_amendment">Amendement</string>
+    <string name="core_ui_subject_article">Article</string>
+    <string name="core_ui_subject_whole_text">Ensemble du texte</string>
+    <string name="core_ui_subject_motion">Motion</string>
+    <string name="core_ui_subject_other">Autre objet</string>
+
+    <string name="core_ui_position_for">Pour</string>
+    <string name="core_ui_position_against">Contre</string>
+    <string name="core_ui_position_abstention">Abstention</string>
+    <string name="core_ui_position_non_voting">Non-votant</string>
+
+    <!-- %1$s: start date, %2$s: end date -->
+    <string name="core_ui_period">Du %1$s au %2$s</string>
+    <string name="core_ui_period_open">Depuis le %1$s (en cours selon la source)</string>
 </resources>

@@ -49,6 +49,7 @@ CREATE TABLE votes (
     ballot_date TEXT NOT NULL,
     ballot_title TEXT NOT NULL,
     ballot_type TEXT,
+    ballot_subject TEXT,
     position TEXT NOT NULL,
     ballot_url TEXT NOT NULL,
     source_id TEXT NOT NULL REFERENCES sources(id)
@@ -118,7 +119,7 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
             ],
         )
         db.executemany(
-            "INSERT INTO votes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO votes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 (
                     v.id,
@@ -128,6 +129,7 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
                     v.ballot_date.isoformat(),
                     v.ballot_title,
                     v.ballot_type,
+                    v.ballot_subject,
                     v.position,
                     v.ballot_url,
                     v.source_id,

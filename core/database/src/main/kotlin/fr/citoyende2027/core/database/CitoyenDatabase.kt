@@ -20,7 +20,7 @@ import java.time.LocalDate
         MandateEntity::class,
         VoteEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class)

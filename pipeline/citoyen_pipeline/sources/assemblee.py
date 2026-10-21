@@ -4,6 +4,8 @@ Files and JSON structure verified on 2026-10-21 with tools/probe_sources.py:
 - AMO30 "tous acteurs, tous mandats, tous organes (historique)": json/acteur/PA*.json with
   acteur.uid(#text), etatCivil.ident.{nom,prenom}, etatCivil.infoNaissance.dateNais,
   mandats.mandat[] (typeOrgane, legislature, dateDebut, dateFin, election.lieu).
+  Government memberships are mandats with typeOrgane "GOUVERNEMENT" whose organe
+  (json/organe/PO*.json) has libelle "Gouvernement" and libelleAbrege naming the government.
 - Scrutins: json/VT*.json with scrutin.{uid, numero, legislature, dateScrutin, titre,
   typeVote.libelleTypeVote, ventilationVotes.organe.groupes.groupe[].vote.decompteNominatif}
   where decompteNominatif.{pours,contres,abstentions,nonVotants}.votant[] carry acteurRef.
@@ -12,6 +14,7 @@ Files and JSON structure verified on 2026-10-21 with tools/probe_sources.py:
 from __future__ import annotations
 
 import json
+import re
 import zipfile
 from collections.abc import Iterator
 
@@ -38,6 +41,21 @@ def scrutins_url(legislature: int) -> str:
 
 # Official page of a scrutin (pattern checked with the `urls` probe on 2026-10-21: HTTP 200).
 BALLOT_PAGE = "https://www.assemblee-nationale.fr/dyn/{legislature}/scrutins/{numero}"
+
+
+# Subject of a ballot from the start of its official title (AGENTS.md §10: amendment, article, whole text).
+# Explicit, ordered rules; anything else stays "OTHER", never guessed.
+SUBJECT_RULES = (
+    (re.compile(r"^(l'|les )(sous-)?amendements?\b", re.IGNORECASE), "AMENDMENT"),
+    (re.compile(r"^(l'|les )articles?\b", re.IGNORECASE), "ARTICLE"),
+    (re.compile(r"^l'ensemble\b", re.IGNORECASE), "WHOLE_TEXT"),
+    (re.compile(r"^(la|les) motions?\b", re.IGNORECASE), "MOTION"),
+)
+
+
+def ballot_subject(title: str) -> str:
+    normalized = title.strip().replace("’", "'")
+    return next((subject for pattern, subject in SUBJECT_RULES if pattern.search(normalized)), "OTHER")
 
 
 def fetch(cache: Cache) -> None:
@@ -68,6 +86,10 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
         license=LICENSE,
     )
     result.sources.append(acteurs_source)
+    organes = {}
+    for record in _json_entries(cache.path(acteurs.key), "organe"):
+        organe = record.get("organe", {})
+        organes[text(organe.get("uid"))] = organe
     for record in _json_entries(cache.path(acteurs.key), "acteur"):
         acteur = record["acteur"]
         uid = text(acteur.get("uid"))
@@ -83,7 +105,8 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
             )
         )
         for mandat in as_list(acteur.get("mandats", {}).get("mandat")):
-            if mandat.get("typeOrgane") != "ASSEMBLEE":
+            kind = mandat.get("typeOrgane")
+            if kind not in ("ASSEMBLEE", "GOUVERNEMENT"):
                 continue
             start = parse_date(mandat.get("dateDebut"))
             if start is None:
@@ -92,8 +115,10 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
                 Mandate(
                     id=f"an-{text(mandat.get('uid'))}",
                     candidate_id=linked[uid].candidate_id,
-                    body=Body.AN,
-                    label=_mandate_label(mandat),
+                    body=Body.AN if kind == "ASSEMBLEE" else Body.GOVERNMENT,
+                    label=_mandate_label(mandat)
+                    if kind == "ASSEMBLEE"
+                    else _government_label(mandat, organes),
                     start_date=start,
                     end_date=parse_date(mandat.get("dateFin")),
                     source_id=acteurs_source.id,
@@ -127,6 +152,12 @@ def _mandate_label(mandat: dict) -> str:
     return " — ".join(parts)
 
 
+def _government_label(mandat: dict, organes: dict[str | None, dict]) -> str:
+    organe = organes.get(text((mandat.get("organes") or {}).get("organeRef"))) or {}
+    name = text(organe.get("libelleAbrege"))
+    return f"Membre du Gouvernement ({name})" if name else "Membre du Gouvernement"
+
+
 def _votes(scrutin: dict, linked: dict[str, Identity], source_id: str) -> Iterator[Vote]:
     uid = text(scrutin.get("uid"))
     numero = text(scrutin.get("numero"))
@@ -150,6 +181,7 @@ def _votes(scrutin: dict, linked: dict[str, Identity], source_id: str) -> Iterat
                     ballot_date=ballot_date,
                     ballot_title=text(scrutin.get("titre")) or "",
                     ballot_type=text((scrutin.get("typeVote") or {}).get("libelleTypeVote")),
+                    ballot_subject=ballot_subject(text(scrutin.get("titre")) or ""),
                     position=position,
                     ballot_url=BALLOT_PAGE.format(legislature=legislature, numero=numero),
                     source_id=source_id,

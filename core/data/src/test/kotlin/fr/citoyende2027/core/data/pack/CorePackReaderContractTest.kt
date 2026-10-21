@@ -1,6 +1,7 @@
 package fr.citoyende2027.core.data.pack
 
 import fr.citoyende2027.core.database.CorePackReader
+import fr.citoyende2027.core.model.BallotSubject
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.CoverageFacet
@@ -35,5 +36,6 @@ class CorePackReaderContractTest {
         assertEquals(CoverageLevel.NOT_APPLICABLE, b.coverage[CoverageFacet.VOTES])
         assertEquals(listOf(Body.AN), content.mandates.map { it.body })
         assertEquals(listOf("pour"), content.votes.map { it.position })
+        assertEquals(listOf(BallotSubject.AMENDMENT), content.votes.map { it.ballotSubject })
     }
 }

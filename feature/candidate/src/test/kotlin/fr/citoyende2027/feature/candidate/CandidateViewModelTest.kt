@@ -4,9 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import fr.citoyende2027.core.data.repository.CandidatesRepository
+import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.Vote
+import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.testing.FictionalCandidates
 import fr.citoyende2027.core.testing.MainDispatcherExtension
 import fr.citoyende2027.feature.candidate.navigation.CandidateRoute
@@ -33,6 +37,12 @@ class CandidateViewModelTest {
             candidates.map { list -> list.firstOrNull { it.id == id } }
 
         override fun observeCorePackInfo(): Flow<DataPackInfo?> = flowOf(FictionalCandidates.packInfo)
+
+        override fun observeMandates(id: CandidateId): Flow<List<Mandate>> =
+            flowOf(FictionalCandidates.mandates.filter { it.candidateId == id })
+
+        override fun observeVotes(id: CandidateId): Flow<List<Vote>> =
+            flowOf(FictionalCandidates.votes.filter { it.candidateId == id })
     }
 
     private fun viewModel(id: String) =
@@ -41,10 +51,10 @@ class CandidateViewModelTest {
     @Test
     fun `known candidate is exposed with the data date`() = runTest {
         viewModel(FictionalCandidates.candidateB.id.value).uiState.test {
-            assertEquals(
-                CandidateUiState.Ready(FictionalCandidates.candidateB, FictionalCandidates.packInfo),
-                awaitSettled(),
-            )
+            val state = awaitSettled() as CandidateUiState.Ready
+            assertEquals(FictionalCandidates.candidateB, state.candidate)
+            assertEquals(FictionalCandidates.packInfo, state.dataInfo)
+            assertEquals(emptyList<Vote>(), state.votes.votes)
         }
     }
 
@@ -61,6 +71,28 @@ class CandidateViewModelTest {
             awaitSettled()
             repository.candidates.value = listOf(FictionalCandidates.candidateB)
             assertEquals(CandidateUiState.NotFound, awaitItem())
+        }
+    }
+
+    @Test
+    fun `votes are filtered without losing the total`() = runTest {
+        val viewModel = viewModel(FictionalCandidates.candidateA.id.value)
+        viewModel.uiState.test {
+            val all = (awaitSettled() as CandidateUiState.Ready).votes
+            assertEquals(FictionalCandidates.votes, all.votes)
+            assertEquals(listOf(Body.AN), all.options.bodies)
+
+            viewModel.onVoteFilterChange(VoteFilter(body = Body.PE))
+            val filtered = (awaitItem() as CandidateUiState.Ready).votes
+            assertEquals(emptyList<Vote>(), filtered.votes)
+            assertEquals(1, filtered.totalCount)
+        }
+    }
+
+    @Test
+    fun `mandates are exposed`() = runTest {
+        viewModel(FictionalCandidates.candidateA.id.value).uiState.test {
+            assertEquals(FictionalCandidates.mandates, (awaitSettled() as CandidateUiState.Ready).mandates)
         }
     }
 

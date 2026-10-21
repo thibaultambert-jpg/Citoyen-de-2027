@@ -15,4 +15,27 @@
     <string name="feature_candidate_section_status">Statut</string>
     <string name="feature_candidate_section_coverage">Couverture des données</string>
     <string name="feature_candidate_coverage_explanation">Indique quelles données les sources utilisées fournissent pour chaque rubrique. L’absence d’une donnée n’est pas l’absence d’une position.</string>
+
+    <string name="feature_candidate_mandates_scope">Mandats figurant dans les sources utilisées : Assemblée nationale (dont fonctions gouvernementales), Sénat, Parlement européen et Répertoire national des élus (mandats locaux en cours).</string>
+
+    <string name="feature_candidate_votes_limits">Seuls les scrutins publics figurent dans les données ouvertes des assemblées. L’absence d’un vote dans cette liste ne signifie pas une absence en séance. Un vote « contre » peut viser une disposition différente de celle que résume le titre du scrutin : consultez le scrutin officiel.</string>
+    <string name="feature_candidate_votes_none">Aucun vote enregistré dans les sources utilisées.</string>
+    <!-- %1$d: shown votes, %2$d: all votes -->
+    <string name="feature_candidate_votes_count">%1$d votes affichés sur %2$d</string>
+    <string name="feature_candidate_filter_all">Tous</string>
+    <string name="feature_candidate_filter_body">Assemblée</string>
+    <string name="feature_candidate_filter_year">Année</string>
+    <string name="feature_candidate_filter_type">Type</string>
+    <string name="feature_candidate_filter_position">Position</string>
+    <string name="feature_candidate_vote_type">Type de scrutin : %1$s</string>
+    <string name="feature_candidate_vote_subject">Objet du scrutin : %1$s</string>
+    <string name="feature_candidate_vote_position">Position enregistrée : %1$s</string>
+    <string name="feature_candidate_vote_official_link">Voir le scrutin officiel</string>
+    <string name="feature_candidate_position_other">Autre</string>
+
+    <string name="feature_candidate_method_title">Méthode</string>
+    <string name="feature_candidate_method_text">Les informations de cette fiche proviennent uniquement des sources officielles listées ci-dessous, sans reformulation. Les identifiants officiels de chaque candidat sont rattachés à la main puis vérifiés automatiquement : nom et date de naissance doivent correspondre dans la source. Les votes sont affichés tels que publiés par chaque assemblée.</string>
+    <string name="feature_candidate_sources_title">Sources</string>
+    <!-- %1$s: retrieval date, %2$s: licence -->
+    <string name="feature_candidate_source_line">Récupérée le %1$s · %2$s</string>
 </resources>

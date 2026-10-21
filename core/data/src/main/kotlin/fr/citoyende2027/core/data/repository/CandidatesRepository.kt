@@ -5,6 +5,8 @@ import fr.citoyende2027.core.database.model.asModel
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.Vote
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,6 +19,12 @@ interface CandidatesRepository {
 
     /** Metadata of the active `core` pack, or null when no data is installed. */
     fun observeCorePackInfo(): Flow<DataPackInfo?>
+
+    /** Mandates, most recent start first. */
+    fun observeMandates(id: CandidateId): Flow<List<Mandate>>
+
+    /** Recorded votes, most recent first. */
+    fun observeVotes(id: CandidateId): Flow<List<Vote>>
 }
 
 internal class OfflineCandidatesRepository @Inject constructor(private val dao: CorePackDao) : CandidatesRepository {

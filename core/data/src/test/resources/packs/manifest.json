@@ -8,11 +8,11 @@
       "licenses": [
         "Licence fictive"
       ],
-      "sha256": "299e530447731581c4fd2202586479bab22c55fd0f5252f81b4853a35bc091e2",
+      "sha256": "2caf12daa1f285c8eaa3531c95066d69e0a8a8feb7b12e02c7f1f70f41f74a08",
       "size": 53248,
       "sources": [],
       "version": "2026-01-15+fixture"
     }
   ],
-  "schema_version": 1
+  "schema_version": 2
 }

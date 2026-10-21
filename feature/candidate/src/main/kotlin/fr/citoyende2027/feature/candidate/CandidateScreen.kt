@@ -35,20 +35,29 @@ import fr.citoyende2027.core.designsystem.R as DesignR
 import fr.citoyende2027.core.designsystem.component.InitialsAvatar
 import fr.citoyende2027.core.designsystem.icon.CitoyenIcons
 import fr.citoyende2027.core.model.Candidate
+import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.ui.CandidateStatusText
 import fr.citoyende2027.core.ui.CoverageBadge
 import fr.citoyende2027.core.ui.DataDateBanner
 import fr.citoyende2027.core.ui.SourceButton
+import fr.citoyende2027.feature.candidate.tab.MandatesTab
+import fr.citoyende2027.feature.candidate.tab.SourcesTab
+import fr.citoyende2027.feature.candidate.tab.VotesTab
 
 @Composable
 internal fun CandidateScreen(onBack: () -> Unit, viewModel: CandidateViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    CandidateContent(uiState = uiState, onBack = onBack)
+    CandidateContent(uiState = uiState, onBack = onBack, onVoteFilterChange = viewModel::onVoteFilterChange)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun CandidateContent(uiState: CandidateUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+internal fun CandidateContent(
+    uiState: CandidateUiState,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    onVoteFilterChange: (VoteFilter) -> Unit = {},
+) {
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
             title = {
@@ -76,14 +85,14 @@ internal fun CandidateContent(uiState: CandidateUiState, onBack: () -> Unit, mod
 
             is CandidateUiState.Ready -> {
                 DataDateBanner(uiState.dataInfo)
-                CandidateSheet(uiState.candidate)
+                CandidateSheet(uiState, onVoteFilterChange)
             }
         }
     }
 }
 
 @Composable
-private fun CandidateSheet(candidate: Candidate) {
+private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (VoteFilter) -> Unit) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     PrimaryScrollableTabRow(selectedTabIndex = selected) {
         CandidateSheetTab.entries.forEachIndexed { index, tab ->

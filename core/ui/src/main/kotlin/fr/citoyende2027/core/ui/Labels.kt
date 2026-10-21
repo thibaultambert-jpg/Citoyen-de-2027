@@ -1,9 +1,12 @@
 package fr.citoyende2027.core.ui
 
 import androidx.annotation.StringRes
+import fr.citoyende2027.core.model.BallotSubject
+import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
+import fr.citoyende2027.core.model.VotePosition
 
 @get:StringRes
 val CoverageFacet.labelRes: Int
@@ -30,4 +33,35 @@ val CandidacyStatus.labelRes: Int
         CandidacyStatus.DECLARE -> R.string.core_ui_status_declared
         CandidacyStatus.RETIRE -> R.string.core_ui_status_withdrawn
         CandidacyStatus.OFFICIEL -> R.string.core_ui_status_official
+    }
+
+@get:StringRes
+val Body.labelRes: Int
+    get() = when (this) {
+        Body.AN -> R.string.core_ui_body_an
+        Body.SENAT -> R.string.core_ui_body_senat
+        Body.PE -> R.string.core_ui_body_pe
+        Body.GOVERNMENT -> R.string.core_ui_body_government
+        Body.LOCAL -> R.string.core_ui_body_local
+    }
+
+/** Null for [VotePosition.OTHER]: the published value is then shown as is. */
+@get:StringRes
+val VotePosition.labelRes: Int?
+    get() = when (this) {
+        VotePosition.FOR -> R.string.core_ui_position_for
+        VotePosition.AGAINST -> R.string.core_ui_position_against
+        VotePosition.ABSTENTION -> R.string.core_ui_position_abstention
+        VotePosition.NON_VOTING -> R.string.core_ui_position_non_voting
+        VotePosition.OTHER -> null
+    }
+
+@get:StringRes
+val BallotSubject.labelRes: Int
+    get() = when (this) {
+        BallotSubject.AMENDMENT -> R.string.core_ui_subject_amendment
+        BallotSubject.ARTICLE -> R.string.core_ui_subject_article
+        BallotSubject.WHOLE_TEXT -> R.string.core_ui_subject_whole_text
+        BallotSubject.MOTION -> R.string.core_ui_subject_motion
+        BallotSubject.OTHER -> R.string.core_ui_subject_other
     }

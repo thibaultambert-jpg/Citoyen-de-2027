@@ -1,5 +1,6 @@
 package fr.citoyende2027.core.testing
 
+import fr.citoyende2027.core.model.BallotSubject
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.Candidate
@@ -98,6 +99,7 @@ object FictionalCandidates {
             ballotDate = LocalDate.of(2025, 3, 4),
             ballotTitle = "Scrutin fictif n° 1",
             ballotType = "Type fictif",
+            ballotSubject = BallotSubject.AMENDMENT,
             position = "pour",
             ballotUrl = "https://example.invalid/scrutin-1",
             source = source,

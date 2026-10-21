@@ -1,5 +1,6 @@
 package fr.citoyende2027.core.database.model
 
+import fr.citoyende2027.core.model.BallotSubject
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.Candidate
@@ -102,6 +103,7 @@ fun Vote.asEntity() = VoteEntity(
     ballotDate = ballotDate,
     ballotTitle = ballotTitle,
     ballotType = ballotType,
+    ballotSubject = ballotSubject?.name,
     position = position,
     ballotUrl = ballotUrl,
     source = source.asEmbedded(),
@@ -115,6 +117,7 @@ fun VoteEntity.asModel() = Vote(
     ballotDate = ballotDate,
     ballotTitle = ballotTitle,
     ballotType = ballotType,
+    ballotSubject = ballotSubject?.let { name -> BallotSubject.entries.firstOrNull { it.name == name } },
     position = position,
     ballotUrl = ballotUrl,
     source = source.asModel(),

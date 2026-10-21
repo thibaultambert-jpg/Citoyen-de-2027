@@ -7,7 +7,17 @@ enum class Body {
     AN,
     SENAT,
     PE,
+    GOVERNMENT,
     LOCAL,
+}
+
+/** Subject of a ballot (AGENTS.md §10), from explicit rules on its official title in the pipeline. */
+enum class BallotSubject {
+    AMENDMENT,
+    ARTICLE,
+    WHOLE_TEXT,
+    MOTION,
+    OTHER,
 }
 
 data class Mandate(
@@ -31,6 +41,8 @@ data class Vote(
     val ballotDate: LocalDate,
     val ballotTitle: String,
     val ballotType: String?,
+    /** Null when the source gives no way to determine it (e.g. European Parliament). */
+    val ballotSubject: BallotSubject?,
     val position: String,
     val ballotUrl: String,
     val source: SourceRef,
