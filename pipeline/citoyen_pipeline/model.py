@@ -21,10 +21,13 @@ class Level(StrEnum):
     UNAVAILABLE = "UNAVAILABLE"
 
 
-class Assembly(StrEnum):
+class Body(StrEnum):
+    """Where a mandate is held or a vote cast. Recorded votes exist for AN, SENAT and PE only."""
+
     AN = "AN"
     SENAT = "SENAT"
     PE = "PE"
+    LOCAL = "LOCAL"
 
 
 @dataclass(frozen=True)
@@ -62,16 +65,16 @@ class Identity:
     senat_id: str | None = None
     pe_id: str | None = None
 
-    def ids(self) -> dict[Assembly, str]:
-        pairs = {Assembly.AN: self.an_id, Assembly.SENAT: self.senat_id, Assembly.PE: self.pe_id}
-        return {assembly: value for assembly, value in pairs.items() if value}
+    def ids(self) -> dict[Body, str]:
+        pairs = {Body.AN: self.an_id, Body.SENAT: self.senat_id, Body.PE: self.pe_id}
+        return {body: value for body, value in pairs.items() if value}
 
 
 @dataclass(frozen=True)
 class Mandate:
     id: str
     candidate_id: str
-    assembly: Assembly
+    body: Body
     label: str
     start_date: date
     end_date: date | None
@@ -84,7 +87,7 @@ class Vote:
 
     id: str
     candidate_id: str
-    assembly: Assembly
+    body: Body
     ballot_id: str
     ballot_date: date
     ballot_title: str
@@ -98,7 +101,7 @@ class Vote:
 class PersonFacts:
     """What an official source says about a person, used to check identity links."""
 
-    assembly: Assembly
+    body: Body
     source_person_id: str
     family_name: str
     birth_date: date | None

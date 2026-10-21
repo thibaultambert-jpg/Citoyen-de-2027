@@ -16,7 +16,9 @@ import urllib.parse
 import urllib.request
 import zipfile
 
-UA = {"User-Agent": "citoyen-2027-pipeline-probe/0.1 (+https://github.com/thibaultambert-jpg/Citoyen-de-2027)"}
+UA = {
+    "User-Agent": "citoyen-2027-pipeline-probe/0.1 (+https://github.com/thibaultambert-jpg/Citoyen-de-2027)"
+}
 MAX_BYTES = 400 * 1024 * 1024
 
 
@@ -57,7 +59,9 @@ def trim(value, depth: int = 0):
     if isinstance(value, dict):
         return {k: trim(v, depth + 1) for k, v in value.items()}
     if isinstance(value, list):
-        return [trim(v, depth + 1) for v in value[:2]] + ([f"... {len(value) - 2} more"] if len(value) > 2 else [])
+        return [trim(v, depth + 1) for v in value[:2]] + (
+            [f"... {len(value) - 2} more"] if len(value) > 2 else []
+        )
     if isinstance(value, str) and len(value) > 50:
         return value[:50] + "..."
     return value
@@ -91,7 +95,9 @@ def describe(name: str, url: str) -> None:
             names = zf.namelist()
             print(f"zip entries={len(names)} sample={names[:8]}")
             jsons = [n for n in names if n.endswith(".json")]
-            prefixes = sorted({n.split("/")[0] + "/" + (n.split("/")[1] if n.count("/") > 1 else "") for n in names})
+            prefixes = sorted(
+                {n.split("/")[0] + "/" + (n.split("/")[1] if n.count("/") > 1 else "") for n in names}
+            )
             print(f"prefixes={prefixes[:10]}")
             picks = []
             for prefix in ("acteur", "mandat", "organe", "scrutin", "deport"):
@@ -133,7 +139,12 @@ def describe_csv(name: str, body: bytes) -> None:
 def links(page: str, pattern: str) -> list[str]:
     status, _, body = get(page, 5 * 1024 * 1024)
     print(f"\n===== links on {page} status={status}")
-    found = sorted({urllib.parse.urljoin(page, m) for m in re.findall(r'href="([^"]+)"', body.decode("utf-8", "replace"))})
+    found = sorted(
+        {
+            urllib.parse.urljoin(page, m)
+            for m in re.findall(r'href="([^"]+)"', body.decode("utf-8", "replace"))
+        }
+    )
     selected = [u for u in found if re.search(pattern, u)]
     for u in selected[:40]:
         print("  ", u)
@@ -146,16 +157,48 @@ def datagouv(slug: str) -> list[str]:
     if status != 200:
         return []
     data = json.loads(body)
-    print("title:", data.get("title"), "| license:", data.get("license"), "| last_update:", data.get("last_update"))
+    print(
+        "title:",
+        data.get("title"),
+        "| license:",
+        data.get("license"),
+        "| last_update:",
+        data.get("last_update"),
+    )
     urls = []
     for res in data.get("resources", [])[:40]:
-        print(f"  - {res.get('title')!r} format={res.get('format')} url={res.get('url')} modified={res.get('last_modified')}")
+        print(
+            f"  - {res.get('title')!r} format={res.get('format')} url={res.get('url')} modified={res.get('last_modified')}"  # noqa: E501
+        )
         urls.append(res.get("url"))
     return urls
 
 
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "pe4":
+        base = "https://data.europarl.europa.eu/api/v2"
+        fmt = "format=application%2Fld%2Bjson"
+        status, _, body = get(f"{base}/meps/840?{fmt}")
+        if status == 200:
+            memberships = json.loads(body)["data"][0]["hasMembership"]
+            kinds = sorted({(m.get("membershipClassification"), m.get("role")) for m in memberships})
+            print("membership kinds:", kinds)
+            for m in memberships:
+                if "COMMITTEE" not in str(m.get("membershipClassification")):
+                    dump("non-committee membership", m)
+                    break
+    if target == "urls":
+        for url in (
+            "https://www.assemblee-nationale.fr/dyn/17/scrutins/2657",
+            "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip",
+            "https://data.europarl.europa.eu/eli/dl/doc/PV-10-2025-01-20-RCV-ITM-001",
+            "https://data.europarl.europa.eu/eli/dl/event/MTG-PL-2025-01-20-DEC-171426",
+            "https://www.europarl.europa.eu/meps/fr/840",
+            "https://www.senat.fr/senateur/83008P.html",
+        ):
+            status, ctype, body = get(url, 4096)
+            print(f"URLCHECK {status} {ctype} {url}")
     if target == "rne3":
         for url in [u for u in datagouv("repertoire-national-des-elus-1") if u and u.endswith(".csv")]:
             status, _, body = get(url, 64 * 1024)
@@ -170,20 +213,34 @@ def main() -> int:
         ):
             links(page, r"\.zip$")
     if target == "an3":
-        zf = zip_json("https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip")
+        zf = zip_json(
+            "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
+        )
         if zf:
             acteur = json.loads(zf.read(next(n for n in zf.namelist() if "/acteur/" in n)))
             mandats = acteur["acteur"]["mandats"]["mandat"]
             mandats = mandats if isinstance(mandats, list) else [mandats]
-            acteur["acteur"]["mandats"]["mandat"] = [m for m in mandats if m.get("typeOrgane") == "ASSEMBLEE"][:1]
+            acteur["acteur"]["mandats"]["mandat"] = [
+                m for m in mandats if m.get("typeOrgane") == "ASSEMBLEE"
+            ][:1]
             dump("acteur (ASSEMBLEE mandate only)", acteur)
             print("typeOrgane values:", sorted({m.get("typeOrgane") for m in mandats}))
-        zf = zip_json("https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip")
+        zf = zip_json(
+            "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip"
+        )
         if zf:
             scrutin = json.loads(zf.read(sorted(zf.namelist())[-1]))
             groupes = scrutin["scrutin"]["ventilationVotes"]["organe"]["groupes"]["groupe"]
             dump("scrutin.ventilationVotes groupe[0]", groupes[0])
-            print("codeTypeVote values:", sorted({json.loads(zf.read(n))["scrutin"]["typeVote"]["codeTypeVote"] for n in zf.namelist()[:400]}))
+            print(
+                "codeTypeVote values:",
+                sorted(
+                    {
+                        json.loads(zf.read(n))["scrutin"]["typeVote"]["codeTypeVote"]
+                        for n in zf.namelist()[:400]
+                    }
+                ),
+            )
     if target == "pe3":
         base = "https://data.europarl.europa.eu/api/v2"
         fmt = "format=application%2Fld%2Bjson"
@@ -195,7 +252,10 @@ def main() -> int:
             if status == 200:
                 dump("mep detail", json.loads(body))
     if target == "an2":
-        describe("AN AMO10", "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip")
+        describe(
+            "AN AMO10",
+            "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip",
+        )
         for url in links("https://data.assemblee-nationale.fr/travaux-parlementaires/votes", r"\.zip$")[:2]:
             describe("AN votes", url)
         links("https://data.assemblee-nationale.fr/", r"(acteurs|votes|scrutin|historique)")

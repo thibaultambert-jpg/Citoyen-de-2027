@@ -1,5 +1,6 @@
 package fr.citoyende2027.core.database.model
 
+import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
@@ -7,7 +8,9 @@ import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Vote
 
 fun CandidateWithCoverage.asModel(): Candidate {
     val stored = coverage.associate { it.facet to it.level }
@@ -69,4 +72,50 @@ fun DataPackInfo.asEntity() = DataPackEntity(
     version = version,
     generatedOn = generatedOn,
     isFictional = isFictional,
+)
+
+fun Mandate.asEntity() = MandateEntity(
+    id = id,
+    candidateId = candidateId.value,
+    body = body.name,
+    label = label,
+    startDate = startDate,
+    endDate = endDate,
+    source = source.asEmbedded(),
+)
+
+fun MandateEntity.asModel() = Mandate(
+    id = id,
+    candidateId = CandidateId(candidateId),
+    body = Body.valueOf(body),
+    label = label,
+    startDate = startDate,
+    endDate = endDate,
+    source = source.asModel(),
+)
+
+fun Vote.asEntity() = VoteEntity(
+    id = id,
+    candidateId = candidateId.value,
+    body = body.name,
+    ballotId = ballotId,
+    ballotDate = ballotDate,
+    ballotTitle = ballotTitle,
+    ballotType = ballotType,
+    position = position,
+    ballotUrl = ballotUrl,
+    source = source.asEmbedded(),
+)
+
+fun VoteEntity.asModel() = Vote(
+    id = id,
+    candidateId = CandidateId(candidateId),
+    body = Body.valueOf(body),
+    ballotId = ballotId,
+    ballotDate = ballotDate,
+    ballotTitle = ballotTitle,
+    ballotType = ballotType,
+    position = position,
+    ballotUrl = ballotUrl,
+    source = source.asModel(),
 )

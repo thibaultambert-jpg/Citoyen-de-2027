@@ -15,7 +15,9 @@ from citoyen_pipeline.sign import build_manifest, pack_entry, public_key_b64, sh
 
 def make_pack(fixtures) -> CorePack:
     policy, candidates, sources = load_candidates(fixtures / "candidates.yaml")
-    return CorePack(date(2026, 10, 1), policy, sources, candidates, compute_coverage(candidates, [], [], []), [], [])
+    return CorePack(
+        date(2026, 10, 1), policy, sources, candidates, compute_coverage(candidates, [], [], []), [], []
+    )
 
 
 def test_pack_contains_meta_candidates_and_coverage(fixtures, tmp_path):

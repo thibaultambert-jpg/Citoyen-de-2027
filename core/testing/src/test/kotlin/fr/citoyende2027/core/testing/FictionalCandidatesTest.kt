@@ -16,7 +16,8 @@ class FictionalCandidatesTest {
 
     @Test
     fun `fixture urls can never resolve`() {
-        assertTrue(FictionalCandidates.source.url.startsWith("https://example.invalid/"))
+        val urls = listOf(FictionalCandidates.source.url) + FictionalCandidates.votes.map { it.ballotUrl }
+        urls.forEach { assertTrue(it.startsWith("https://example.invalid/"), it) }
     }
 
     @Test

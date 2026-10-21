@@ -17,7 +17,7 @@ def compute_coverage(
         identity = by_candidate.get(candidate.id)
         linked = set(identity.ids()) if identity else set()
         has_mandates = any(m.candidate_id == candidate.id for m in mandates)
-        voted_in = {v.assembly for v in votes if v.candidate_id == candidate.id}
+        voted_in = {v.body for v in votes if v.candidate_id == candidate.id}
 
         # Programmes arrive with J4 and speeches with J3: never claimed before they are in the pack.
         coverage[(candidate.id, Facet.PROGRAM)] = Level.UNAVAILABLE

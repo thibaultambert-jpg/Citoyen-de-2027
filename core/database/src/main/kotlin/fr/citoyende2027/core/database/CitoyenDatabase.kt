@@ -8,6 +8,8 @@ import fr.citoyende2027.core.database.dao.CorePackDao
 import fr.citoyende2027.core.database.model.CandidateCoverageEntity
 import fr.citoyende2027.core.database.model.CandidateEntity
 import fr.citoyende2027.core.database.model.DataPackEntity
+import fr.citoyende2027.core.database.model.MandateEntity
+import fr.citoyende2027.core.database.model.VoteEntity
 import java.time.LocalDate
 
 @Database(
@@ -15,8 +17,10 @@ import java.time.LocalDate
         CandidateEntity::class,
         CandidateCoverageEntity::class,
         DataPackEntity::class,
+        MandateEntity::class,
+        VoteEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class)

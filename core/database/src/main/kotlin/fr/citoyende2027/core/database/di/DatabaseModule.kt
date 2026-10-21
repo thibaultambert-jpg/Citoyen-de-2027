@@ -17,7 +17,11 @@ internal object DatabaseModule {
     @Provides
     @Singleton
     fun providesDatabase(@ApplicationContext context: Context): CitoyenDatabase =
-        Room.databaseBuilder(context, CitoyenDatabase::class.java, "citoyen.db").build()
+        Room.databaseBuilder(context, CitoyenDatabase::class.java, "citoyen.db")
+            // The database only caches verified packs, which are re-installed after a reset
+            // (user preferences live in DataStore): a schema change may safely drop the cache.
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
 
     @Provides
     fun providesCorePackDao(database: CitoyenDatabase): CorePackDao = database.corePackDao()

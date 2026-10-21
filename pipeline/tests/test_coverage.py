@@ -1,14 +1,16 @@
 from datetime import date
 
 from citoyen_pipeline.coverage import compute_coverage
-from citoyen_pipeline.model import Assembly, Candidate, Facet, Identity, Level, Mandate, Vote
+from citoyen_pipeline.model import Body, Candidate, Facet, Identity, Level, Mandate, Vote
 
 A = Candidate("fictif-a", "Candidat A", "A", "DECLARE", date(2026, 1, 1), "s")
 B = Candidate("fictif-b", "Candidat B", "B", "DECLARE", date(2026, 1, 1), "s")
 
 
-def vote(assembly):
-    return Vote(f"v-{assembly}", "fictif-a", assembly, "1", date(2025, 1, 1), "t", None, "pour", "https://x.invalid", "s")
+def vote(body):
+    return Vote(
+        f"v-{body}", "fictif-a", body, "1", date(2025, 1, 1), "t", None, "pour", "https://x.invalid", "s"
+    )
 
 
 def test_candidate_without_parliamentary_link_has_votes_not_applicable():
@@ -20,11 +22,11 @@ def test_candidate_without_parliamentary_link_has_votes_not_applicable():
 
 def test_votes_partial_when_only_some_linked_assemblies_have_votes():
     identity = Identity("fictif-a", "Exemple", "Alpha", date(1970, 1, 1), an_id="PA1", pe_id="9")
-    mandate = Mandate("m1", "fictif-a", Assembly.AN, "Député", date(2024, 1, 1), None, "s")
-    coverage = compute_coverage([A], [identity], [mandate], [vote(Assembly.AN)])
+    mandate = Mandate("m1", "fictif-a", Body.AN, "Député", date(2024, 1, 1), None, "s")
+    coverage = compute_coverage([A], [identity], [mandate], [vote(Body.AN)])
     assert coverage[("fictif-a", Facet.VOTES)] == Level.PARTIAL
     assert coverage[("fictif-a", Facet.MANDATES)] == Level.AVAILABLE
-    full = compute_coverage([A], [identity], [mandate], [vote(Assembly.AN), vote(Assembly.PE)])
+    full = compute_coverage([A], [identity], [mandate], [vote(Body.AN), vote(Body.PE)])
     assert full[("fictif-a", Facet.VOTES)] == Level.AVAILABLE
 
 

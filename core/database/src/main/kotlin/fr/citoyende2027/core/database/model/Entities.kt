@@ -60,3 +60,50 @@ data class DataPackEntity(
     @ColumnInfo(name = "generated_on") val generatedOn: LocalDate,
     @ColumnInfo(name = "is_fictional") val isFictional: Boolean,
 )
+
+@Entity(
+    tableName = "mandates",
+    foreignKeys = [
+        ForeignKey(
+            entity = CandidateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["candidate_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("candidate_id")],
+)
+data class MandateEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val body: String,
+    val label: String,
+    @ColumnInfo(name = "start_date") val startDate: LocalDate,
+    @ColumnInfo(name = "end_date") val endDate: LocalDate?,
+    @Embedded(prefix = "source_") val source: SourceEmbedded,
+)
+
+@Entity(
+    tableName = "votes",
+    foreignKeys = [
+        ForeignKey(
+            entity = CandidateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["candidate_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("candidate_id"), Index("ballot_date")],
+)
+data class VoteEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val body: String,
+    @ColumnInfo(name = "ballot_id") val ballotId: String,
+    @ColumnInfo(name = "ballot_date") val ballotDate: LocalDate,
+    @ColumnInfo(name = "ballot_title") val ballotTitle: String,
+    @ColumnInfo(name = "ballot_type") val ballotType: String?,
+    val position: String,
+    @ColumnInfo(name = "ballot_url") val ballotUrl: String,
+    @Embedded(prefix = "source_") val source: SourceEmbedded,
+)

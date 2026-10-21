@@ -35,7 +35,7 @@ CREATE TABLE candidate_coverage (
 CREATE TABLE mandates (
     id TEXT PRIMARY KEY NOT NULL,
     candidate_id TEXT NOT NULL REFERENCES candidates(id),
-    assembly TEXT NOT NULL,
+    body TEXT NOT NULL,
     label TEXT NOT NULL,
     start_date TEXT NOT NULL,
     end_date TEXT,
@@ -44,7 +44,7 @@ CREATE TABLE mandates (
 CREATE TABLE votes (
     id TEXT PRIMARY KEY NOT NULL,
     candidate_id TEXT NOT NULL REFERENCES candidates(id),
-    assembly TEXT NOT NULL,
+    body TEXT NOT NULL,
     ballot_id TEXT NOT NULL,
     ballot_date TEXT NOT NULL,
     ballot_title TEXT NOT NULL,
@@ -85,13 +85,18 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
         db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
         db.executemany(
             "INSERT INTO sources VALUES (?, ?, ?, ?, ?)",
-            [(s.id, s.name, s.url, s.retrieved_on.isoformat(), s.license)
-             for s in sorted(pack.sources, key=lambda s: s.id) if s.id in referenced],
+            [
+                (s.id, s.name, s.url, s.retrieved_on.isoformat(), s.license)
+                for s in sorted(pack.sources, key=lambda s: s.id)
+                if s.id in referenced
+            ],
         )
         db.executemany(
             "INSERT INTO candidates VALUES (?, ?, ?, ?, ?, ?)",
-            [(c.id, c.display_name, c.sort_name, c.status, c.status_date.isoformat(), c.status_source_id)
-             for c in sorted(pack.candidates, key=lambda c: c.id)],
+            [
+                (c.id, c.display_name, c.sort_name, c.status, c.status_date.isoformat(), c.status_source_id)
+                for c in sorted(pack.candidates, key=lambda c: c.id)
+            ],
         )
         db.executemany(
             "INSERT INTO candidate_coverage VALUES (?, ?, ?)",
@@ -99,15 +104,36 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
         )
         db.executemany(
             "INSERT INTO mandates VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [(m.id, m.candidate_id, m.assembly.value, m.label, m.start_date.isoformat(),
-              m.end_date.isoformat() if m.end_date else None, m.source_id)
-             for m in sorted(pack.mandates, key=lambda m: m.id)],
+            [
+                (
+                    m.id,
+                    m.candidate_id,
+                    m.body.value,
+                    m.label,
+                    m.start_date.isoformat(),
+                    m.end_date.isoformat() if m.end_date else None,
+                    m.source_id,
+                )
+                for m in sorted(pack.mandates, key=lambda m: m.id)
+            ],
         )
         db.executemany(
             "INSERT INTO votes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [(v.id, v.candidate_id, v.assembly.value, v.ballot_id, v.ballot_date.isoformat(), v.ballot_title,
-              v.ballot_type, v.position, v.ballot_url, v.source_id)
-             for v in sorted(pack.votes, key=lambda v: v.id)],
+            [
+                (
+                    v.id,
+                    v.candidate_id,
+                    v.body.value,
+                    v.ballot_id,
+                    v.ballot_date.isoformat(),
+                    v.ballot_title,
+                    v.ballot_type,
+                    v.position,
+                    v.ballot_url,
+                    v.source_id,
+                )
+                for v in sorted(pack.votes, key=lambda v: v.id)
+            ],
         )
         db.commit()
         db.execute("VACUUM")

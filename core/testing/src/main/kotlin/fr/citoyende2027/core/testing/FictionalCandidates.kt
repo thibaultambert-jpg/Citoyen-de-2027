@@ -1,5 +1,6 @@
 package fr.citoyende2027.core.testing
 
+import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
@@ -8,7 +9,9 @@ import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Vote
 import java.time.LocalDate
 
 /**
@@ -73,7 +76,35 @@ object FictionalCandidates {
         isFictional = true,
     )
 
-    val corePack = CorePackContent(packInfo, all)
+    /** Fictional mandate and votes of Candidat A (coverage: mandates available, votes partial). */
+    val mandates = listOf(
+        Mandate(
+            id = "fictif-a-mandat-1",
+            candidateId = candidateA.id,
+            body = Body.AN,
+            label = "Mandat fictif",
+            startDate = LocalDate.of(2024, 7, 1),
+            endDate = null,
+            source = source,
+        ),
+    )
+
+    val votes = listOf(
+        Vote(
+            id = "fictif-a-vote-1",
+            candidateId = candidateA.id,
+            body = Body.AN,
+            ballotId = "scrutin-fictif-1",
+            ballotDate = LocalDate.of(2025, 3, 4),
+            ballotTitle = "Scrutin fictif n° 1",
+            ballotType = "Type fictif",
+            position = "pour",
+            ballotUrl = "https://example.invalid/scrutin-1",
+            source = source,
+        ),
+    )
+
+    val corePack = CorePackContent(packInfo, all, mandates, votes)
 
     private fun coverage(vararg levels: Pair<CoverageFacet, CoverageLevel>) = DataCoverage(levels.toMap())
 }

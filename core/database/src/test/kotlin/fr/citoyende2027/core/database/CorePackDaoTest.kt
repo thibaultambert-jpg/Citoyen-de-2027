@@ -41,6 +41,10 @@ class CorePackDaoTest {
         pack = info.asEntity(),
         candidates = candidates.map { it.asEntity() },
         coverage = candidates.flatMap { it.coverageEntities() },
+        mandates = FictionalCandidates.mandates.filter { m -> candidates.any { it.id == m.candidateId } }
+            .map { it.asEntity() },
+        votes = FictionalCandidates.votes.filter { v -> candidates.any { it.id == v.candidateId } }
+            .map { it.asEntity() },
     )
 
     @Test
@@ -50,6 +54,9 @@ class CorePackDaoTest {
         val stored = dao.observeCandidates().first()
         assertEquals(FictionalCandidates.all.toSet(), stored.map { it.asModel() }.toSet())
         assertEquals(FictionalCandidates.packInfo, dao.observePack(DataPackInfo.CORE).first()?.asModel())
+        val a = FictionalCandidates.candidateA.id.value
+        assertEquals(FictionalCandidates.mandates, dao.observeMandates(a).first().map { it.asModel() })
+        assertEquals(FictionalCandidates.votes, dao.observeVotes(a).first().map { it.asModel() })
     }
 
     @Test
@@ -60,6 +67,8 @@ class CorePackDaoTest {
 
         assertEquals(listOf(FictionalCandidates.candidateB), dao.observeCandidates().first().map { it.asModel() })
         assertNull(dao.observeCandidate(FictionalCandidates.candidateA.id.value).first())
+        assertEquals(emptyList<Any>(), dao.observeMandates(FictionalCandidates.candidateA.id.value).first())
+        assertEquals(emptyList<Any>(), dao.observeVotes(FictionalCandidates.candidateA.id.value).first())
         assertEquals("0.0.1-fixture", dao.observePack(DataPackInfo.CORE).first()?.version)
         assertEquals(1, dao.countPacks(DataPackInfo.CORE))
     }

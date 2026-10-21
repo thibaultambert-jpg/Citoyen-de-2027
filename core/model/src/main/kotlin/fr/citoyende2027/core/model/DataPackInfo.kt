@@ -15,10 +15,18 @@ data class DataPackInfo(
     }
 }
 
-/** Content of the `core` pack handled in J1: candidates only (mandates, votes… come with J2–J3). */
-data class CorePackContent(val info: DataPackInfo, val candidates: List<Candidate>) {
+/** Content of the `core` pack: candidates, their mandates and their recorded votes. */
+data class CorePackContent(
+    val info: DataPackInfo,
+    val candidates: List<Candidate>,
+    val mandates: List<Mandate> = emptyList(),
+    val votes: List<Vote> = emptyList(),
+) {
     init {
         require(info.id == DataPackInfo.CORE) { "Not a core pack: ${info.id}" }
-        require(candidates.map { it.id }.toSet().size == candidates.size) { "Duplicate candidate ids" }
+        val ids = candidates.map { it.id }.toSet()
+        require(ids.size == candidates.size) { "Duplicate candidate ids" }
+        require(mandates.all { it.candidateId in ids }) { "Mandate of an unknown candidate" }
+        require(votes.all { it.candidateId in ids }) { "Vote of an unknown candidate" }
     }
 }
