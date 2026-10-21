@@ -41,7 +41,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Unit tests (incl. neutrality scan)
-        run: ./gradlew test
+        run: ./gradlew test --continue
 
       - name: Android Lint
         run: ./gradlew lint
