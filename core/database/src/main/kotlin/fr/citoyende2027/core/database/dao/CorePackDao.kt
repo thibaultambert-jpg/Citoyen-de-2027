@@ -27,6 +27,9 @@ interface CorePackDao {
     @Query("SELECT * FROM data_packs WHERE id = :id")
     fun observePack(id: String): Flow<DataPackEntity?>
 
+    @Query("SELECT * FROM data_packs WHERE id = :id")
+    suspend fun getPack(id: String): DataPackEntity?
+
     @Query("SELECT COUNT(*) FROM data_packs WHERE id = :id")
     suspend fun countPacks(id: String): Int
 

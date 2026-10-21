@@ -1,0 +1,121 @@
+package fr.citoyende2027.core.database
+
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import fr.citoyende2027.core.model.Body
+import fr.citoyende2027.core.model.CandidacyStatus
+import fr.citoyende2027.core.model.Candidate
+import fr.citoyende2027.core.model.CandidateId
+import fr.citoyende2027.core.model.CorePackContent
+import fr.citoyende2027.core.model.CoverageFacet
+import fr.citoyende2027.core.model.CoverageLevel
+import fr.citoyende2027.core.model.DataCoverage
+import fr.citoyende2027.core.model.DataPackInfo
+import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.SourceRef
+import fr.citoyende2027.core.model.Vote
+import java.io.File
+import java.time.LocalDate
+import javax.inject.Inject
+
+class UnsupportedPackException(message: String) : Exception(message)
+
+/**
+ * Reads a `core` pack SQLite file written by the pipeline (pipeline/citoyen_pipeline/build.py).
+ * Only files whose signature and hash were verified are given to this reader.
+ */
+class CorePackReader @Inject constructor() {
+    fun read(file: File): CorePackContent {
+        val db = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
+        try {
+            val meta = db.query("SELECT key, value FROM meta") { it.getString(0) to it.getString(1) }.toMap()
+            val schema = meta["schema_version"]?.toIntOrNull()
+            if (schema != SUPPORTED_SCHEMA_VERSION) {
+                throw UnsupportedPackException("Unsupported pack schema $schema (expected $SUPPORTED_SCHEMA_VERSION)")
+            }
+            if (meta["pack_id"] != DataPackInfo.CORE) throw UnsupportedPackException("Not a core pack")
+            val version = meta.getValue("version")
+            val sources = db.query("SELECT id, name, url, retrieved_on, license FROM sources") {
+                it.getString(0) to SourceRef(
+                    name = it.getString(1),
+                    url = it.getString(2),
+                    retrievedOn = LocalDate.parse(it.getString(3)),
+                    license = it.getString(4),
+                    packVersion = version,
+                )
+            }.toMap()
+            val coverage = db.query("SELECT candidate_id, facet, level FROM candidate_coverage") {
+                Triple(it.getString(0), it.getString(1), it.getString(2))
+            }.groupBy({ it.first }, { it.second to it.third })
+            val candidates = db.query(
+                "SELECT id, display_name, sort_name, status, status_date, status_source_id FROM candidates",
+            ) {
+                val id = it.getString(0)
+                Candidate(
+                    id = CandidateId(id),
+                    displayName = it.getString(1),
+                    sortName = it.getString(2),
+                    status = CandidacyStatus.valueOf(it.getString(3)),
+                    statusDate = LocalDate.parse(it.getString(4)),
+                    statusSource = sources.getValue(it.getString(5)),
+                    coverage = coverageOf(coverage[id].orEmpty().toMap()),
+                )
+            }
+            val mandates = db.query(
+                "SELECT id, candidate_id, body, label, start_date, end_date, source_id FROM mandates",
+            ) {
+                Mandate(
+                    id = it.getString(0),
+                    candidateId = CandidateId(it.getString(1)),
+                    body = Body.valueOf(it.getString(2)),
+                    label = it.getString(3),
+                    startDate = LocalDate.parse(it.getString(4)),
+                    endDate = it.getStringOrNull(5)?.let(LocalDate::parse),
+                    source = sources.getValue(it.getString(6)),
+                )
+            }
+            val votes = db.query(
+                "SELECT id, candidate_id, body, ballot_id, ballot_date, ballot_title, ballot_type, position, " +
+                    "ballot_url, source_id FROM votes",
+            ) {
+                Vote(
+                    id = it.getString(0),
+                    candidateId = CandidateId(it.getString(1)),
+                    body = Body.valueOf(it.getString(2)),
+                    ballotId = it.getString(3),
+                    ballotDate = LocalDate.parse(it.getString(4)),
+                    ballotTitle = it.getString(5),
+                    ballotType = it.getStringOrNull(6),
+                    position = it.getString(7),
+                    ballotUrl = it.getString(8),
+                    source = sources.getValue(it.getString(9)),
+                )
+            }
+            val info = DataPackInfo(
+                id = DataPackInfo.CORE,
+                version = version,
+                generatedOn = LocalDate.parse(meta.getValue("generated_on")),
+                isFictional = false,
+            )
+            return CorePackContent(info, candidates, mandates, votes)
+        } finally {
+            db.close()
+        }
+    }
+
+    private fun coverageOf(stored: Map<String, String>) = DataCoverage(
+        CoverageFacet.entries.associateWith { facet ->
+            CoverageLevel.entries.firstOrNull { it.name == stored[facet.name] } ?: CoverageLevel.UNAVAILABLE
+        },
+    )
+
+    private fun <T> SQLiteDatabase.query(sql: String, row: (Cursor) -> T): List<T> =
+        rawQuery(sql, null).use { cursor -> buildList { while (cursor.moveToNext()) add(row(cursor)) } }
+
+    private fun Cursor.getStringOrNull(index: Int): String? = if (isNull(index)) null else getString(index)
+
+    companion object {
+        /** Must match PACK_SCHEMA_VERSION in pipeline/citoyen_pipeline/__init__.py. */
+        const val SUPPORTED_SCHEMA_VERSION = 1
+    }
+}

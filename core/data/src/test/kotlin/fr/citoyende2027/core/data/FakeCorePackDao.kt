@@ -26,6 +26,8 @@ internal class FakeCorePackDao : CorePackDao {
 
     override fun observePack(id: String): Flow<DataPackEntity?> = packs.map { it[id] }
 
+    override suspend fun getPack(id: String): DataPackEntity? = packs.value[id]
+
     override suspend fun countPacks(id: String): Int = if (packs.value.containsKey(id)) 1 else 0
 
     override suspend fun deleteCandidates() {

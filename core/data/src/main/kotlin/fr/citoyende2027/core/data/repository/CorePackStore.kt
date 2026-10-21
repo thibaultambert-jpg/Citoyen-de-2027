@@ -11,6 +11,9 @@ import javax.inject.Inject
 class CorePackStore @Inject internal constructor(private val dao: CorePackDao) {
     suspend fun hasCorePack(): Boolean = dao.countPacks(DataPackInfo.CORE) > 0
 
+    /** Version of the installed `core` pack, or null (fictional demo data counts as "none"). */
+    suspend fun installedVersion(): String? = dao.getPack(DataPackInfo.CORE)?.takeUnless { it.isFictional }?.version
+
     suspend fun install(content: CorePackContent) = dao.replaceCorePack(
         pack = content.info.asEntity(),
         candidates = content.candidates.map { it.asEntity() },

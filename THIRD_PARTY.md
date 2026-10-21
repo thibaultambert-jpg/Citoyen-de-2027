@@ -20,7 +20,8 @@ chaque ajout est justifié ici. Versions : `gradle/libs.versions.toml`.
 | AndroidX Room (runtime, ktx) | Apache-2.0 | Base locale SQLite des packs (J1). |
 | AndroidX DataStore (preferences) | Apache-2.0 | Préférences locales (ordre des candidats). |
 
-Déclarée dans le catalogue mais pas encore utilisée (J2) : AndroidX WorkManager (Apache-2.0).
+| AndroidX WorkManager, AndroidX Hilt Work | Apache-2.0 | Synchronisation des packs en arrière-plan (Wi-Fi, reprise). |
+| Google Tink (tink-android) | Apache-2.0 | Vérification Ed25519 des manifestes de packs (java.security n’a Ed25519 qu’à partir de l’API 33). |
 
 ## Outils de build et de test (non distribués)
 
@@ -35,6 +36,19 @@ Déclarée dans le catalogue mais pas encore utilisée (J2) : AndroidX WorkManag
 | AndroidX Test core, Compose UI test (junit4, manifest) | Apache-2.0 | Tests ; `ui-test-manifest` en `debugImplementation` des modules testés uniquement. |
 | Turbine | Apache-2.0 | Tests de Flow. |
 | kotlinx-coroutines-test | Apache-2.0 | Tests de coroutines. |
+
+## Pipeline de données (`/pipeline`, hors APK)
+
+| Dépendance | Licence | Justification |
+| --- | --- | --- |
+| PyYAML | MIT | Lecture des entrées `candidates.yaml` / `identities.yaml`. |
+| jsonschema | MIT | Validation des entrées (JSON Schema). |
+| cryptography | Apache-2.0 OU BSD-3-Clause | Signature Ed25519 des manifestes. |
+| pytest, ruff | MIT | Tests et lint. |
+
+Données réutilisées (dans les packs, pas dans le code) : Assemblée nationale et Sénat (Licence Ouverte),
+Répertoire national des élus (Licence Ouverte v2.0), Parlement européen (CC BY 4.0). Chaque fait garde sa
+source, sa date de récupération et sa licence.
 
 ## Exclusions explicites
 
