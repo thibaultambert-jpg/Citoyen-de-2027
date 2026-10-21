@@ -78,6 +78,10 @@ def zip_json(url: str) -> zipfile.ZipFile | None:
     return zipfile.ZipFile(io.BytesIO(body)) if status == 200 else None
 
 
+def as_list_probe(value):
+    return value if isinstance(value, list) else ([] if value is None else [value])
+
+
 def describe(name: str, url: str) -> None:
     print(f"\n===== {name}\nURL {url}")
     status, ctype, body = get(url)
@@ -176,6 +180,37 @@ def datagouv(slug: str) -> list[str]:
 
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "j3gov":
+        zf = zip_json(
+            "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/"
+            "tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+        )
+        if zf:
+            names = zf.namelist()
+            print("prefixes:", sorted({n.split("/")[1] for n in names if n.count("/") >= 2}))
+            kinds, sample = {}, None
+            for name in [n for n in names if "/acteur/" in n][:3000]:
+                for m in as_list_probe(json.loads(zf.read(name))["acteur"]["mandats"]["mandat"]):
+                    kinds[m.get("typeOrgane")] = kinds.get(m.get("typeOrgane"), 0) + 1
+                    if m.get("typeOrgane") == "GOUVERNEMENT" and sample is None:
+                        sample = m
+            print("typeOrgane counts:", kinds)
+            if sample:
+                dump("GOUVERNEMENT mandat", sample)
+                organe = sample.get("organes", {}).get("organeRef")
+                if organe and f"json/organe/{organe}.json" in names:
+                    dump("its organe", json.loads(zf.read(f"json/organe/{organe}.json")))
+    if target == "j3speech":
+        describe(
+            "vie-publique discours",
+            "https://echanges.dila.gouv.fr/OPENDATA/DISCOURS_PUBLICS/vp_discours.json",
+        )
+        base = "https://data.europarl.europa.eu/api/v2"
+        fmt = "format=application%2Fld%2Bjson"
+        describe("PE speeches", f"{base}/speeches?person-id=840&{fmt}&offset=0&limit=2")
+        describe("PE speeches nofilter", f"{base}/speeches?{fmt}&offset=0&limit=1")
+        links("https://data.assemblee-nationale.fr/travaux-parlementaires/debats", r"\.(zip|xml|json)$")
+        links("https://data.assemblee-nationale.fr/", r"(debat|compte|syceron|cri)")
     if target == "pe4":
         base = "https://data.europarl.europa.eu/api/v2"
         fmt = "format=application%2Fld%2Bjson"

@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [pe4]
+        source: [j3gov, j3speech]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
