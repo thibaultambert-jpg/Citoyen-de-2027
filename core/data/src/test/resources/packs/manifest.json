@@ -14,6 +14,17 @@
       "version": "2026-01-15+fixture"
     },
     {
+      "file": "legal.sqlite",
+      "id": "legal",
+      "licenses": [
+        "Licence fictive"
+      ],
+      "sha256": "d26fb3efff0594decd449c2af4aacf947a715f9663b9621ba5ca988d32fb56b8",
+      "size": 28672,
+      "sources": [],
+      "version": "2026-01-15+legal-fixture"
+    },
+    {
       "file": "programs.sqlite",
       "id": "programs",
       "licenses": [

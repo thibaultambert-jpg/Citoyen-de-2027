@@ -26,7 +26,7 @@ def test_committed_test_pack_matches_the_pipeline(tmp_path):
     manifest = (COMMITTED / "manifest.json").read_bytes()
     entries = json.loads(manifest)["packs"]
     regenerated = json.loads((tmp_path / "manifest.json").read_bytes())["packs"]
-    assert [e["file"] for e in entries] == ["core.sqlite", "programs.sqlite"]
+    assert [e["file"] for e in entries] == ["core.sqlite", "legal.sqlite", "programs.sqlite"]
     for entry, fresh in zip(entries, regenerated, strict=True):
         file = entry["file"]
         assert _dump(COMMITTED / file) == _dump(tmp_path / file)

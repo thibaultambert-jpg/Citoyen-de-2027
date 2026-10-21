@@ -228,3 +228,35 @@ class CorePack:
     speeches: list[Speech] = field(default_factory=list)
     themes: list[Theme] = field(default_factory=list)
     vote_themes: dict[str, list[ThemeTag]] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class LegalText:
+    id: str
+    title: str
+    position: int
+    url: str
+    source_name: str
+    retrieved_on: date
+    license: str
+
+
+@dataclass(frozen=True)
+class LegalArticle:
+    """One article in force, verbatim: one chunk of the LEGAL corpus (AGENTS.md §8)."""
+
+    id: str
+    text_id: str
+    ordinal: int
+    number: str
+    heading_path: tuple[str, ...]
+    body: str
+    in_force_since: date | None
+    url: str
+
+
+@dataclass
+class LegalPack:
+    generated_on: date
+    texts: list[LegalText]
+    articles: list[LegalArticle]

@@ -1,4 +1,4 @@
-"""Writes the `core` and `programs` packs as SQLite files. Rows are inserted in a fixed order so
+"""Writes the `core`, `programs` and `legal` packs as SQLite files. Rows are inserted in a fixed order so
 that identical inputs give identical files (reproducible builds, AGENTS.md §4)."""
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ import sqlite3
 from pathlib import Path
 
 from citoyen_pipeline import PACK_SCHEMA_VERSION
-from citoyen_pipeline.model import CorePack, ProgramsPack, ThemeTag
+from citoyen_pipeline.model import CorePack, LegalPack, ProgramsPack, ThemeTag
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
@@ -298,6 +298,83 @@ def write_programs_pack(
         meta = {
             "schema_version": str(PACK_SCHEMA_VERSION),
             "pack_id": "programs",
+            "version": version,
+            "generated_on": pack.generated_on.isoformat(),
+        }
+        db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
+        for table, rows in tables.items():
+            if rows:
+                placeholders = ", ".join("?" * len(rows[0]))
+                db.executemany(f"INSERT INTO {table} VALUES ({placeholders})", rows)
+        db.commit()
+        db.execute("VACUUM")
+    finally:
+        db.close()
+    return version
+
+
+LEGAL_SCHEMA = """
+CREATE TABLE meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+CREATE TABLE legal_texts (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    url TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    retrieved_on TEXT NOT NULL,
+    license TEXT NOT NULL
+);
+CREATE TABLE legal_articles (
+    id TEXT PRIMARY KEY NOT NULL,
+    text_id TEXT NOT NULL REFERENCES legal_texts(id),
+    ordinal INTEGER NOT NULL,
+    number TEXT NOT NULL,
+    heading_path TEXT NOT NULL,
+    body TEXT NOT NULL,
+    in_force_since TEXT,
+    url TEXT NOT NULL
+);
+"""
+
+
+def write_legal_pack(pack: LegalPack, path: Path, version: str | None = None) -> str:
+    """Writes the `legal` pack; by default its version is a digest of its rows (see programs)."""
+    text_ids = {t.id for t in pack.texts}
+    if stray := {a.text_id for a in pack.articles} - text_ids:
+        raise ValueError(f"Articles of unknown texts: {sorted(stray)}")
+    for url in [t.url for t in pack.texts] + [a.url for a in pack.articles]:
+        if not url.startswith("https://"):
+            raise ValueError(f"Legal URL must be HTTPS: {url}")
+    tables = {
+        "legal_texts": [
+            (t.id, t.title, t.position, t.url, t.source_name, t.retrieved_on.isoformat(), t.license)
+            for t in sorted(pack.texts, key=lambda t: t.id)
+        ],
+        "legal_articles": [
+            (
+                a.id,
+                a.text_id,
+                a.ordinal,
+                a.number,
+                HEADING_SEPARATOR.join(a.heading_path),
+                a.body,
+                a.in_force_since.isoformat() if a.in_force_since else None,
+                a.url,
+            )
+            for a in sorted(pack.articles, key=lambda a: (a.text_id, a.ordinal))
+        ],
+    }
+    if version is None:
+        digest = hashlib.sha256(json.dumps([PACK_SCHEMA_VERSION, tables], ensure_ascii=False).encode())
+        version = f"legal-{digest.hexdigest()[:12]}"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.unlink(missing_ok=True)
+    db = sqlite3.connect(path)
+    try:
+        db.executescript(LEGAL_SCHEMA)
+        meta = {
+            "schema_version": str(PACK_SCHEMA_VERSION),
+            "pack_id": "legal",
             "version": version,
             "generated_on": pack.generated_on.isoformat(),
         }

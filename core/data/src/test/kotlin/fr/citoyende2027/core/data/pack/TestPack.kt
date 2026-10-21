@@ -21,6 +21,7 @@ object TestPack {
     val signature: ByteArray get() = resource("manifest.json.sig")
     val pack: ByteArray get() = resource("core.sqlite")
     val programs: ByteArray get() = resource("programs.sqlite")
+    val legal: ByteArray get() = resource("legal.sqlite")
     val publicKey: String get() = resource("test_public_key.txt").decodeToString().trim()
     const val VERSION = "2026-01-15+fixture"
     const val PROGRAMS_VERSION = "2026-01-15+programs-fixture"
@@ -37,7 +38,14 @@ object TestPack {
         File(dir, "download-programs.sqlite").apply { writeBytes(bytes) }
 
     /** Files of every pack of the manifest, as downloaded. */
-    fun files(dir: File, core: ByteArray = pack) = mapOf("core" to packFile(dir, core), "programs" to programsFile(dir))
+    fun legalFile(dir: File, bytes: ByteArray = legal): File =
+        File(dir, "download-legal.sqlite").apply { writeBytes(bytes) }
+
+    fun files(dir: File, core: ByteArray = pack) = mapOf(
+        "core" to packFile(dir, core),
+        "programs" to programsFile(dir),
+        "legal" to legalFile(dir),
+    )
 
     /** Content a reader would return for a pack of [version] (the real readers are tested separately). */
     fun content(version: String = VERSION): CorePackContent = FictionalCandidates.corePack.copy(

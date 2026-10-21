@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from citoyen_pipeline import programs
+from citoyen_pipeline import legal, programs
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import check_identities
@@ -18,6 +18,7 @@ from citoyen_pipeline.sources import assemblee, discours, parlement_europeen, rn
 from citoyen_pipeline.themes import load_overrides, load_taxonomy
 
 PROGRAMS_MANIFEST = Path("programs") / "manifest.yaml"
+LEGAL_TEXTS = Path("legal") / "texts.yaml"
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,9 @@ def fetch_all(inputs: Path, cache: Cache) -> list[str]:
         adapter.fetch(cache, identities)
     entries = programs.load_manifest(inputs / PROGRAMS_MANIFEST, {c.id for c in candidates})
     programs.fetch(cache, entries)
-    return [a.name for a in used] + (["programs"] if entries else [])
+    legal_inputs = legal.load_inputs(inputs / LEGAL_TEXTS)
+    legal.fetch(cache, legal_inputs)
+    return [a.name for a in used] + (["programs"] if entries else []) + (["legi"] if legal_inputs else [])
 
 
 def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
@@ -146,3 +149,8 @@ def _unique(sources):
     for source in sources:
         seen.setdefault(source.id, source)
     return list(seen.values())
+
+
+def assemble_legal(inputs: Path, cache: Cache, generated_on: date):
+    """The legal pack has its own content-based version: it does not change the core version."""
+    return legal.assemble(cache, legal.load_inputs(inputs / LEGAL_TEXTS), generated_on)

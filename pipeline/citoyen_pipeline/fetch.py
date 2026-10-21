@@ -74,6 +74,27 @@ class Cache:
             time.sleep(self.delay_seconds)
         return entry
 
+    def fetch_large(self, key: str, url: str) -> Fetched:
+        """Like [fetch], streamed to disk: for archives of several hundred megabytes."""
+        if not url.startswith("https://"):
+            raise ValueError(f"Only HTTPS sources are fetched: {url}")
+        if self.has(key) and self._log[key].url == url:
+            return self._log[key]
+        target = self.path(key)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        partial = target.with_name(target.name + ".part")
+        digest, size = hashlib.sha256(), 0
+        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(request, timeout=600) as response, partial.open("wb") as out:
+            while chunk := response.read(1 << 20):
+                digest.update(chunk)
+                size += len(chunk)
+                out.write(chunk)
+        partial.replace(target)
+        entry = Fetched(key, url, key, digest.hexdigest(), size, datetime.now(UTC).date().isoformat())
+        self.record(entry)
+        return entry
+
     def record(self, entry: Fetched) -> None:
         self._log[entry.key] = entry
         self._log_path.write_text(

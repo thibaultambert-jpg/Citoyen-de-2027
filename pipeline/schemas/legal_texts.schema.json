@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "legal/texts.yaml",
+  "type": "object",
+  "required": ["version", "texts"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "texts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "legi_id"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "legi_id": {"type": "string", "pattern": "^LEGITEXT[0-9]{12}$"},
+          "sections": {"type": "array", "items": {"type": "string", "pattern": "^LEGISCTA[0-9]{12}$"}}
+        }
+      }
+    }
+  }
+}

@@ -57,6 +57,7 @@ class PackSynchronizerTest {
         "manifest.json.sig" to TestPack.signature,
         "core.sqlite" to TestPack.pack,
         "programs.sqlite" to TestPack.programs,
+        "legal.sqlite" to TestPack.legal,
     )
 
     @Test
@@ -67,6 +68,7 @@ class PackSynchronizerTest {
         assertEquals(SyncResult.UpToDate, sync.sync())
         assertEquals(1, releases.requested.count { it.endsWith("core.sqlite") })
         assertEquals(1, releases.requested.count { it.endsWith("programs.sqlite") })
+        assertEquals(1, releases.requested.count { it.endsWith("legal.sqlite") })
     }
 
     @Test

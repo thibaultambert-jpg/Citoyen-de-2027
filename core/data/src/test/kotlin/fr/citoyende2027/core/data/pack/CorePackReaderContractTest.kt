@@ -1,6 +1,7 @@
 package fr.citoyende2027.core.data.pack
 
 import fr.citoyende2027.core.database.CorePackReader
+import fr.citoyende2027.core.database.LegalPackReader
 import fr.citoyende2027.core.database.ProgramsPackReader
 import fr.citoyende2027.core.model.BallotSubject
 import fr.citoyende2027.core.model.Body
@@ -70,5 +71,24 @@ class CorePackReaderContractTest {
         assertEquals(listOf(TagMethod.RULE, TagMethod.MANUAL), b.chunks.single().themes.map { it.method })
         val c = content.program(CandidateId("fictif-c"))
         assertEquals(ProgramStatus.NON_PUBLIE, c.status)
+    }
+
+    @Test
+    fun readsThePipelineLegalPack() {
+        val content = LegalPackReader().read(TestPack.legalFile(folder.root))
+
+        assertEquals(TestPack.LEGAL_VERSION, content.info.version)
+        assertEquals(listOf("fictif-texte-a", "fictif-texte-b"), content.texts.sortedBy { it.position }.map { it.id })
+        val textA = content.texts.first { it.id == "fictif-texte-a" }
+        assertEquals("Texte fictif a", textA.source.name)
+        assertEquals("https://example.invalid/textes/a", textA.source.url)
+        assertEquals(TestPack.LEGAL_VERSION, textA.source.packVersion)
+        val preamble = content.articles.first { it.id == "fictif-texte-a-art-1" }
+        assertEquals("", preamble.number)
+        assertEquals(listOf("Préambule fictif"), preamble.headingPath)
+        assertEquals(null, preamble.inForceSince)
+        val line = content.articles.first { it.id == "fictif-texte-b-art-1" }
+        assertEquals("Ligne fictive.\nSeconde ligne fictive.", line.text)
+        assertEquals(listOf("Livre fictif"), line.headingPath)
     }
 }

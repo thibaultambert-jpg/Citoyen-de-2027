@@ -10,8 +10,8 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 from citoyen_pipeline import testpack
-from citoyen_pipeline.assemble import assemble_packs, fetch_all, inputs_digest
-from citoyen_pipeline.build import pack_version, write_core_pack, write_programs_pack
+from citoyen_pipeline.assemble import assemble_legal, assemble_packs, fetch_all, inputs_digest
+from citoyen_pipeline.build import pack_version, write_core_pack, write_legal_pack, write_programs_pack
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.sign import build_manifest, pack_entry, private_key_from_env, public_key_b64, sign
 
@@ -51,15 +51,31 @@ def cmd_pack(args) -> int:
         {"name": d.title, "url": d.url, "retrieved_on": d.retrieved_on.isoformat(), "license": d.license}
         for d in sorted(programs.documents, key=lambda d: d.id)
     ]
-    manifest = build_manifest(
-        [
-            pack_entry("core", version, pack_file, sources, [s["license"] for s in sources]),
+    entries = [
+        pack_entry("core", version, pack_file, sources, [s["license"] for s in sources]),
+        pack_entry("programs", programs_version, programs_file, documents, [d["license"] for d in documents]),
+    ]
+    legal_pack, legal_review = assemble_legal(inputs, cache, pack.generated_on)
+    review = {**review, **legal_review}
+    legal_version = None
+    if legal_pack.texts:
+        legal_file = out / "legal.sqlite"
+        legal_version = write_legal_pack(legal_pack, legal_file)
+        legal_sources = [
+            {
+                "name": t.source_name,
+                "url": t.url,
+                "retrieved_on": t.retrieved_on.isoformat(),
+                "license": t.license,
+            }
+            for t in legal_pack.texts
+        ]
+        entries.append(
             pack_entry(
-                "programs", programs_version, programs_file, documents, [d["license"] for d in documents]
-            ),
-        ],
-        pack.generated_on.isoformat(),
-    )
+                "legal", legal_version, legal_file, legal_sources, [t.license for t in legal_pack.texts]
+            )
+        )
+    manifest = build_manifest(entries, pack.generated_on.isoformat())
     (out / "manifest.json").write_bytes(manifest)
     report = {
         "version": version,
@@ -77,6 +93,10 @@ def cmd_pack(args) -> int:
             for c in pack.candidates
         },
         "programs_version": programs_version,
+        "legal": {
+            "version": legal_version,
+            "articles": {t.id: sum(a.text_id == t.id for a in legal_pack.articles) for t in legal_pack.texts},
+        },
         # Share of items per theme, to review the keyword rules (AGENTS.md §7.4).
         "themes": {
             "votes": _theme_counts(pack.vote_themes),

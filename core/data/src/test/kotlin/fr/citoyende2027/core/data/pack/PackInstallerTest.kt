@@ -32,6 +32,7 @@ class PackInstallerTest {
         assertEquals(InstallResult.Installed(TestPack.VERSION), result)
         assertEquals(TestPack.VERSION, store.installedVersion())
         assertEquals(TestPack.PROGRAMS_VERSION, store.installedVersion(DataPackInfo.PROGRAMS))
+        assertEquals(TestPack.LEGAL_VERSION, store.installedVersion(DataPackInfo.LEGAL))
         assertNull(installer.plan(TestPack.manifest, TestPack.signature))
     }
 

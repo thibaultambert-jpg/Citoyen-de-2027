@@ -12,12 +12,15 @@ from pathlib import Path
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from citoyen_pipeline.build import write_core_pack, write_programs_pack
+from citoyen_pipeline.build import write_core_pack, write_legal_pack, write_programs_pack
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.inputs import load_candidates, load_identities
 from citoyen_pipeline.model import (
     Body,
     CorePack,
+    LegalArticle,
+    LegalPack,
+    LegalText,
     Mandate,
     ProgramChunk,
     ProgramDocument,
@@ -37,6 +40,7 @@ TEST_SEED = bytes(range(32))
 GENERATED_ON = date(2026, 1, 15)
 VERSION = "2026-01-15+fixture"
 PROGRAMS_VERSION = "2026-01-15+programs-fixture"
+LEGAL_VERSION = "2026-01-15+legal-fixture"
 FIXTURES = Path(__file__).resolve().parent.parent / "tests" / "fixtures"
 
 
@@ -104,10 +108,13 @@ def build(out: Path) -> dict[str, str]:
     write_core_pack(pack, VERSION, pack_file)
     programs_file = out / "programs.sqlite"
     write_programs_pack(programs, taxonomy.ids(), programs_file, PROGRAMS_VERSION)
+    legal_file = out / "legal.sqlite"
+    write_legal_pack(fictional_legal(), legal_file, LEGAL_VERSION)
     manifest = build_manifest(
         [
             pack_entry("core", VERSION, pack_file, [], ["Licence fictive"]),
             pack_entry("programs", PROGRAMS_VERSION, programs_file, [], ["Conditions fictives"]),
+            pack_entry("legal", LEGAL_VERSION, legal_file, [], ["Licence fictive"]),
         ],
         GENERATED_ON.isoformat(),
     )
@@ -190,4 +197,57 @@ def fictional_programs() -> ProgramsPack:
                 ThemeTag("fictif-02", TagMethod.MANUAL, TagConfidence.HIGH),
             ],
         },
+    )
+
+
+def fictional_legal() -> LegalPack:
+    """Two fictional texts: a preamble without number, numbered articles under headings."""
+
+    def text(suffix: str, position: int) -> LegalText:
+        return LegalText(
+            id=f"fictif-texte-{suffix}",
+            title=f"Texte fictif {suffix.upper()}",
+            position=position,
+            url=f"https://example.invalid/textes/{suffix}",
+            source_name=f"Texte fictif {suffix}",
+            retrieved_on=date(2026, 1, 1),
+            license="Licence fictive",
+        )
+
+    def article(text_id, ordinal, number, headings, body, start, url) -> LegalArticle:
+        return LegalArticle(f"{text_id}-art-{ordinal}", text_id, ordinal, number, headings, body, start, url)
+
+    a, b = "fictif-texte-a", "fictif-texte-b"
+    return LegalPack(
+        GENERATED_ON,
+        [text("a", 1), text("b", 2)],
+        [
+            article(
+                a,
+                1,
+                "",
+                ("Préambule fictif",),
+                "Paragraphe fictif d’introduction.",
+                None,
+                "https://example.invalid/textes/a/preambule",
+            ),
+            article(
+                a,
+                2,
+                "1",
+                ("Titre fictif I", "Chapitre fictif 1"),
+                "L’élection fictive a lieu selon une règle fictive.",
+                date(2020, 1, 1),
+                "https://example.invalid/textes/a/1",
+            ),
+            article(
+                b,
+                1,
+                "L. 1",
+                ("Livre fictif",),
+                "Ligne fictive.\nSeconde ligne fictive.",
+                date(2022, 1, 1),
+                "https://example.invalid/textes/b/l1",
+            ),
+        ],
     )
