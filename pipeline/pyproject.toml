@@ -8,6 +8,7 @@ dependencies = [
     "PyYAML==6.0.3",          # MIT
     "jsonschema==4.26.0",     # MIT
     "cryptography==50.0.2",   # Apache-2.0 OR BSD-3-Clause
+    "pypdf==6.19.0",          # BSD-3-Clause (programme PDF text extraction)
 ]
 
 [project.optional-dependencies]

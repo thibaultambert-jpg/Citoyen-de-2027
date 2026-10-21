@@ -4,11 +4,13 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - 'config/neutrality/**'
       - 'pipeline/**'
       - 'core/data/src/test/resources/packs/**'
       - '.github/workflows/pipeline.yml'
   pull_request:
     paths:
+      - 'config/neutrality/**'
       - 'pipeline/**'
       - 'core/data/src/test/resources/packs/**'
 

@@ -11,9 +11,18 @@ import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.ProgramChunk
+import fr.citoyende2027.core.model.ProgramDocument
+import fr.citoyende2027.core.model.ProgramStatus
+import fr.citoyende2027.core.model.ProgramsPackContent
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
+import fr.citoyende2027.core.model.TagConfidence
+import fr.citoyende2027.core.model.TagMethod
+import fr.citoyende2027.core.model.Theme
+import fr.citoyende2027.core.model.ThemeId
+import fr.citoyende2027.core.model.ThemeTag
 import fr.citoyende2027.core.model.Vote
 import java.time.LocalDate
 
@@ -79,6 +88,11 @@ object FictionalCandidates {
         isFictional = true,
     )
 
+    val theme1 = Theme(ThemeId("fictif-01"), "Thème fictif 01")
+    val theme2 = Theme(ThemeId("fictif-02"), "Thème fictif 02")
+    val unknownTheme = Theme(ThemeId(ThemeId.UNKNOWN), "Thème non déterminé")
+    val themes = listOf(theme1, theme2, unknownTheme)
+
     /** Fictional mandate and votes of Candidat A (coverage: mandates available, votes partial). */
     val mandates = listOf(
         Mandate(
@@ -105,6 +119,7 @@ object FictionalCandidates {
             position = "pour",
             ballotUrl = "https://example.invalid/scrutin-1",
             source = source,
+            themes = listOf(ThemeTag(theme1.id, TagMethod.RULE, TagConfidence.LOW)),
         ),
     )
 
@@ -122,7 +137,85 @@ object FictionalCandidates {
         ),
     )
 
-    val corePack = CorePackContent(packInfo, all, mandates, votes, speeches)
+    val corePack = CorePackContent(packInfo, all, mandates, votes, speeches, themes)
+
+    val programsInfo = packInfo.copy(id = DataPackInfo.PROGRAMS)
+
+    private fun programSource(documentId: String) = source.copy(
+        name = "Programme fictif",
+        url = "https://example.invalid/$documentId",
+        license = "Conditions fictives",
+    )
+
+    /** Candidat A: complete programme (PDF pages); B: partial (web page anchor); C: none. */
+    val programDocuments = listOf(
+        ProgramDocument(
+            id = "fictif-a-programme",
+            candidateId = candidateA.id,
+            title = "Programme fictif (fictif-a)",
+            publishedOn = LocalDate.of(2026, 1, 5),
+            version = "1",
+            source = programSource("fictif-a-programme"),
+        ),
+        ProgramDocument(
+            id = "fictif-b-programme",
+            candidateId = candidateB.id,
+            title = "Programme fictif (fictif-b)",
+            publishedOn = LocalDate.of(2026, 1, 5),
+            version = "1",
+            source = programSource("fictif-b-programme"),
+        ),
+    )
+
+    val programChunks = listOf(
+        ProgramChunk(
+            id = "fictif-a-programme-0001",
+            documentId = "fictif-a-programme",
+            candidateId = candidateA.id,
+            ordinal = 1,
+            headingPath = listOf("Partie fictive 1", "Section fictive"),
+            page = 1,
+            anchor = null,
+            text = "Mesure fictive n° 1 : texte fictif sur le motfictif01.",
+            themes = listOf(ThemeTag(theme1.id, TagMethod.RULE, TagConfidence.LOW)),
+        ),
+        ProgramChunk(
+            id = "fictif-a-programme-0002",
+            documentId = "fictif-a-programme",
+            candidateId = candidateA.id,
+            ordinal = 2,
+            headingPath = listOf("Partie fictive 2"),
+            page = 3,
+            anchor = null,
+            text = "Mesure fictive n° 2.\n\nParagraphe fictif sans thème reconnu.",
+            themes = listOf(ThemeTag(unknownTheme.id, TagMethod.RULE, TagConfidence.LOW)),
+        ),
+        ProgramChunk(
+            id = "fictif-b-programme-0001",
+            documentId = "fictif-b-programme",
+            candidateId = candidateB.id,
+            ordinal = 1,
+            headingPath = emptyList(),
+            page = null,
+            anchor = "section-fictive",
+            text = "Mesure fictive de B sur le motfictif01 et le motfictif02.",
+            themes = listOf(
+                ThemeTag(theme1.id, TagMethod.RULE, TagConfidence.LOW),
+                ThemeTag(theme2.id, TagMethod.MANUAL, TagConfidence.HIGH),
+            ),
+        ),
+    )
+
+    val programsPack = ProgramsPackContent(
+        info = programsInfo,
+        statuses = mapOf(
+            candidateA.id to ProgramStatus.COMPLET,
+            candidateB.id to ProgramStatus.PARTIEL,
+            candidateC.id to ProgramStatus.NON_PUBLIE,
+        ),
+        documents = programDocuments,
+        chunks = programChunks,
+    )
 
     private fun coverage(vararg levels: Pair<CoverageFacet, CoverageLevel>) = DataCoverage(levels.toMap())
 }

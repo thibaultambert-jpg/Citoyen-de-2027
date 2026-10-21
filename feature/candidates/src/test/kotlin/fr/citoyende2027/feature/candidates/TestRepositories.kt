@@ -5,9 +5,11 @@ import fr.citoyende2027.core.data.repository.UserPreferencesRepository
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.CandidateOrder
+import fr.citoyende2027.core.model.CandidateProgram
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.Vote
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +32,10 @@ internal class TestCandidatesRepository : CandidatesRepository {
     override fun observeVotes(id: CandidateId): Flow<List<Vote>> = flowOf(emptyList())
 
     override fun observeSpeeches(id: CandidateId): Flow<List<Speech>> = flowOf(emptyList())
+
+    override fun observeThemes(): Flow<List<Theme>> = flowOf(emptyList())
+
+    override fun observeProgram(id: CandidateId): Flow<CandidateProgram> = flowOf(CandidateProgram.notPublished(id))
 }
 
 internal class TestUserPreferencesRepository : UserPreferencesRepository {

@@ -18,7 +18,7 @@ class InputError(ValueError):
     pass
 
 
-def _load(path: Path, schema_name: str) -> dict:
+def load_yaml(path: Path, schema_name: str) -> dict:
     # BaseLoader keeps every scalar as a string: no implicit date/bool conversion before validation.
     data = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
     if isinstance(data, dict) and "version" in data:
@@ -33,7 +33,7 @@ def _load(path: Path, schema_name: str) -> dict:
 
 
 def load_candidates(path: Path) -> tuple[date, list[Candidate], list[Source]]:
-    data = _load(path, "candidates.schema.json")
+    data = load_yaml(path, "candidates.schema.json")
     candidates, sources = [], []
     for item in data["candidates"]:
         src = item["status_source"]
@@ -62,7 +62,7 @@ def load_candidates(path: Path) -> tuple[date, list[Candidate], list[Source]]:
 
 
 def load_identities(path: Path, candidate_ids: set[str]) -> list[Identity]:
-    data = _load(path, "identities.schema.json")
+    data = load_yaml(path, "identities.schema.json")
     identities = []
     for item in data["identities"]:
         if item["candidate_id"] not in candidate_ids:
@@ -85,4 +85,4 @@ def load_identities(path: Path, candidate_ids: set[str]) -> list[Identity]:
     return identities
 
 
-__all__ = ["InputError", "load_candidates", "load_identities"]
+__all__ = ["InputError", "load_candidates", "load_identities", "load_yaml"]

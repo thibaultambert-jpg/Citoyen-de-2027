@@ -10,8 +10,9 @@ import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Installs the `core` pack embedded in the APK (assets/packs/: manifest.json, manifest.json.sig,
- * core.sqlite) on first launch, with the same signature and hash checks as a download (AGENTS.md §5).
+ * Installs the packs embedded in the APK (assets/packs/: manifest.json, manifest.json.sig and the
+ * pack files it lists) on first launch, with the same signature and hash checks as a download
+ * (AGENTS.md §5).
  */
 class EmbeddedPackSeeder @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -22,14 +23,20 @@ class EmbeddedPackSeeder @Inject constructor(
     suspend fun install(): Boolean {
         if (store.installedVersion() != null) return true
         val installer = runtime.installer ?: return false
-        val files = context.assets.list(DIRECTORY).orEmpty()
-        if (MANIFEST !in files || SIGNATURE !in files || PACK !in files) return false
+        val assets = context.assets.list(DIRECTORY).orEmpty()
+        if (MANIFEST !in assets || SIGNATURE !in assets) return false
         return try {
-            val target = File(context.cacheDir, "embedded-core.sqlite")
-            context.assets.open("$DIRECTORY/$PACK").use { input ->
-                target.outputStream().use { output -> input.copyTo(output) }
+            val manifest = read(MANIFEST)
+            val signature = read(SIGNATURE)
+            val plan = installer.plan(manifest, signature) ?: return true
+            val files = plan.entries.filter { it.file in assets }.associate { entry ->
+                val target = File(context.cacheDir, "embedded-${entry.file}")
+                context.assets.open("$DIRECTORY/${entry.file}").use { input ->
+                    target.outputStream().use { output -> input.copyTo(output) }
+                }
+                entry.id to target
             }
-            installer.install(read(MANIFEST), read(SIGNATURE), target)
+            installer.install(manifest, signature, files)
             true
         } catch (error: CancellationException) {
             throw error
@@ -51,6 +58,5 @@ class EmbeddedPackSeeder @Inject constructor(
         const val DIRECTORY = "packs"
         const val MANIFEST = "manifest.json"
         const val SIGNATURE = "manifest.json.sig"
-        const val PACK = "core.sqlite"
     }
 }

@@ -329,6 +329,11 @@ def test_assemble_end_to_end_with_identity_check(cache, fixtures):
     assert {v.candidate_id for v in pack.votes} == {"fictif-a"}
     assert pack.coverage[("fictif-a", Facet.VOTES)] == Level.AVAILABLE
     assert pack.coverage[("fictif-b", Facet.VOTES)] == Level.NOT_APPLICABLE
+    # Themes: the fixture taxonomy plus "inconnu"; every vote is tagged (no rule matches here).
+    assert len(pack.themes) == 16
+    assert {tuple(t.theme_id for t in tags) for tags in pack.vote_themes.values()} == {("inconnu",)}
+    assert set(pack.vote_themes) == {v.id for v in pack.votes}
+    assert pack.coverage[("fictif-a", Facet.PROGRAM)] == Level.UNAVAILABLE
 
 
 def test_vie_publique_statements_require_the_validated_name(tmp_path):

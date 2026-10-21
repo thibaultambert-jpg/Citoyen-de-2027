@@ -18,7 +18,7 @@ internal class DebugDataSeeder @Inject constructor(
 ) : StartupDataSeeder {
     override suspend fun seedIfNeeded() {
         if (!embedded.install() && !corePackStore.hasCorePack()) {
-            corePackStore.install(FictionalCandidates.corePack)
+            corePackStore.install(FictionalCandidates.corePack, FictionalCandidates.programsPack)
         }
     }
 }

@@ -33,3 +33,12 @@ def test_votes_partial_when_only_some_linked_assemblies_have_votes():
 def test_every_candidate_has_every_facet():
     coverage = compute_coverage([A, B], [], [], [])
     assert {(c, f) for c in ("fictif-a", "fictif-b") for f in Facet} == set(coverage)
+
+
+def test_program_coverage_follows_the_validated_status():
+    from citoyen_pipeline.model import ProgramStatus
+
+    statuses = {"fictif-a": ProgramStatus.COMPLET, "fictif-b": ProgramStatus.PARTIEL}
+    coverage = compute_coverage([A, B], [], [], [], [], statuses)
+    assert coverage[("fictif-a", Facet.PROGRAM)] == Level.AVAILABLE
+    assert coverage[("fictif-b", Facet.PROGRAM)] == Level.PARTIAL

@@ -128,6 +128,81 @@ class Speech:
     source_id: str
 
 
+class TagMethod(StrEnum):
+    """How a theme was attached (AGENTS.md §7.4): explicit keyword rule or human decision."""
+
+    RULE = "RULE"
+    MANUAL = "MANUAL"
+
+
+class TagConfidence(StrEnum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+UNKNOWN_THEME = "inconnu"
+
+
+@dataclass(frozen=True)
+class Theme:
+    id: str
+    label: str
+
+
+@dataclass(frozen=True)
+class ThemeTag:
+    theme_id: str
+    method: TagMethod
+    confidence: TagConfidence
+
+
+class ProgramStatus(StrEnum):
+    COMPLET = "COMPLET"
+    PARTIEL = "PARTIEL"
+    NON_PUBLIE = "NON_PUBLIE"
+
+
+@dataclass(frozen=True)
+class ProgramDocument:
+    """A programme document listed by hand in inputs/programs/manifest.yaml."""
+
+    id: str
+    candidate_id: str
+    title: str
+    url: str
+    format: str  # "pdf" or "html"
+    published_on: date
+    version: str
+    sha256: str
+    retrieved_on: date
+    license: str
+
+
+@dataclass(frozen=True)
+class ProgramChunk:
+    """A verbatim excerpt of a programme document (AGENTS.md §7.5), never rephrased."""
+
+    id: str
+    document_id: str
+    candidate_id: str
+    ordinal: int
+    heading_path: tuple[str, ...]
+    page: int | None
+    anchor: str | None
+    text: str
+    token_count: int
+
+
+@dataclass
+class ProgramsPack:
+    generated_on: date
+    statuses: dict[str, ProgramStatus]
+    documents: list[ProgramDocument]
+    chunks: list[ProgramChunk]
+    chunk_themes: dict[str, list[ThemeTag]]
+
+
 @dataclass
 class SourceExtract:
     """Output of one source adapter."""
@@ -151,3 +226,5 @@ class CorePack:
     mandates: list[Mandate]
     votes: list[Vote]
     speeches: list[Speech] = field(default_factory=list)
+    themes: list[Theme] = field(default_factory=list)
+    vote_themes: dict[str, list[ThemeTag]] = field(default_factory=dict)

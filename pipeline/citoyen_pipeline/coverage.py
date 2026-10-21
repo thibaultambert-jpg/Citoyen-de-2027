@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from citoyen_pipeline.model import Candidate, Facet, Identity, Level, Mandate, Speech, Vote
+from citoyen_pipeline.model import Candidate, Facet, Identity, Level, Mandate, ProgramStatus, Speech, Vote
 
 
 def compute_coverage(
@@ -11,6 +11,7 @@ def compute_coverage(
     mandates: list[Mandate],
     votes: list[Vote],
     speeches: list[Speech] | None = None,
+    program_statuses: dict[str, ProgramStatus] | None = None,
 ) -> dict[tuple[str, Facet], Level]:
     by_candidate = {i.candidate_id: i for i in identities}
     coverage: dict[tuple[str, Facet], Level] = {}
@@ -20,9 +21,14 @@ def compute_coverage(
         has_mandates = any(m.candidate_id == candidate.id for m in mandates)
         voted_in = {v.body for v in votes if v.candidate_id == candidate.id}
 
-        # Programmes arrive with J4: never claimed before they are in the pack. Speeches cover PE
-        # interventions and official statements only (AN and Senate debates are not integrated yet).
-        coverage[(candidate.id, Facet.PROGRAM)] = Level.UNAVAILABLE
+        # Programme status comes from inputs/programs/manifest.yaml; no entry means unavailable.
+        # Speeches cover PE interventions and official statements only (AN and Senate debates are
+        # not integrated yet).
+        status = (program_statuses or {}).get(candidate.id, ProgramStatus.NON_PUBLIE)
+        coverage[(candidate.id, Facet.PROGRAM)] = {
+            ProgramStatus.COMPLET: Level.AVAILABLE,
+            ProgramStatus.PARTIEL: Level.PARTIAL,
+        }.get(status, Level.UNAVAILABLE)
         has_speeches = any(s.candidate_id == candidate.id for s in speeches or [])
         coverage[(candidate.id, Facet.SPEECHES)] = Level.PARTIAL if has_speeches else Level.UNAVAILABLE
         # A mandate search only happens through validated identity links; no link means "unavailable",

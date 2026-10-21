@@ -46,7 +46,11 @@ data class Vote(
     val position: String,
     val ballotUrl: String,
     val source: SourceRef,
-)
+    /** Themes from the pipeline's explicit rules or human decisions (AGENTS.md §7.4). */
+    val themes: List<ThemeTag> = emptyList(),
+) {
+    fun hasTheme(theme: ThemeId): Boolean = themes.any { it.themeId == theme }
+}
 
 enum class SpeechKind {
     /** Intervention in a plenary sitting (European Parliament). */

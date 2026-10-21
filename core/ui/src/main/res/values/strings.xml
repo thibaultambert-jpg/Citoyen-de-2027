@@ -43,6 +43,31 @@
     <string name="core_ui_position_abstention">Abstention</string>
     <string name="core_ui_position_non_voting">Non-votant</string>
 
+    <string name="core_ui_vote_type">Type de scrutin : %1$s</string>
+    <string name="core_ui_vote_subject">Objet du scrutin : %1$s</string>
+    <string name="core_ui_vote_position">Position enregistrée : %1$s</string>
+    <string name="core_ui_vote_official_link">Voir le scrutin officiel</string>
+    <string name="core_ui_position_other">Autre</string>
+    <!-- %1$s: theme labels -->
+    <string name="core_ui_themes">Thèmes : %1$s</string>
+    <!-- %1$s: theme label, %2$s: how it was attached -->
+    <string name="core_ui_theme_with_method">%1$s (%2$s)</string>
+    <string name="core_ui_tag_method_rule">attribué par règle de mots-clés</string>
+    <string name="core_ui_tag_method_manual">attribué après relecture humaine</string>
+
+    <string name="core_ui_program_status_complete">Programme publié : documents intégrés en entier.</string>
+    <string name="core_ui_program_status_partial">Programme publié en partie : seuls certains documents ou thèmes sont disponibles à ce jour.</string>
+    <string name="core_ui_program_status_none">Programme non disponible dans les sources utilisées.</string>
+    <string name="core_ui_absence_is_not_position">L’absence d’une donnée n’est pas l’absence d’une position.</string>
+    <!-- %1$s: document title, %2$s: version, %3$s: date JJ/MM/AAAA -->
+    <string name="core_ui_program_document">%1$s · version %2$s · daté du %3$s</string>
+    <!-- %1$d: page number -->
+    <string name="core_ui_excerpt_page">Page %1$d du document PDF</string>
+    <string name="core_ui_excerpt_web">Page web du programme</string>
+    <string name="core_ui_excerpt_verbatim">Texte publié, sans reformulation</string>
+    <string name="core_ui_excerpt_open">Ouvrir le document</string>
+    <string name="core_ui_filter_all">Tous</string>
+
     <!-- %1$s: start date, %2$s: end date -->
     <string name="core_ui_period">Du %1$s au %2$s</string>
     <string name="core_ui_period_open">Depuis le %1$s (en cours selon la source)</string>

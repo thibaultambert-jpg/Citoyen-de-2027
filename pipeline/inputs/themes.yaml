@@ -1,0 +1,68 @@
+# Fixed theme taxonomy (AGENTS.md §7.4). DRAFT: labels and rules must be reviewed by a human before
+# the first publication. Labels are neutral topic names; patterns are regular expressions applied to
+# the lower-cased, accent-free text of ballot titles and programme excerpts, as whole words.
+# A ballot or excerpt matched by no rule is tagged "inconnu". Tags made by these rules carry
+# method RULE; inputs/theme_overrides.yaml records human decisions (method MANUAL).
+version: 1
+unknown_label: Thème non déterminé
+themes:
+  - id: agriculture
+    label: Agriculture et alimentation
+    patterns: ['agricol\w*', 'agricult\w*', 'alimentation', 'alimentaires?', 'elevages?', 'eleveurs?', 'peche', 'pecheurs?', 'pesticides?']
+  - id: culture
+    label: Culture et médias
+    patterns: ['culture', 'culturel\w*', 'patrimoine', 'musees?', 'spectacle vivant', 'audiovisuel\w*', 'medias?', 'presse', 'cinema']
+  - id: defense
+    label: Défense
+    patterns: ['defense nationale', 'armees?', 'militaires?', 'dissuasion', 'programmation militaire', 'anciens combattants', 'service national']
+  - id: democratie
+    label: Institutions et démocratie
+    patterns: ['constitution\w*', 'referendums?', 'parlement', 'proportionnelle', 'mode de scrutin', 'elections?', 'electora\w*', 'institutions?']
+  - id: economie
+    label: Économie et entreprises
+    patterns: ['entreprises?', 'industri\w*', 'commerce', 'commerciaux', 'croissance', 'pme', 'artisans?', 'artisanat', 'concurrence', 'consommat\w*']
+  - id: education
+    label: Éducation et jeunesse
+    patterns: ['ecoles?', 'education', 'enseignants?', 'eleves?', 'colleges?', 'lycees?', 'baccalaureat', 'jeunesse', 'scolaires?']
+  - id: emploi
+    label: Travail et emploi
+    patterns: ['emplois?', 'chomage', 'salaries?', 'salaires?', 'smic', 'travail', 'formation professionnelle', 'apprentissage']
+  - id: energie
+    label: Énergie
+    patterns: ['energ\w*', 'electricite', 'nucleaire', 'renouvelables?', 'carburants?', 'gaz', 'eolien\w*', 'photovoltaique\w*', 'hydrogene']
+  - id: environnement
+    label: Environnement et climat
+    patterns: ['environnement\w*', 'climat\w*', 'biodiversite', 'pollution\w*', 'effet de serre', 'ecologi\w*', 'dechets', 'ressources? en eau']
+  - id: europe-international
+    label: Europe et international
+    patterns: ['union europeenne', 'europe', 'europeen\w*', 'internationa\w*', 'diplomati\w*', 'otan', 'aide au developpement']
+  - id: fiscalite
+    label: Fiscalité et finances publiques
+    patterns: ['impots?', 'fiscal\w*', 'taxes?', 'tva', 'budget\w*', 'dette publique', 'deficits?', 'finances publiques', 'loi de finances', 'prelevements obligatoires']
+  - id: immigration
+    label: Immigration et asile
+    patterns: ['immigr\w*', 'migra\w*', 'asile', 'etrangers?', 'titres? de sejour', 'naturalisation\w*', 'nationalite']
+  - id: justice
+    label: Justice
+    patterns: ['justice', 'judiciaires?', 'tribunal', 'tribunaux', 'magistrat\w*', 'prisons?', 'penitentiaire\w*', 'penal\w*']
+  - id: logement
+    label: Logement et urbanisme
+    patterns: ['logements?', 'loyers?', 'locataires?', 'hlm', 'urbanisme', 'habitat', 'proprietaires?']
+  - id: numerique
+    label: Numérique
+    patterns: ['numerique\w*', 'internet', 'donnees personnelles', 'intelligence artificielle', 'cyber\w*', 'plateformes? en ligne', 'telecommunications?']
+  - id: protection-sociale
+    label: Retraites et protection sociale
+    patterns: ['retraites?', 'pensions?', 'securite sociale', 'allocations?', 'prestations sociales', 'minima sociaux', 'rsa', 'handicap\w*', 'dependance']
+  - id: recherche
+    label: Enseignement supérieur et recherche
+    patterns: ['universit\w*', 'enseignement superieur', 'recherche', 'etudiants?', 'chercheurs?', 'innovation']
+  - id: sante
+    label: Santé
+    patterns: ['sante', 'hopita(l|ux)', 'medec\w*', 'medica\w*', 'soins?', 'maladies?', 'pharmac\w*', 'infirmi\w*']
+  - id: securite
+    label: Sécurité intérieure
+    patterns: ['police', 'policiers?', 'gendarm\w*', 'delinquance', 'terroris\w*', 'securite interieure', 'criminalite', 'ordre public']
+  - id: territoires-transports
+    label: Transports et territoires
+    patterns: ['transports?', 'ferroviaire\w*', 'routes?', 'routiers?', 'mobilites?', 'collectivites territoriales', 'communes?', 'ruralite', 'outre-mer', 'territoires?']

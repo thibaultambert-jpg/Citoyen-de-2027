@@ -19,22 +19,25 @@ sealed interface SyncResult {
     data class Rejected(val cause: Throwable) : SyncResult
 }
 
-/** Downloads the signed manifest and, when newer, the `core` pack from [baseUrl]. */
+/** Downloads the signed manifest and, when newer, the packs that changed from [baseUrl]. */
 class PackSynchronizer(
     private val baseUrl: String,
     private val http: PackHttpClient,
     /** Null when no public key is configured: sync is then disabled. */
-    private val installer: CorePackInstaller?,
+    private val installer: PackInstaller?,
 ) {
     suspend fun sync(): SyncResult {
         val installer = installer ?: return SyncResult.Disabled
         return try {
             val manifest = http.fetchBytes(baseUrl + MANIFEST)
             val signature = http.fetchBytes(baseUrl + SIGNATURE)
-            val (_, entry) = installer.plan(manifest, signature) ?: return SyncResult.UpToDate
-            val file = installer.stagingFile(entry)
-            http.download(baseUrl + entry.file, file, entry.size)
-            when (val result = installer.install(manifest, signature, file)) {
+            val plan = installer.plan(manifest, signature) ?: return SyncResult.UpToDate
+            val files = plan.entries.filter { installer.reusableFile(it) == null }.associate { entry ->
+                val file = installer.stagingFile(entry)
+                http.download(baseUrl + entry.file, file, entry.size)
+                entry.id to file
+            }
+            when (val result = installer.install(manifest, signature, files)) {
                 is InstallResult.Installed -> SyncResult.Installed(result.version)
                 InstallResult.UpToDate -> SyncResult.UpToDate
             }

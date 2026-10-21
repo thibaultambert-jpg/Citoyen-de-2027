@@ -1,0 +1,6 @@
+# Programme documents (AGENTS.md §6, §7.5). Programmes are NOT open data: each entry is added by a
+# human from the candidate's official site, with the exact file hash and the reuse terms validated.
+# A candidate without entry is shown as "programme non disponible dans les sources utilisées".
+# Format: docs/pipeline-inputs.md.
+version: 1
+programs: []

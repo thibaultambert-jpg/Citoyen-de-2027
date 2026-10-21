@@ -132,3 +132,120 @@ data class SpeechEntity(
     val url: String,
     @Embedded(prefix = "source_") val source: SourceEmbedded,
 )
+
+@Entity(tableName = "themes")
+data class ThemeEntity(@PrimaryKey val id: String, val label: String)
+
+/** Theme tag of a vote; removed with its vote. */
+@Entity(
+    tableName = "vote_themes",
+    primaryKeys = ["vote_id", "theme_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = VoteEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["vote_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("vote_id"), Index("theme_id")],
+)
+data class VoteThemeEntity(
+    @ColumnInfo(name = "vote_id") val voteId: String,
+    @ColumnInfo(name = "theme_id") val themeId: String,
+    val method: String,
+    val confidence: String,
+)
+
+data class VoteWithThemes(
+    @Embedded val vote: VoteEntity,
+    @Relation(parentColumn = "id", entityColumn = "vote_id")
+    val themes: List<VoteThemeEntity>,
+)
+
+@Entity(
+    tableName = "program_status",
+    foreignKeys = [
+        ForeignKey(
+            entity = CandidateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["candidate_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+)
+data class ProgramStatusEntity(
+    @PrimaryKey @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val status: String,
+)
+
+@Entity(
+    tableName = "program_documents",
+    foreignKeys = [
+        ForeignKey(
+            entity = CandidateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["candidate_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("candidate_id")],
+)
+data class ProgramDocumentEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val title: String,
+    @ColumnInfo(name = "published_on") val publishedOn: LocalDate,
+    val version: String,
+    @Embedded(prefix = "source_") val source: SourceEmbedded,
+)
+
+@Entity(
+    tableName = "program_chunks",
+    foreignKeys = [
+        ForeignKey(
+            entity = ProgramDocumentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["document_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("document_id"), Index("candidate_id")],
+)
+data class ProgramChunkEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "document_id") val documentId: String,
+    @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val ordinal: Int,
+    /** Headings separated by a line feed, as in the published pack. */
+    @ColumnInfo(name = "heading_path") val headingPath: String,
+    val page: Int?,
+    val anchor: String?,
+    val text: String,
+)
+
+@Entity(
+    tableName = "chunk_themes",
+    primaryKeys = ["chunk_id", "theme_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = ProgramChunkEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["chunk_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("chunk_id"), Index("theme_id")],
+)
+data class ChunkThemeEntity(
+    @ColumnInfo(name = "chunk_id") val chunkId: String,
+    @ColumnInfo(name = "theme_id") val themeId: String,
+    val method: String,
+    val confidence: String,
+)
+
+data class ChunkWithThemes(
+    @Embedded val chunk: ProgramChunkEntity,
+    @Relation(parentColumn = "id", entityColumn = "chunk_id")
+    val themes: List<ChunkThemeEntity>,
+)

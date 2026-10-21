@@ -1,6 +1,9 @@
 package fr.citoyende2027.feature.candidate
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
@@ -8,11 +11,13 @@ import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import fr.citoyende2027.core.designsystem.R as DesignR
 import fr.citoyende2027.core.designsystem.theme.CitoyenTheme
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.testing.FictionalCandidates
+import fr.citoyende2027.core.ui.R as CoreUiR
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -43,10 +48,7 @@ class CandidateSheetParityTest {
     private fun assertCommonTemplate(candidate: Candidate) {
         composeRule.setContent {
             CitoyenTheme {
-                CandidateContent(
-                    uiState = CandidateUiState.Ready(candidate, FictionalCandidates.packInfo),
-                    onBack = {},
-                )
+                CandidateContent(uiState = readyState(candidate), onBack = {})
             }
         }
 
@@ -68,6 +70,37 @@ class CandidateSheetParityTest {
         composeRule.onNodeWithText(context.getString(DesignR.string.core_designsystem_source)).assertExists()
         composeRule.onAllNodes(coverageItem).assertCountEquals(4)
     }
+
+    /** Every tab opens for every candidate, whatever data exists (no tab disappears or fails). */
+    @Test
+    fun everyTabRendersForEveryCandidate() {
+        var candidate by mutableStateOf(FictionalCandidates.candidateA)
+        composeRule.setContent { CitoyenTheme { CandidateContent(uiState = readyState(candidate), onBack = {}) } }
+        FictionalCandidates.all.forEach { current ->
+            candidate = current
+            CandidateSheetTab.entries.forEach { tab ->
+                composeRule.onNodeWithText(context.getString(tab.label)).performClick()
+                composeRule.waitForIdle()
+            }
+            composeRule.onNodeWithText(context.getString(CandidateSheetTab.OVERVIEW.label)).performClick()
+        }
+        candidate = FictionalCandidates.candidateA
+        composeRule.onNodeWithText(context.getString(CandidateSheetTab.PROGRAM.label)).performClick()
+        composeRule.onNodeWithText(context.getString(CoreUiR.string.core_ui_program_status_complete)).assertExists()
+    }
+
+    private fun readyState(candidate: Candidate) = CandidateUiState.Ready(
+        candidate = candidate,
+        dataInfo = FictionalCandidates.packInfo,
+        mandates = FictionalCandidates.mandates.filter { it.candidateId == candidate.id },
+        votes = VotesState(
+            votes = FictionalCandidates.votes.filter { it.candidateId == candidate.id },
+            totalCount = FictionalCandidates.votes.count { it.candidateId == candidate.id },
+        ),
+        program = FictionalCandidates.programsPack.program(candidate.id),
+        themes = FictionalCandidates.themes,
+        allVotes = FictionalCandidates.votes.filter { it.candidateId == candidate.id },
+    )
 
     private val coverageItem = SemanticsMatcher("coverage item") { node ->
         node.config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.any { it.contains(" : ") }

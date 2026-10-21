@@ -2,6 +2,8 @@ package fr.citoyende2027.core.database
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import fr.citoyende2027.core.database.model.HEADING_SEPARATOR
+import fr.citoyende2027.core.database.model.tagOf
 import fr.citoyende2027.core.model.BallotSubject
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
@@ -13,9 +15,16 @@ import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.ProgramChunk
+import fr.citoyende2027.core.model.ProgramDocument
+import fr.citoyende2027.core.model.ProgramStatus
+import fr.citoyende2027.core.model.ProgramsPackContent
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
+import fr.citoyende2027.core.model.Theme
+import fr.citoyende2027.core.model.ThemeId
+import fr.citoyende2027.core.model.ThemeTag
 import fr.citoyende2027.core.model.Vote
 import java.io.File
 import java.time.LocalDate
@@ -31,12 +40,7 @@ class CorePackReader @Inject constructor() {
     fun read(file: File): CorePackContent {
         val db = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
         try {
-            val meta = db.query("SELECT key, value FROM meta") { it.getString(0) to it.getString(1) }.toMap()
-            val schema = meta["schema_version"]?.toIntOrNull()
-            if (schema != SUPPORTED_SCHEMA_VERSION) {
-                throw UnsupportedPackException("Unsupported pack schema $schema (expected $SUPPORTED_SCHEMA_VERSION)")
-            }
-            if (meta["pack_id"] != DataPackInfo.CORE) throw UnsupportedPackException("Not a core pack")
+            val meta = db.meta(DataPackInfo.CORE)
             val version = meta.getValue("version")
             val sources = db.query("SELECT id, name, url, retrieved_on, license FROM sources") {
                 it.getString(0) to SourceRef(
@@ -77,6 +81,8 @@ class CorePackReader @Inject constructor() {
                     source = sources.getValue(it.getString(6)),
                 )
             }
+            val themes = db.query("SELECT id, label FROM themes") { Theme(ThemeId(it.getString(0)), it.getString(1)) }
+            val voteThemes = db.tags("SELECT vote_id, theme_id, method, confidence FROM vote_themes")
             val votes = db.query(
                 "SELECT id, candidate_id, body, ballot_id, ballot_date, ballot_title, ballot_type, ballot_subject, " +
                     "position, ballot_url, source_id FROM votes",
@@ -95,6 +101,7 @@ class CorePackReader @Inject constructor() {
                     position = it.getString(8),
                     ballotUrl = it.getString(9),
                     source = sources.getValue(it.getString(10)),
+                    themes = voteThemes[it.getString(0)].orEmpty(),
                 )
             }
             val speeches = db.query(
@@ -120,7 +127,7 @@ class CorePackReader @Inject constructor() {
                 generatedOn = LocalDate.parse(meta.getValue("generated_on")),
                 isFictional = false,
             )
-            return CorePackContent(info, candidates, mandates, votes, speeches)
+            return CorePackContent(info, candidates, mandates, votes, speeches, themes)
         } finally {
             db.close()
         }
@@ -132,13 +139,91 @@ class CorePackReader @Inject constructor() {
         },
     )
 
-    private fun <T> SQLiteDatabase.query(sql: String, row: (Cursor) -> T): List<T> =
-        rawQuery(sql, null).use { cursor -> buildList { while (cursor.moveToNext()) add(row(cursor)) } }
-
-    private fun Cursor.getStringOrNull(index: Int): String? = if (isNull(index)) null else getString(index)
-
     companion object {
         /** Must match PACK_SCHEMA_VERSION in pipeline/citoyen_pipeline/__init__.py. */
-        const val SUPPORTED_SCHEMA_VERSION = 2
+        const val SUPPORTED_SCHEMA_VERSION = 3
     }
 }
+
+/** Reads a `programs` pack written by the pipeline (build.py, write_programs_pack). */
+class ProgramsPackReader @Inject constructor() {
+    fun read(file: File): ProgramsPackContent {
+        val db = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
+        try {
+            val meta = db.meta(DataPackInfo.PROGRAMS)
+            val version = meta.getValue("version")
+            val statuses = db.query("SELECT candidate_id, status FROM program_status") { row ->
+                ProgramStatus.entries.firstOrNull { it.name == row.getString(1) }?.let {
+                    CandidateId(row.getString(0)) to
+                        it
+                }
+            }.filterNotNull().toMap()
+            val documents = db.query(
+                "SELECT id, candidate_id, title, url, published_on, version, retrieved_on, license FROM program_documents",
+            ) {
+                ProgramDocument(
+                    id = it.getString(0),
+                    candidateId = CandidateId(it.getString(1)),
+                    title = it.getString(2),
+                    publishedOn = LocalDate.parse(it.getString(4)),
+                    version = it.getString(5),
+                    source = SourceRef(
+                        name = it.getString(2),
+                        url = it.getString(3),
+                        retrievedOn = LocalDate.parse(it.getString(6)),
+                        license = it.getString(7),
+                        packVersion = version,
+                    ),
+                )
+            }
+            val chunkThemes = db.tags("SELECT chunk_id, theme_id, method, confidence FROM chunk_themes")
+            val chunks = db.query(
+                "SELECT id, document_id, candidate_id, ordinal, heading_path, page, anchor, text FROM program_chunks",
+            ) {
+                ProgramChunk(
+                    id = it.getString(0),
+                    documentId = it.getString(1),
+                    candidateId = CandidateId(it.getString(2)),
+                    ordinal = it.getInt(3),
+                    headingPath = it.getString(4).split(HEADING_SEPARATOR).filter(String::isNotEmpty),
+                    page = if (it.isNull(5)) null else it.getInt(5),
+                    anchor = it.getStringOrNull(6),
+                    text = it.getString(7),
+                    themes = chunkThemes[it.getString(0)].orEmpty(),
+                )
+            }
+            val info = DataPackInfo(
+                id = DataPackInfo.PROGRAMS,
+                version = version,
+                generatedOn = LocalDate.parse(meta.getValue("generated_on")),
+                isFictional = false,
+            )
+            return ProgramsPackContent(info, statuses, documents, chunks)
+        } finally {
+            db.close()
+        }
+    }
+}
+
+private fun SQLiteDatabase.meta(packId: String): Map<String, String> {
+    val meta = query("SELECT key, value FROM meta") { it.getString(0) to it.getString(1) }.toMap()
+    val schema = meta["schema_version"]?.toIntOrNull()
+    if (schema != CorePackReader.SUPPORTED_SCHEMA_VERSION) {
+        throw UnsupportedPackException(
+            "Unsupported pack schema $schema (expected ${CorePackReader.SUPPORTED_SCHEMA_VERSION})",
+        )
+    }
+    if (meta["pack_id"] != packId) throw UnsupportedPackException("Not a $packId pack")
+    return meta
+}
+
+/** Theme tags per item id; tags with an unknown method or confidence are left out. */
+private fun SQLiteDatabase.tags(sql: String): Map<String, List<ThemeTag>> =
+    query(sql) { row -> tagOf(row.getString(1), row.getString(2), row.getString(3))?.let { row.getString(0) to it } }
+        .filterNotNull()
+        .groupBy({ it.first }, { it.second })
+
+private fun <T> SQLiteDatabase.query(sql: String, row: (Cursor) -> T): List<T> =
+    rawQuery(sql, null).use { cursor -> buildList { while (cursor.moveToNext()) add(row(cursor)) } }
+
+private fun Cursor.getStringOrNull(index: Int): String? = if (isNull(index)) null else getString(index)

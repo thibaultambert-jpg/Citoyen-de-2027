@@ -31,7 +31,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import fr.citoyende2027.core.designsystem.R as DesignR
 import fr.citoyende2027.core.designsystem.component.InitialsAvatar
 import fr.citoyende2027.core.designsystem.icon.CitoyenIcons
 import fr.citoyende2027.core.model.Candidate
@@ -41,6 +40,8 @@ import fr.citoyende2027.core.ui.CoverageBadge
 import fr.citoyende2027.core.ui.DataDateBanner
 import fr.citoyende2027.core.ui.SourceButton
 import fr.citoyende2027.feature.candidate.tab.MandatesTab
+import fr.citoyende2027.feature.candidate.tab.ProgramAndVotesTab
+import fr.citoyende2027.feature.candidate.tab.ProgramTab
 import fr.citoyende2027.feature.candidate.tab.SourcesTab
 import fr.citoyende2027.feature.candidate.tab.SpeechesTab
 import fr.citoyende2027.feature.candidate.tab.VotesTab
@@ -106,18 +107,12 @@ private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (V
     }
     when (CandidateSheetTab.entries[selected]) {
         CandidateSheetTab.OVERVIEW -> ScrollableTab { OverviewTab(state.candidate) }
-
         CandidateSheetTab.MANDATES -> MandatesTab(state.mandates)
-
-        CandidateSheetTab.VOTES -> VotesTab(state.votes, onVoteFilterChange)
-
+        CandidateSheetTab.PROGRAM -> ProgramTab(state.program, state.themes)
+        CandidateSheetTab.VOTES -> VotesTab(state.votes, state.themes, onVoteFilterChange)
         CandidateSheetTab.SPEECHES -> SpeechesTab(state.speeches)
-
+        CandidateSheetTab.PROGRAM_AND_VOTES -> ProgramAndVotesTab(state.program, state.allVotes, state.themes)
         CandidateSheetTab.SOURCES -> SourcesTab(state)
-
-        // Programmes and their comparison with votes arrive with J4.
-        CandidateSheetTab.PROGRAM, CandidateSheetTab.PROGRAM_AND_VOTES ->
-            ScrollableTab { Text(stringResource(DesignR.string.core_designsystem_coming_soon)) }
     }
 }
 

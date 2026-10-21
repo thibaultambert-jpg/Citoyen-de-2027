@@ -1,7 +1,7 @@
 # Remplir les entrées du pipeline
 
-Le pipeline (`/pipeline`, Python 3.12) ne publie que ce qu’un humain a renseigné et validé dans deux
-fichiers. Aucun nom ni identifiant n’y est jamais ajouté de mémoire ou par génération automatique
+Le pipeline (`/pipeline`, Python 3.12) ne publie que ce qu’un humain a renseigné et validé dans les
+fichiers d’entrée. Aucun nom ni identifiant n’y est jamais ajouté de mémoire ou par génération automatique
 (AGENTS.md §2.6, §7.2).
 
 ## `pipeline/inputs/candidates.yaml`
@@ -46,6 +46,55 @@ identities:
 
 Où trouver les identifiants : fiche du député sur data.assemblee-nationale.fr (uid `PA…`), jeu « Les
 Sénateurs » sur data.senat.fr (`Matricule`), API du Parlement européen (`/meps`, champ `identifier`).
+
+## `pipeline/inputs/programs/manifest.yaml`
+
+Les programmes ne sont pas des données ouvertes : chaque document est ajouté à la main depuis le site
+officiel du candidat, avec l’empreinte exacte du fichier et ses conditions de réutilisation validées.
+Un candidat absent de ce fichier apparaît avec « Programme non disponible dans les sources utilisées ».
+
+```yaml
+version: 1
+programs:
+  - candidate_id: prenom-nom
+    status: COMPLET                    # COMPLET ou PARTIEL (programme publié en partie)
+    documents:
+      - id: prenom-nom-programme       # minuscules, chiffres, tirets ; unique
+        title: Titre du document tel que publié
+        url: https://…                 # adresse officielle du fichier (PDF) ou de la page (HTML)
+        format: pdf                    # pdf ou html
+        sha256: 0123…                  # empreinte du fichier validé (sha256sum fichier.pdf)
+        published_on: 2027-01-10       # date indiquée par le document ou sa page
+        version: "1"
+        reuse_rights:
+          terms: Conditions de réutilisation, telles qu’affichées dans l’app
+          validated_on: 2027-01-11     # date de la validation humaine
+```
+
+Si le fichier publié change (empreinte différente), la construction échoue : relire la nouvelle version,
+puis mettre à jour `sha256`, `version` et `published_on`. Le texte est extrait tel quel (PDF : texte et
+signets ; HTML : titres et paragraphes), découpé en extraits de 150 à 300 unités (mots et ponctuation) par
+paragraphe ou mesure, jamais reformulé. Un PDF numérisé sans couche texte est refusé (pas d’OCR). Les
+extraits contenant des consignes adressées à une IA sont listés dans `report.json` pour relecture.
+
+## `pipeline/inputs/themes.yaml` et `theme_overrides.yaml`
+
+`themes.yaml` fixe la liste des thèmes (15 à 20, plus « Thème non déterminé ») et leurs règles de
+mots-clés (expressions régulières sur le texte en minuscules et sans accents). **Brouillon à relire** :
+libellés neutres, règles explicites ; le rapport `report.json` donne le nombre de votes et d’extraits par
+thème pour ajuster les règles. Aucun thème n’est attribué par une IA.
+
+`theme_overrides.yaml` enregistre une décision humaine pour un scrutin (`target: ballot`, identifiant
+officiel du scrutin) ou un extrait (`target: chunk`, identifiant affiché dans `report.json`) ; elle remplace
+les thèmes attribués par les règles et apparaît dans l’app comme « attribué après relecture humaine ».
+
+```yaml
+version: 1
+overrides:
+  - target: ballot
+    id: identifiant-officiel-du-scrutin   # « uid » du scrutin dans la source
+    themes: [sante]
+```
 
 ## Publier
 

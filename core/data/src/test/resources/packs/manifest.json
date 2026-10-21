@@ -8,11 +8,22 @@
       "licenses": [
         "Licence fictive"
       ],
-      "sha256": "285848b4fc24bc5a5d94092ccc7b3098ffd33b3ef34c04d200a6e114fbca9d02",
-      "size": 61440,
+      "sha256": "0d5e1a925f487f523ef545db4487205c10684a071197bdd7a8fae391d306a538",
+      "size": 77824,
       "sources": [],
       "version": "2026-01-15+fixture"
+    },
+    {
+      "file": "programs.sqlite",
+      "id": "programs",
+      "licenses": [
+        "Conditions fictives"
+      ],
+      "sha256": "c8866aace998ad1dbc9b2cc532b53438090a021d257f5e192913980e823fb97e",
+      "size": 45056,
+      "sources": [],
+      "version": "2026-01-15+programs-fixture"
     }
   ],
-  "schema_version": 2
+  "schema_version": 3
 }

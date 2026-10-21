@@ -6,11 +6,13 @@ data class VoteFilter(
     val year: Int? = null,
     val subject: BallotSubject? = null,
     val position: VotePosition? = null,
+    val theme: ThemeId? = null,
 ) {
     fun matches(vote: Vote): Boolean = (body == null || vote.body == body) &&
         (year == null || vote.ballotDate.year == year) &&
         (subject == null || vote.ballotSubject == subject) &&
-        (position == null || vote.positionCategory == position)
+        (position == null || vote.positionCategory == position) &&
+        (theme == null || vote.hasTheme(theme))
 
     val isActive: Boolean get() = this != VoteFilter()
 }
@@ -21,6 +23,8 @@ data class VoteFilterOptions(
     val years: List<Int>,
     val subjects: List<BallotSubject>,
     val positions: List<VotePosition>,
+    /** Theme ids present in the votes; labels and order come from the theme list. */
+    val themes: List<ThemeId> = emptyList(),
 ) {
     companion object {
         fun of(votes: List<Vote>) = VoteFilterOptions(
@@ -28,6 +32,7 @@ data class VoteFilterOptions(
             years = votes.map { it.ballotDate.year }.distinct().sortedDescending(),
             subjects = votes.mapNotNull { it.ballotSubject }.distinct().sorted(),
             positions = votes.map { it.positionCategory }.distinct().sorted(),
+            themes = votes.flatMap { vote -> vote.themes.map { it.themeId } }.distinct(),
         )
     }
 }

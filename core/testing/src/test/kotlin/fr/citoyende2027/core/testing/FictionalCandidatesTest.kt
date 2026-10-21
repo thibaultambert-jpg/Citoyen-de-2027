@@ -16,12 +16,21 @@ class FictionalCandidatesTest {
 
     @Test
     fun `fixture urls can never resolve`() {
-        val urls = listOf(FictionalCandidates.source.url) + FictionalCandidates.votes.map { it.ballotUrl }
+        val urls = listOf(FictionalCandidates.source.url) + FictionalCandidates.votes.map { it.ballotUrl } +
+            FictionalCandidates.programDocuments.map { it.source.url }
         urls.forEach { assertTrue(it.startsWith("https://example.invalid/"), it) }
     }
 
     @Test
     fun `fixture ids are unique`() {
         assertEquals(FictionalCandidates.all.size, FictionalCandidates.all.map { it.id }.toSet().size)
+    }
+
+    @Test
+    fun `programme fixtures are fictional`() {
+        FictionalCandidates.programChunks.forEach {
+            assertTrue(it.text.contains("fictif") || it.text.contains("fictive"), it.text)
+        }
+        FictionalCandidates.themes.forEach { assertTrue(it.label.contains("fictif") || it.id.isUnknown, it.label) }
     }
 }

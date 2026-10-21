@@ -1,13 +1,15 @@
-"""Writes the `core` pack as a SQLite file. Rows are inserted in a fixed order so that identical
-inputs give identical files (reproducible builds, AGENTS.md §4)."""
+"""Writes the `core` and `programs` packs as SQLite files. Rows are inserted in a fixed order so
+that identical inputs give identical files (reproducible builds, AGENTS.md §4)."""
 
 from __future__ import annotations
 
+import hashlib
+import json
 import sqlite3
 from pathlib import Path
 
 from citoyen_pipeline import PACK_SCHEMA_VERSION
-from citoyen_pipeline.model import CorePack
+from citoyen_pipeline.model import CorePack, ProgramsPack, ThemeTag
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
@@ -65,7 +67,53 @@ CREATE TABLE votes (
     ballot_url TEXT NOT NULL,
     source_id TEXT NOT NULL REFERENCES sources(id)
 );
+CREATE TABLE themes (id TEXT PRIMARY KEY NOT NULL, label TEXT NOT NULL);
+CREATE TABLE vote_themes (
+    vote_id TEXT NOT NULL REFERENCES votes(id),
+    theme_id TEXT NOT NULL REFERENCES themes(id),
+    method TEXT NOT NULL,
+    confidence TEXT NOT NULL,
+    PRIMARY KEY (vote_id, theme_id)
+);
 """
+
+PROGRAMS_SCHEMA = """
+CREATE TABLE meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+CREATE TABLE program_status (candidate_id TEXT PRIMARY KEY NOT NULL, status TEXT NOT NULL);
+CREATE TABLE program_documents (
+    id TEXT PRIMARY KEY NOT NULL,
+    candidate_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    format TEXT NOT NULL,
+    published_on TEXT NOT NULL,
+    version TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    retrieved_on TEXT NOT NULL,
+    license TEXT NOT NULL
+);
+CREATE TABLE program_chunks (
+    id TEXT PRIMARY KEY NOT NULL,
+    document_id TEXT NOT NULL REFERENCES program_documents(id),
+    candidate_id TEXT NOT NULL,
+    ordinal INTEGER NOT NULL,
+    heading_path TEXT NOT NULL,
+    page INTEGER,
+    anchor TEXT,
+    text TEXT NOT NULL,
+    token_count INTEGER NOT NULL
+);
+CREATE TABLE chunk_themes (
+    chunk_id TEXT NOT NULL REFERENCES program_chunks(id),
+    theme_id TEXT NOT NULL,
+    method TEXT NOT NULL,
+    confidence TEXT NOT NULL,
+    PRIMARY KEY (chunk_id, theme_id)
+);
+"""
+# Heading paths are stored as one text, headings separated by a line feed (headings never contain
+# one: whitespace is normalised at extraction).
+HEADING_SEPARATOR = "\n"
 
 
 def pack_version(pack: CorePack, inputs_digest: str) -> str:
@@ -166,7 +214,100 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
                 for s in sorted(pack.speeches, key=lambda s: s.id)
             ],
         )
+        db.executemany(
+            "INSERT INTO themes VALUES (?, ?)",
+            [(t.id, t.label) for t in sorted(pack.themes, key=lambda t: t.id)],
+        )
+        vote_ids = {v.id for v in pack.votes}
+        theme_ids = {t.id for t in pack.themes}
+        db.executemany(
+            "INSERT INTO vote_themes VALUES (?, ?, ?, ?)", _tag_rows(pack.vote_themes, vote_ids, theme_ids)
+        )
         db.commit()
         db.execute("VACUUM")
     finally:
         db.close()
+
+
+def _tag_rows(tags: dict[str, list[ThemeTag]], item_ids: set[str], theme_ids: set[str]) -> list[tuple]:
+    rows = []
+    for item_id, item_tags in sorted(tags.items()):
+        if item_id not in item_ids:
+            raise ValueError(f"Theme tags for an unknown item: {item_id}")
+        for tag in sorted(item_tags, key=lambda t: t.theme_id):
+            if tag.theme_id not in theme_ids:
+                raise ValueError(f"Unknown theme {tag.theme_id} on {item_id}")
+            rows.append((item_id, tag.theme_id, tag.method.value, tag.confidence.value))
+    return rows
+
+
+def write_programs_pack(
+    pack: ProgramsPack, theme_ids: set[str], path: Path, version: str | None = None
+) -> str:
+    """Writes the pack and returns its version: by default a digest of its rows, so that the version
+    (hence a download by the app) only changes when the programme content changes."""
+    candidates = set(pack.statuses)
+    documents = {d.id for d in pack.documents}
+    if stray := {d.candidate_id for d in pack.documents} - candidates:
+        raise ValueError(f"Programme documents of unknown candidates: {sorted(stray)}")
+    if stray := {c.document_id for c in pack.chunks} - documents:
+        raise ValueError(f"Chunks of unknown documents: {sorted(stray)}")
+
+    tables = {
+        "program_status": [(cid, status.value) for cid, status in sorted(pack.statuses.items())],
+        "program_documents": [
+            (
+                d.id,
+                d.candidate_id,
+                d.title,
+                d.url,
+                d.format,
+                d.published_on.isoformat(),
+                d.version,
+                d.sha256,
+                d.retrieved_on.isoformat(),
+                d.license,
+            )
+            for d in sorted(pack.documents, key=lambda d: d.id)
+        ],
+        "program_chunks": [
+            (
+                c.id,
+                c.document_id,
+                c.candidate_id,
+                c.ordinal,
+                HEADING_SEPARATOR.join(c.heading_path),
+                c.page,
+                c.anchor,
+                c.text,
+                c.token_count,
+            )
+            for c in sorted(pack.chunks, key=lambda c: c.id)
+        ],
+        "chunk_themes": _tag_rows(pack.chunk_themes, {c.id for c in pack.chunks}, theme_ids),
+    }
+    if version is None:
+        digest = hashlib.sha256(json.dumps([PACK_SCHEMA_VERSION, tables], ensure_ascii=False).encode())
+        version = f"programs-{digest.hexdigest()[:12]}"
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.unlink(missing_ok=True)
+    db = sqlite3.connect(path)
+    try:
+        db.executescript(PROGRAMS_SCHEMA)
+        meta = {
+            "schema_version": str(PACK_SCHEMA_VERSION),
+            "pack_id": "programs",
+            "version": version,
+            "generated_on": pack.generated_on.isoformat(),
+        }
+        db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
+        for table, rows in tables.items():
+            if rows:
+                placeholders = ", ".join("?" * len(rows[0]))
+                db.executemany(f"INSERT INTO {table} VALUES ({placeholders})", rows)
+        db.commit()
+        db.execute("VACUUM")
+    finally:
+        db.close()
+    return version

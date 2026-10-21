@@ -6,6 +6,8 @@ import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
+import fr.citoyende2027.core.model.ProgramStatus
+import fr.citoyende2027.core.model.TagMethod
 import fr.citoyende2027.core.model.VotePosition
 
 @get:StringRes
@@ -64,4 +66,19 @@ val BallotSubject.labelRes: Int
         BallotSubject.WHOLE_TEXT -> R.string.core_ui_subject_whole_text
         BallotSubject.MOTION -> R.string.core_ui_subject_motion
         BallotSubject.OTHER -> R.string.core_ui_subject_other
+    }
+
+@get:StringRes
+val ProgramStatus.labelRes: Int
+    get() = when (this) {
+        ProgramStatus.COMPLET -> R.string.core_ui_program_status_complete
+        ProgramStatus.PARTIEL -> R.string.core_ui_program_status_partial
+        ProgramStatus.NON_PUBLIE -> R.string.core_ui_program_status_none
+    }
+
+@get:StringRes
+val TagMethod.labelRes: Int
+    get() = when (this) {
+        TagMethod.RULE -> R.string.core_ui_tag_method_rule
+        TagMethod.MANUAL -> R.string.core_ui_tag_method_manual
     }

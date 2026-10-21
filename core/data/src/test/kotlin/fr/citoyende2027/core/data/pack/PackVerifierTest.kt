@@ -14,7 +14,7 @@ class PackVerifierTest {
     @Test
     fun `accepts the manifest signed by the pipeline`() {
         val manifest = verifier.verifyManifest(TestPack.manifest, TestPack.signature)
-        assertEquals(2, manifest.schemaVersion)
+        assertEquals(SUPPORTED_PACK_SCHEMA, manifest.schemaVersion)
         assertEquals(TestPack.VERSION, manifest.pack("core")?.version)
     }
 

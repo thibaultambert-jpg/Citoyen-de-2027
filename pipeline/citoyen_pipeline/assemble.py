@@ -1,4 +1,4 @@
-"""Assembles the `core` pack from the inputs and the cached sources."""
+"""Assembles the `core` and `programs` packs from the inputs and the cached sources."""
 
 from __future__ import annotations
 
@@ -8,12 +8,16 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from citoyen_pipeline import programs
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import check_identities
 from citoyen_pipeline.inputs import load_candidates, load_identities
-from citoyen_pipeline.model import CorePack, Identity, SourceExtract
+from citoyen_pipeline.model import CorePack, Identity, ProgramsPack, SourceExtract, ThemeTag
 from citoyen_pipeline.sources import assemblee, discours, parlement_europeen, rne, senat
+from citoyen_pipeline.themes import load_overrides, load_taxonomy
+
+PROGRAMS_MANIFEST = Path("programs") / "manifest.yaml"
 
 
 @dataclass(frozen=True)
@@ -52,11 +56,13 @@ def load_inputs(inputs: Path):
 
 
 def fetch_all(inputs: Path, cache: Cache) -> list[str]:
-    *_, identities = load_inputs(inputs)
+    _, candidates, _, identities = load_inputs(inputs)
     used = [a for a in ADAPTERS if a.needed(identities)]
     for adapter in used:
         adapter.fetch(cache, identities)
-    return [a.name for a in used]
+    entries = programs.load_manifest(inputs / PROGRAMS_MANIFEST, {c.id for c in candidates})
+    programs.fetch(cache, entries)
+    return [a.name for a in used] + (["programs"] if entries else [])
 
 
 def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
@@ -66,7 +72,20 @@ def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
 def assemble_with_review(
     inputs: Path, cache: Cache, generated_on: date
 ) -> tuple[CorePack, dict[str, list[str]]]:
+    core, _, review = assemble_packs(inputs, cache, generated_on)
+    return core, review
+
+
+def assemble_packs(
+    inputs: Path, cache: Cache, generated_on: date
+) -> tuple[CorePack, ProgramsPack, dict[str, list[str]]]:
     policy_date, candidates, status_sources, identities = load_inputs(inputs)
+    taxonomy = load_taxonomy(inputs / "themes.yaml")
+    overrides = load_overrides(inputs / "theme_overrides.yaml", taxonomy)
+    entries = programs.load_manifest(inputs / PROGRAMS_MANIFEST, {c.id for c in candidates})
+    programs_pack, programs_review = programs.assemble(
+        cache, entries, [c.id for c in candidates], taxonomy, overrides, generated_on
+    )
     combined = SourceExtract(sources=list(status_sources))
     for adapter in ADAPTERS:
         if adapter.needed(identities):
@@ -79,24 +98,44 @@ def assemble_with_review(
             combined.review.update(part.review)
     # Every identifier written by hand must agree with its official source (AGENTS.md §7.2).
     check_identities(identities, combined.people)
+    if unknown := set(overrides.ballots) - {v.ballot_id for v in combined.votes}:
+        raise ValueError(f"theme_overrides.yaml: unknown ballot ids {sorted(unknown)}")
+    vote_themes: dict[str, list[ThemeTag]] = {}
+    for vote in combined.votes:
+        manual = overrides.ballots.get(vote.ballot_id)
+        vote_themes[vote.id] = overrides.manual(manual) if manual else taxonomy.tag(vote.ballot_title)
     pack = CorePack(
         generated_on=generated_on,
         inclusion_policy_date=policy_date,
         sources=_unique(combined.sources),
         candidates=candidates,
         coverage=compute_coverage(
-            candidates, identities, combined.mandates, combined.votes, combined.speeches
+            candidates,
+            identities,
+            combined.mandates,
+            combined.votes,
+            combined.speeches,
+            programs_pack.statuses,
         ),
         mandates=combined.mandates,
         votes=combined.votes,
         speeches=combined.speeches,
+        themes=taxonomy.all_themes,
+        vote_themes=vote_themes,
     )
-    return pack, combined.review
+    return pack, programs_pack, {**combined.review, **programs_review}
 
 
 def inputs_digest(inputs: Path, cache: Cache) -> str:
     digest = hashlib.sha256()
-    for path in (inputs / "candidates.yaml", inputs / "identities.yaml", cache.root / "fetch_log.json"):
+    names = (
+        "candidates.yaml",
+        "identities.yaml",
+        "themes.yaml",
+        "theme_overrides.yaml",
+        str(PROGRAMS_MANIFEST),
+    )
+    for path in [*(inputs / name for name in names), cache.root / "fetch_log.json"]:
         if path.exists():
             digest.update(path.read_bytes())
     return digest.hexdigest()

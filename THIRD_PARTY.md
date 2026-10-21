@@ -44,11 +44,14 @@ chaque ajout est justifié ici. Versions : `gradle/libs.versions.toml`.
 | PyYAML | MIT | Lecture des entrées `candidates.yaml` / `identities.yaml`. |
 | jsonschema | MIT | Validation des entrées (JSON Schema). |
 | cryptography | Apache-2.0 OU BSD-3-Clause | Signature Ed25519 des manifestes. |
+| pypdf 6.19.0 | BSD-3-Clause | Extraction du texte et des signets des programmes au format PDF (pipeline uniquement). |
 | pytest, ruff | MIT | Tests et lint. |
 
 Données réutilisées (dans les packs, pas dans le code) : Assemblée nationale et Sénat (Licence Ouverte),
 Répertoire national des élus (Licence Ouverte v2.0), Parlement européen (CC BY 4.0). Chaque fait garde sa
 source, sa date de récupération et sa licence.
+Programmes des candidats : hors open data, intégrés seulement après validation humaine de leurs conditions de
+réutilisation (`pipeline/inputs/programs/manifest.yaml`), conditions affichées derrière le bouton « Source ».
 
 ## Exclusions explicites
 

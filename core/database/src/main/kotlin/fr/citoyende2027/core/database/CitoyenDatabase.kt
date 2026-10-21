@@ -7,10 +7,16 @@ import androidx.room.TypeConverters
 import fr.citoyende2027.core.database.dao.CorePackDao
 import fr.citoyende2027.core.database.model.CandidateCoverageEntity
 import fr.citoyende2027.core.database.model.CandidateEntity
+import fr.citoyende2027.core.database.model.ChunkThemeEntity
 import fr.citoyende2027.core.database.model.DataPackEntity
 import fr.citoyende2027.core.database.model.MandateEntity
+import fr.citoyende2027.core.database.model.ProgramChunkEntity
+import fr.citoyende2027.core.database.model.ProgramDocumentEntity
+import fr.citoyende2027.core.database.model.ProgramStatusEntity
 import fr.citoyende2027.core.database.model.SpeechEntity
+import fr.citoyende2027.core.database.model.ThemeEntity
 import fr.citoyende2027.core.database.model.VoteEntity
+import fr.citoyende2027.core.database.model.VoteThemeEntity
 import java.time.LocalDate
 
 @Database(
@@ -21,8 +27,14 @@ import java.time.LocalDate
         MandateEntity::class,
         VoteEntity::class,
         SpeechEntity::class,
+        ThemeEntity::class,
+        VoteThemeEntity::class,
+        ProgramStatusEntity::class,
+        ProgramDocumentEntity::class,
+        ProgramChunkEntity::class,
+        ChunkThemeEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class)

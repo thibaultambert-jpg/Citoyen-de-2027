@@ -10,8 +10,8 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 from citoyen_pipeline import testpack
-from citoyen_pipeline.assemble import assemble_with_review, fetch_all, inputs_digest
-from citoyen_pipeline.build import pack_version, write_core_pack
+from citoyen_pipeline.assemble import assemble_packs, fetch_all, inputs_digest
+from citoyen_pipeline.build import pack_version, write_core_pack, write_programs_pack
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.sign import build_manifest, pack_entry, private_key_from_env, public_key_b64, sign
 
@@ -31,7 +31,7 @@ def cmd_fetch(args) -> int:
 
 def cmd_pack(args) -> int:
     inputs, out, cache = Path(args.inputs), Path(args.out), Cache(Path(args.cache))
-    pack, review = assemble_with_review(inputs, cache, _generated_on())
+    pack, programs, review = assemble_packs(inputs, cache, _generated_on())
     if not pack.candidates and not args.allow_empty:
         print("inputs/candidates.yaml is empty: nothing to publish (use --allow-empty to build anyway).")
         return 2
@@ -45,8 +45,19 @@ def cmd_pack(args) -> int:
         for s in sorted(pack.sources, key=lambda s: s.id)
         if s.id in used
     ]
+    programs_file = out / "programs.sqlite"
+    programs_version = write_programs_pack(programs, {t.id for t in pack.themes}, programs_file)
+    documents = [
+        {"name": d.title, "url": d.url, "retrieved_on": d.retrieved_on.isoformat(), "license": d.license}
+        for d in sorted(programs.documents, key=lambda d: d.id)
+    ]
     manifest = build_manifest(
-        [pack_entry("core", version, pack_file, sources, [s["license"] for s in sources])],
+        [
+            pack_entry("core", version, pack_file, sources, [s["license"] for s in sources]),
+            pack_entry(
+                "programs", programs_version, programs_file, documents, [d["license"] for d in documents]
+            ),
+        ],
         pack.generated_on.isoformat(),
     )
     (out / "manifest.json").write_bytes(manifest)
@@ -57,11 +68,19 @@ def cmd_pack(args) -> int:
                 "mandates": sum(m.candidate_id == c.id for m in pack.mandates),
                 "votes": sum(v.candidate_id == c.id for v in pack.votes),
                 "speeches": sum(s.candidate_id == c.id for s in pack.speeches),
+                "program_status": programs.statuses[c.id].value,
+                "program_chunks": sum(ch.candidate_id == c.id for ch in programs.chunks),
                 "coverage": {
                     f.value: lvl.value for (cid, f), lvl in sorted(pack.coverage.items()) if cid == c.id
                 },
             }
             for c in pack.candidates
+        },
+        "programs_version": programs_version,
+        # Share of items per theme, to review the keyword rules (AGENTS.md §7.4).
+        "themes": {
+            "votes": _theme_counts(pack.vote_themes),
+            "program_chunks": _theme_counts(programs.chunk_themes),
         },
         # To check by hand before publishing (e.g. homonyms behind a vie-publique.fr name).
         "review": review,
@@ -75,6 +94,14 @@ def cmd_pack(args) -> int:
         print("Signed with public key", public_key_b64(key))
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
+
+
+def _theme_counts(tags) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item_tags in tags.values():
+        for tag in item_tags:
+            counts[tag.theme_id] = counts.get(tag.theme_id, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def cmd_test_pack(args) -> int:
@@ -91,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
     fetch.add_argument("--cache", default="cache")
     fetch.add_argument("--delay", type=float, default=0.7, help="seconds between requests (API quotas)")
     fetch.set_defaults(func=cmd_fetch)
-    pack = sub.add_parser("pack", help="build, report and sign the core pack")
+    pack = sub.add_parser("pack", help="build, report and sign the core and programs packs")
     pack.add_argument("--inputs", default="inputs")
     pack.add_argument("--cache", default="cache")
     pack.add_argument("--out", default="dist")

@@ -3,6 +3,8 @@ package fr.citoyende2027.core.data
 import app.cash.turbine.test
 import fr.citoyende2027.core.data.repository.CorePackStore
 import fr.citoyende2027.core.data.repository.OfflineCandidatesRepository
+import fr.citoyende2027.core.model.CandidateProgram
+import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.testing.FictionalCandidates
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,5 +44,25 @@ class OfflineCandidatesRepositoryTest {
         repository.observeSpeeches(FictionalCandidates.candidateA.id).test {
             assertEquals(FictionalCandidates.speeches, awaitItem())
         }
+        repository.observeThemes().test { assertEquals(FictionalCandidates.themes, awaitItem()) }
+    }
+
+    @Test
+    fun `programmes are installed with the core pack and exposed per candidate`() = runTest {
+        store.install(FictionalCandidates.corePack, FictionalCandidates.programsPack)
+
+        FictionalCandidates.all.forEach { candidate ->
+            repository.observeProgram(candidate.id).test {
+                assertEquals(FictionalCandidates.programsPack.program(candidate.id), awaitItem())
+            }
+        }
+        assertEquals("0.0.0-fixture", dao.getPack(DataPackInfo.PROGRAMS)?.version)
+
+        // A core pack installed without programmes removes the previous ones.
+        store.install(FictionalCandidates.corePack)
+        repository.observeProgram(FictionalCandidates.candidateA.id).test {
+            assertEquals(CandidateProgram.notPublished(FictionalCandidates.candidateA.id), awaitItem())
+        }
+        assertNull(dao.getPack(DataPackInfo.PROGRAMS))
     }
 }

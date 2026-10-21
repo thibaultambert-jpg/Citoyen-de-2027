@@ -7,9 +7,11 @@ import fr.citoyende2027.core.data.repository.CandidatesRepository
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
+import fr.citoyende2027.core.model.CandidateProgram
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.Vote
 import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.testing.FictionalCandidates
@@ -47,6 +49,11 @@ class CandidateViewModelTest {
 
         override fun observeSpeeches(id: CandidateId): Flow<List<Speech>> =
             flowOf(FictionalCandidates.speeches.filter { it.candidateId == id })
+
+        override fun observeThemes(): Flow<List<Theme>> = flowOf(FictionalCandidates.themes.reversed())
+
+        override fun observeProgram(id: CandidateId): Flow<CandidateProgram> =
+            flowOf(FictionalCandidates.programsPack.program(id))
     }
 
     private fun viewModel(id: String) =
@@ -90,6 +97,22 @@ class CandidateViewModelTest {
             val filtered = (awaitItem() as CandidateUiState.Ready).votes
             assertEquals(emptyList<Vote>(), filtered.votes)
             assertEquals(1, filtered.totalCount)
+        }
+    }
+
+    @Test
+    fun `programme, alphabetical themes and theme filter are exposed`() = runTest {
+        val viewModel = viewModel(FictionalCandidates.candidateA.id.value)
+        viewModel.uiState.test {
+            val state = awaitSettled() as CandidateUiState.Ready
+            assertEquals(FictionalCandidates.programsPack.program(FictionalCandidates.candidateA.id), state.program)
+            assertEquals(FictionalCandidates.themes, state.themes)
+            assertEquals(listOf(FictionalCandidates.theme1.id), state.votes.options.themes)
+
+            viewModel.onVoteFilterChange(VoteFilter(theme = FictionalCandidates.theme2.id))
+            val filtered = awaitItem() as CandidateUiState.Ready
+            assertEquals(emptyList<Vote>(), filtered.votes.votes)
+            assertEquals(FictionalCandidates.votes, filtered.allVotes)
         }
     }
 

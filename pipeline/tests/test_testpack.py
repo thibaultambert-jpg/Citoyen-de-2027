@@ -23,17 +23,18 @@ def test_committed_test_pack_matches_the_pipeline(tmp_path):
     bytes legitimately differ between machines.
     """
     testpack.build(tmp_path)
-    assert _dump(COMMITTED / "core.sqlite") == _dump(tmp_path / "core.sqlite")
-
     manifest = (COMMITTED / "manifest.json").read_bytes()
-    entry = json.loads(manifest)["packs"][0]
-    assert entry["sha256"] == sha256_file(COMMITTED / "core.sqlite")
-    assert entry["size"] == (COMMITTED / "core.sqlite").stat().st_size
+    entries = json.loads(manifest)["packs"]
+    regenerated = json.loads((tmp_path / "manifest.json").read_bytes())["packs"]
+    assert [e["file"] for e in entries] == ["core.sqlite", "programs.sqlite"]
+    for entry, fresh in zip(entries, regenerated, strict=True):
+        file = entry["file"]
+        assert _dump(COMMITTED / file) == _dump(tmp_path / file)
+        assert entry["sha256"] == sha256_file(COMMITTED / file)
+        assert entry["size"] == (COMMITTED / file).stat().st_size
+        for key in ("sha256", "size"):
+            entry.pop(key)
+            fresh.pop(key)
+        assert entry == fresh
     verify(manifest, (COMMITTED / "manifest.json.sig").read_bytes(), public_key_b64(testpack.test_key()))
     assert (COMMITTED / "test_public_key.txt").read_text().strip() == public_key_b64(testpack.test_key())
-
-    regenerated = json.loads((tmp_path / "manifest.json").read_bytes())
-    for key in ("sha256", "size"):
-        regenerated["packs"][0].pop(key)
-        entry.pop(key)
-    assert regenerated["packs"][0] == entry

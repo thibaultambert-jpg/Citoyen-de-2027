@@ -7,12 +7,14 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import fr.citoyende2027.core.data.BuildConfig
-import fr.citoyende2027.core.data.pack.CorePackInstaller
+import fr.citoyende2027.core.data.pack.PackFileReader
+import fr.citoyende2027.core.data.pack.PackInstaller
 import fr.citoyende2027.core.data.pack.PackRuntime
 import fr.citoyende2027.core.data.pack.PackSynchronizer
 import fr.citoyende2027.core.data.pack.PackVerifier
 import fr.citoyende2027.core.data.repository.CorePackStore
 import fr.citoyende2027.core.database.CorePackReader
+import fr.citoyende2027.core.database.ProgramsPackReader
 import fr.citoyende2027.core.network.PackHttpClient
 import java.io.File
 import javax.inject.Singleton
@@ -24,11 +26,17 @@ internal object PackModule {
     @Singleton
     fun providesPackRuntime(
         @ApplicationContext context: Context,
-        reader: CorePackReader,
+        coreReader: CorePackReader,
+        programsReader: ProgramsPackReader,
         store: CorePackStore,
     ): PackRuntime = PackRuntime(
         BuildConfig.PACKS_PUBLIC_KEY.takeIf { it.isNotBlank() }?.let { key ->
-            CorePackInstaller(PackVerifier(key), reader::read, store, File(context.filesDir, "packs"))
+            val reader = object : PackFileReader {
+                override fun readCore(file: File) = coreReader.read(file)
+
+                override fun readPrograms(file: File) = programsReader.read(file)
+            }
+            PackInstaller(PackVerifier(key), reader, store, File(context.filesDir, "packs"))
         },
     )
 

@@ -43,9 +43,9 @@ jobs:
         run: |
           version=$(python -c "import json;print(json.load(open('dist/report.json'))['version'])")
           tag="packs-$(echo "$version" | tr '+:' '--')"
-          gh release create "$tag" dist/core.sqlite dist/manifest.json dist/manifest.json.sig dist/report.json \
+          gh release create "$tag" dist/core.sqlite dist/programs.sqlite dist/manifest.json dist/manifest.json.sig dist/report.json \
             --title "Données $version" --notes "Pack core $version (voir report.json)." --latest=false
           # Stable location read by the app: releases/download/packs-current/<file>.
           gh release view packs-current >/dev/null 2>&1 || \
             gh release create packs-current --title "Données actuelles" --notes "Dernier pack publié." --latest=false
-          gh release upload packs-current dist/core.sqlite dist/manifest.json dist/manifest.json.sig --clobber
+          gh release upload packs-current dist/core.sqlite dist/programs.sqlite dist/manifest.json dist/manifest.json.sig --clobber

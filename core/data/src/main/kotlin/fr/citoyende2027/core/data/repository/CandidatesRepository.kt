@@ -2,14 +2,18 @@ package fr.citoyende2027.core.data.repository
 
 import fr.citoyende2027.core.database.dao.CorePackDao
 import fr.citoyende2027.core.database.model.asModel
+import fr.citoyende2027.core.database.model.programStatusOf
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
+import fr.citoyende2027.core.model.CandidateProgram
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.Vote
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 interface CandidatesRepository {
@@ -29,6 +33,12 @@ interface CandidatesRepository {
 
     /** Speeches (metadata and links), most recent first. */
     fun observeSpeeches(id: CandidateId): Flow<List<Speech>>
+
+    /** Theme taxonomy of the installed `core` pack, in storage order (see alphabetical()). */
+    fun observeThemes(): Flow<List<Theme>>
+
+    /** Programme of a candidate: status, documents and excerpts in document order. */
+    fun observeProgram(id: CandidateId): Flow<CandidateProgram>
 }
 
 internal class OfflineCandidatesRepository @Inject constructor(private val dao: CorePackDao) : CandidatesRepository {
@@ -45,6 +55,21 @@ internal class OfflineCandidatesRepository @Inject constructor(private val dao: 
 
     override fun observeVotes(id: CandidateId): Flow<List<Vote>> =
         dao.observeVotes(id.value).map { list -> list.map { it.asModel() } }
+
+    override fun observeThemes(): Flow<List<Theme>> = dao.observeThemes().map { list -> list.map { it.asModel() } }
+
+    override fun observeProgram(id: CandidateId): Flow<CandidateProgram> = combine(
+        dao.observeProgramStatus(id.value),
+        dao.observeProgramDocuments(id.value),
+        dao.observeProgramChunks(id.value),
+    ) { status, documents, chunks ->
+        CandidateProgram(
+            candidateId = id,
+            status = programStatusOf(status),
+            documents = documents.map { it.asModel() },
+            chunks = chunks.map { it.asModel() },
+        )
+    }
 
     override fun observeSpeeches(id: CandidateId): Flow<List<Speech>> =
         dao.observeSpeeches(id.value).map { list -> list.mapNotNull { it.asModel() } }

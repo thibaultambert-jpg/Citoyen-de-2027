@@ -46,7 +46,7 @@ class PackSynchronizerTest {
         baseUrl = base,
         http = PackHttpClient(releases.factory),
         installer = if (withKey) {
-            CorePackInstaller(PackVerifier(TestPack.publicKey), { TestPack.content() }, store, dir)
+            PackInstaller(PackVerifier(TestPack.publicKey), TestPack.reader(), store, dir)
         } else {
             null
         },
@@ -56,6 +56,7 @@ class PackSynchronizerTest {
         "manifest.json" to TestPack.manifest,
         "manifest.json.sig" to TestPack.signature,
         "core.sqlite" to TestPack.pack,
+        "programs.sqlite" to TestPack.programs,
     )
 
     @Test
@@ -65,6 +66,7 @@ class PackSynchronizerTest {
         assertEquals(SyncResult.Installed(TestPack.VERSION), sync.sync())
         assertEquals(SyncResult.UpToDate, sync.sync())
         assertEquals(1, releases.requested.count { it.endsWith("core.sqlite") })
+        assertEquals(1, releases.requested.count { it.endsWith("programs.sqlite") })
     }
 
     @Test

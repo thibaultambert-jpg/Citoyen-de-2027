@@ -10,9 +10,17 @@ import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.ProgramChunk
+import fr.citoyende2027.core.model.ProgramDocument
+import fr.citoyende2027.core.model.ProgramStatus
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
+import fr.citoyende2027.core.model.TagConfidence
+import fr.citoyende2027.core.model.TagMethod
+import fr.citoyende2027.core.model.Theme
+import fr.citoyende2027.core.model.ThemeId
+import fr.citoyende2027.core.model.ThemeTag
 import fr.citoyende2027.core.model.Vote
 
 fun CandidateWithCoverage.asModel(): Candidate {
@@ -152,3 +160,78 @@ fun SpeechEntity.asModel(): Speech? {
         source = source.asModel(),
     )
 }
+
+fun VoteWithThemes.asModel() = vote.asModel().copy(
+    themes = themes.mapNotNull {
+        tagOf(it.themeId, it.method, it.confidence)
+    },
+)
+
+fun Vote.themeEntities() = themes.map {
+    VoteThemeEntity(voteId = id, themeId = it.themeId.value, method = it.method.name, confidence = it.confidence.name)
+}
+
+fun Theme.asEntity() = ThemeEntity(id = id.value, label = label)
+
+fun ThemeEntity.asModel() = Theme(ThemeId(id), label)
+
+/** Null for a method or confidence this version of the app does not know: the tag is not shown. */
+internal fun tagOf(themeId: String, method: String, confidence: String): ThemeTag? {
+    val knownMethod = TagMethod.entries.firstOrNull { it.name == method } ?: return null
+    val knownConfidence = TagConfidence.entries.firstOrNull { it.name == confidence } ?: return null
+    return ThemeTag(ThemeId(themeId), knownMethod, knownConfidence)
+}
+
+const val HEADING_SEPARATOR = "\n"
+
+fun ProgramDocument.asEntity() = ProgramDocumentEntity(
+    id = id,
+    candidateId = candidateId.value,
+    title = title,
+    publishedOn = publishedOn,
+    version = version,
+    source = source.asEmbedded(),
+)
+
+fun ProgramDocumentEntity.asModel() = ProgramDocument(
+    id = id,
+    candidateId = CandidateId(candidateId),
+    title = title,
+    publishedOn = publishedOn,
+    version = version,
+    source = source.asModel(),
+)
+
+fun ProgramChunk.asEntity() = ProgramChunkEntity(
+    id = id,
+    documentId = documentId,
+    candidateId = candidateId.value,
+    ordinal = ordinal,
+    headingPath = headingPath.joinToString(HEADING_SEPARATOR),
+    page = page,
+    anchor = anchor,
+    text = text,
+)
+
+fun ProgramChunk.themeEntities() = themes.map {
+    ChunkThemeEntity(chunkId = id, themeId = it.themeId.value, method = it.method.name, confidence = it.confidence.name)
+}
+
+fun ChunkWithThemes.asModel() = ProgramChunk(
+    id = chunk.id,
+    documentId = chunk.documentId,
+    candidateId = CandidateId(chunk.candidateId),
+    ordinal = chunk.ordinal,
+    headingPath = chunk.headingPath.split(HEADING_SEPARATOR).filter { it.isNotEmpty() },
+    page = chunk.page,
+    anchor = chunk.anchor,
+    text = chunk.text,
+    themes = themes.mapNotNull { tagOf(it.themeId, it.method, it.confidence) },
+)
+
+/** Unknown status values are shown as "not published": absence of data is never turned into a value. */
+fun programStatusOf(value: String?): ProgramStatus =
+    ProgramStatus.entries.firstOrNull { it.name == value } ?: ProgramStatus.NON_PUBLIE
+
+fun programStatusEntity(candidateId: CandidateId, status: ProgramStatus) =
+    ProgramStatusEntity(candidateId = candidateId.value, status = status.name)

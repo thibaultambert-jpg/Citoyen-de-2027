@@ -4,9 +4,12 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import fr.citoyende2027.core.database.dao.CorePackDao
+import fr.citoyende2027.core.database.dao.ProgramsRows
 import fr.citoyende2027.core.database.model.asEntity
 import fr.citoyende2027.core.database.model.asModel
 import fr.citoyende2027.core.database.model.coverageEntities
+import fr.citoyende2027.core.database.model.programStatusEntity
+import fr.citoyende2027.core.database.model.themeEntities
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.testing.FictionalCandidates
@@ -37,17 +40,32 @@ class CorePackDaoTest {
     @After
     fun tearDown() = database.close()
 
-    private suspend fun replace(info: DataPackInfo, candidates: List<Candidate>) = dao.replaceCorePack(
-        pack = info.asEntity(),
-        candidates = candidates.map { it.asEntity() },
-        coverage = candidates.flatMap { it.coverageEntities() },
-        mandates = FictionalCandidates.mandates.filter { m -> candidates.any { it.id == m.candidateId } }
-            .map { it.asEntity() },
-        votes = FictionalCandidates.votes.filter { v -> candidates.any { it.id == v.candidateId } }
-            .map { it.asEntity() },
-        speeches = FictionalCandidates.speeches.filter { s -> candidates.any { it.id == s.candidateId } }
-            .map { it.asEntity() },
-    )
+    private val programs = FictionalCandidates.programsPack.let { content ->
+        ProgramsRows(
+            pack = content.info.asEntity(),
+            statuses = content.statuses.map { (id, status) -> programStatusEntity(id, status) },
+            documents = content.documents.map { it.asEntity() },
+            chunks = content.chunks.map { it.asEntity() },
+            chunkThemes = content.chunks.flatMap { it.themeEntities() },
+        )
+    }
+
+    private suspend fun replace(info: DataPackInfo, candidates: List<Candidate>, withPrograms: Boolean = true) =
+        dao.replaceCorePack(
+            pack = info.asEntity(),
+            candidates = candidates.map { it.asEntity() },
+            coverage = candidates.flatMap { it.coverageEntities() },
+            mandates = FictionalCandidates.mandates.filter { m -> candidates.any { it.id == m.candidateId } }
+                .map { it.asEntity() },
+            votes = FictionalCandidates.votes.filter { v -> candidates.any { it.id == v.candidateId } }
+                .map { it.asEntity() },
+            speeches = FictionalCandidates.speeches.filter { s -> candidates.any { it.id == s.candidateId } }
+                .map { it.asEntity() },
+            themes = FictionalCandidates.themes.map { it.asEntity() },
+            voteThemes = FictionalCandidates.votes.filter { v -> candidates.any { it.id == v.candidateId } }
+                .flatMap { it.themeEntities() },
+            programs = programs.takeIf { withPrograms },
+        )
 
     @Test
     fun candidates_roundTripWithCoverageAndSource() = runTest {
@@ -60,13 +78,30 @@ class CorePackDaoTest {
         assertEquals(FictionalCandidates.mandates, dao.observeMandates(a).first().map { it.asModel() })
         assertEquals(FictionalCandidates.votes, dao.observeVotes(a).first().map { it.asModel() })
         assertEquals(FictionalCandidates.speeches, dao.observeSpeeches(a).first().map { it.asModel() })
+        assertEquals(FictionalCandidates.themes.toSet(), dao.observeThemes().first().map { it.asModel() }.toSet())
+    }
+
+    @Test
+    fun programs_roundTripAndAreReplacedWithTheCorePack() = runTest {
+        replace(FictionalCandidates.packInfo, FictionalCandidates.all)
+        val b = FictionalCandidates.candidateB.id
+        val expected = FictionalCandidates.programsPack.program(b)
+        assertEquals(expected.status.name, dao.observeProgramStatus(b.value).first())
+        assertEquals(expected.documents, dao.observeProgramDocuments(b.value).first().map { it.asModel() })
+        assertEquals(expected.chunks, dao.observeProgramChunks(b.value).first().map { it.asModel() })
+        assertEquals(FictionalCandidates.programsInfo, dao.observePack(DataPackInfo.PROGRAMS).first()?.asModel())
+
+        replace(FictionalCandidates.packInfo, FictionalCandidates.all, withPrograms = false)
+        assertNull(dao.observeProgramStatus(b.value).first())
+        assertEquals(emptyList<Any>(), dao.observeProgramChunks(b.value).first())
+        assertNull(dao.observePack(DataPackInfo.PROGRAMS).first())
     }
 
     @Test
     fun replace_removesCandidatesAndCoverageAbsentFromNewPack() = runTest {
         replace(FictionalCandidates.packInfo, FictionalCandidates.all)
         val newInfo = FictionalCandidates.packInfo.copy(version = "0.0.1-fixture")
-        replace(newInfo, listOf(FictionalCandidates.candidateB))
+        replace(newInfo, listOf(FictionalCandidates.candidateB), withPrograms = false)
 
         assertEquals(listOf(FictionalCandidates.candidateB), dao.observeCandidates().first().map { it.asModel() })
         assertNull(dao.observeCandidate(FictionalCandidates.candidateA.id.value).first())
