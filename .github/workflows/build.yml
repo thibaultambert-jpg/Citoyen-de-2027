@@ -49,6 +49,9 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug
 
+      - name: Compile release (no fixtures in release)
+        run: ./gradlew :app:compileReleaseKotlin
+
       - name: Report APK size
         run: |
           ls -l app/build/outputs/apk/debug/
@@ -62,4 +65,5 @@ jobs:
           path: |
             **/build/reports/
             **/build/test-results/
+            core/database/schemas/
           retention-days: 7

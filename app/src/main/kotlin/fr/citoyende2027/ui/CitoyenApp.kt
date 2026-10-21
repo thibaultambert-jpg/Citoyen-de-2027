@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import fr.citoyende2027.feature.about.navigation.aboutScreen
 import fr.citoyende2027.feature.ask.navigation.askScreen
 import fr.citoyende2027.feature.candidate.navigation.candidateScreen
+import fr.citoyende2027.feature.candidate.navigation.navigateToCandidate
 import fr.citoyende2027.feature.candidates.navigation.CandidatesRoute
 import fr.citoyende2027.feature.candidates.navigation.candidatesScreen
 import fr.citoyende2027.feature.compare.navigation.compareScreen
@@ -51,8 +52,8 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
         },
     ) {
         NavHost(navController = navController, startDestination = CandidatesRoute) {
-            candidatesScreen()
-            candidateScreen()
+            candidatesScreen(onCandidateClick = navController::navigateToCandidate)
+            candidateScreen(onBack = { navController.popBackStack() })
             compareScreen()
             askScreen()
             institutionsScreen()

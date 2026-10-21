@@ -22,6 +22,7 @@ l’application ou un prompt contient un terme de `config/neutrality/evaluative-
 | `:core:model` | Types du domaine (Kotlin pur). |
 | `:core:testing` | Fixtures **fictives** (Candidat A, B, C). |
 | `:core:designsystem` | Thème neutre, avatar à initiales, composants partagés. |
+| `:core:ui` | Composants liés au modèle : badge de couverture, statut, date des données, bouton Source. |
 | `:core:database`, `:core:data`, `:core:network` | Room/FTS5, dépôts et synchronisation, téléchargement des packs. |
 | `:feature:*` | Écrans : candidats, fiche, comparer, question, institutions, infos. |
 | `:rag`, `:llm` | Recherche dans les sources, LLM local. |

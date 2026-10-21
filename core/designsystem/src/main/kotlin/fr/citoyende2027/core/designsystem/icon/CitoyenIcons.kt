@@ -16,4 +16,8 @@ object CitoyenIcons {
     @DrawableRes val About = R.drawable.core_designsystem_ic_info
 
     @DrawableRes val Back = R.drawable.core_designsystem_ic_arrow_back
+
+    @DrawableRes val Search = R.drawable.core_designsystem_ic_search
+
+    @DrawableRes val Clear = R.drawable.core_designsystem_ic_close
 }

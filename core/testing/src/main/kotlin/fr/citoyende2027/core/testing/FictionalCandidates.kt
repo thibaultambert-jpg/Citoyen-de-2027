@@ -3,9 +3,11 @@ package fr.citoyende2027.core.testing
 import fr.citoyende2027.core.model.CandidacyStatus
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
+import fr.citoyende2027.core.model.CorePackContent
 import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.DataCoverage
+import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.SourceRef
 import java.time.LocalDate
 
@@ -14,12 +16,21 @@ import java.time.LocalDate
  * URLs use the reserved ".invalid" TLD (RFC 2606) so they can never resolve.
  */
 object FictionalCandidates {
+    val source = SourceRef(
+        name = "Source fictive",
+        url = "https://example.invalid/source",
+        retrievedOn = LocalDate.of(2026, 1, 1),
+        license = "Licence fictive",
+        packVersion = "0.0.0-fixture",
+    )
+
     val candidateA = Candidate(
         id = CandidateId("fictif-a"),
         displayName = "Candidat A",
         sortName = "A",
         status = CandidacyStatus.DECLARE,
         statusDate = LocalDate.of(2026, 1, 10),
+        statusSource = source,
         coverage = coverage(
             CoverageFacet.PROGRAM to CoverageLevel.AVAILABLE,
             CoverageFacet.MANDATES to CoverageLevel.AVAILABLE,
@@ -34,6 +45,7 @@ object FictionalCandidates {
         sortName = "B",
         status = CandidacyStatus.DECLARE,
         statusDate = LocalDate.of(2026, 2, 20),
+        statusSource = source,
         coverage = coverage(
             CoverageFacet.PROGRAM to CoverageLevel.PARTIAL,
             CoverageFacet.MANDATES to CoverageLevel.NOT_APPLICABLE,
@@ -48,18 +60,20 @@ object FictionalCandidates {
         sortName = "C",
         status = CandidacyStatus.RETIRE,
         statusDate = LocalDate.of(2026, 3, 30),
+        statusSource = source,
         coverage = DataCoverage.Unavailable,
     )
 
     val all: List<Candidate> = listOf(candidateA, candidateB, candidateC)
 
-    val source = SourceRef(
-        name = "Source fictive",
-        url = "https://example.invalid/source",
-        retrievedOn = LocalDate.of(2026, 1, 1),
-        license = "Licence fictive",
-        packVersion = "0.0.0-fixture",
+    val packInfo = DataPackInfo(
+        id = DataPackInfo.CORE,
+        version = "0.0.0-fixture",
+        generatedOn = LocalDate.of(2026, 1, 1),
+        isFictional = true,
     )
+
+    val corePack = CorePackContent(packInfo, all)
 
     private fun coverage(vararg levels: Pair<CoverageFacet, CoverageLevel>) = DataCoverage(levels.toMap())
 }

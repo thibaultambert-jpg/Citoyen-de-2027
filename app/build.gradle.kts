@@ -25,6 +25,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.data)
     implementation(projects.core.designsystem)
     implementation(projects.core.model)
     implementation(projects.feature.about)
@@ -41,5 +42,9 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+
+    // Fictional demo data, debug builds only (AGENTS.md §2.6): never shipped in a release APK.
+    debugImplementation(projects.core.testing)
 }

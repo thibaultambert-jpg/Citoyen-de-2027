@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="feature_candidate_title">Fiche candidat</string>
+    <string name="feature_candidate_back">Retour</string>
+    <string name="feature_candidate_not_found">Ce candidat ne figure pas dans les données installées.</string>
+
+    <string name="feature_candidate_tab_overview">Aperçu</string>
+    <string name="feature_candidate_tab_program">Programme</string>
+    <string name="feature_candidate_tab_mandates">Mandats</string>
+    <string name="feature_candidate_tab_votes">Votes</string>
+    <string name="feature_candidate_tab_speeches">Prises de parole</string>
+    <string name="feature_candidate_tab_program_and_votes">Mise en regard</string>
+    <string name="feature_candidate_tab_sources">Sources et méthode</string>
+
+    <string name="feature_candidate_section_status">Statut</string>
+    <string name="feature_candidate_section_coverage">Couverture des données</string>
+    <string name="feature_candidate_coverage_explanation">Indique quelles données les sources utilisées fournissent pour chaque rubrique. L’absence d’une donnée n’est pas l’absence d’une position.</string>
 </resources>

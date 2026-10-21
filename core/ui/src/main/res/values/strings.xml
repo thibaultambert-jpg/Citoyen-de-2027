@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="core_ui_facet_program">Programme</string>
+    <string name="core_ui_facet_mandates">Mandats</string>
+    <string name="core_ui_facet_votes">Votes</string>
+    <string name="core_ui_facet_speeches">Prises de parole</string>
+
+    <string name="core_ui_level_available">disponible</string>
+    <string name="core_ui_level_partial">partiel</string>
+    <string name="core_ui_level_not_applicable">non applicable</string>
+    <string name="core_ui_level_unavailable">indisponible</string>
+    <!-- %1$s: facet, %2$s: coverage level -->
+    <string name="core_ui_coverage_item">%1$s : %2$s</string>
+
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="core_ui_status_declared">Candidature déclarée le %1$s</string>
+    <string name="core_ui_status_withdrawn">Candidature retirée le %1$s</string>
+    <string name="core_ui_status_official">Candidature officielle (liste du Conseil constitutionnel) depuis le %1$s</string>
+
+    <string name="core_ui_data_date">Données du %1$s</string>
+    <string name="core_ui_data_date_fictional">Données fictives de démonstration du %1$s</string>
+    <string name="core_ui_data_none">Aucune donnée installée pour le moment.</string>
+
+    <string name="core_ui_source_retrieved_on">Récupérée le %1$s</string>
+    <string name="core_ui_source_license">Licence : %1$s</string>
+    <string name="core_ui_source_pack_version">Version des données : %1$s</string>
+    <string name="core_ui_close">Fermer</string>
+</resources>

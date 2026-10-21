@@ -22,6 +22,7 @@ dependencies {
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.room.gradlePlugin)
     compileOnly(libs.spotless.gradlePlugin)
 }
 
@@ -57,6 +58,10 @@ gradlePlugin {
         register("androidLint") {
             id = libs.plugins.citoyen.android.lint.get().pluginId
             implementationClass = "AndroidLintConventionPlugin"
+        }
+        register("androidRoom") {
+            id = libs.plugins.citoyen.android.room.get().pluginId
+            implementationClass = "AndroidRoomConventionPlugin"
         }
         register("hilt") {
             id = libs.plugins.citoyen.hilt.get().pluginId

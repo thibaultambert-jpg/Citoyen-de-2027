@@ -16,6 +16,8 @@ abstract class AndroidFeatureConventionPlugin : Plugin<Project> {
             dependencies {
                 "implementation"(project(":core:model"))
                 "implementation"(project(":core:designsystem"))
+                "implementation"(project(":core:ui"))
+                "implementation"(project(":core:data"))
 
                 "implementation"(libs.findLibrary("androidx.compose.material3").get())
                 "implementation"(libs.findLibrary("androidx.hilt.navigation.compose").get())
@@ -24,6 +26,7 @@ abstract class AndroidFeatureConventionPlugin : Plugin<Project> {
                 "implementation"(libs.findLibrary("androidx.navigation.compose").get())
                 "implementation"(libs.findLibrary("kotlinx.serialization.json").get())
 
+                "testImplementation"(project(":core:testing"))
                 "testImplementation"(libs.findLibrary("kotlinx.coroutines.test").get())
                 "testImplementation"(libs.findLibrary("turbine").get())
             }

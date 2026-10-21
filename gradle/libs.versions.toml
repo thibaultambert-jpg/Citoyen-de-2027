@@ -9,15 +9,18 @@ androidxCore = "1.15.0"
 androidxDataStore = "1.2.0"
 androidxLifecycle = "2.10.0"
 androidxNavigation = "2.8.5"
+androidxTestCore = "1.7.0"
 androidxWork = "2.10.0"
 hilt = "2.59"
 hiltExt = "1.2.0"
+junit4 = "4.13.2"
 junit5 = "5.14.4"
 kotlin = "2.3.0"
 kotlinxCoroutines = "1.10.1"
 kotlinxSerializationJson = "1.8.0"
 ksp = "2.3.4"
 ktlint = "1.8.0"
+robolectric = "4.17"
 room = "2.8.3"
 spotless = "8.3.0"
 turbine = "1.2.0"
@@ -30,6 +33,8 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-material3-navigationSuite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
@@ -38,13 +43,17 @@ androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navig
 androidx-lifecycle-runtimeCompose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit5" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine" }
 kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
@@ -52,6 +61,7 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Dependencies of the included build-logic
@@ -59,6 +69,7 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle-api",
 compose-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
 spotless-gradlePlugin = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 
 [plugins]
@@ -70,6 +81,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "room" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 
 # Plugins defined by this project (build-logic)
@@ -79,5 +91,6 @@ citoyen-android-feature = { id = "citoyen.android.feature" }
 citoyen-android-library = { id = "citoyen.android.library" }
 citoyen-android-library-compose = { id = "citoyen.android.library.compose" }
 citoyen-android-lint = { id = "citoyen.android.lint" }
+citoyen-android-room = { id = "citoyen.android.room" }
 citoyen-hilt = { id = "citoyen.hilt" }
 citoyen-jvm-library = { id = "citoyen.jvm.library" }

@@ -18,8 +18,18 @@ data class Candidate(
     val status: CandidacyStatus,
     /** Date the status was established (announcement, withdrawal or official list). */
     val statusDate: LocalDate,
+    /** Where the status comes from, behind the "Source" button. */
+    val statusSource: SourceRef,
     val coverage: DataCoverage,
 ) {
+    /** Accent- and case-insensitive match on the displayed and sort names. */
+    fun matches(query: String): Boolean {
+        val needle = SearchText.normalize(query)
+        return needle.isEmpty() ||
+            SearchText.normalize(displayName).contains(needle) ||
+            SearchText.normalize(sortName).contains(needle)
+    }
+
     /** Initials used by the uniform avatar, at most two letters. */
     val initials: String
         get() = displayName
