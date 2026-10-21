@@ -50,6 +50,30 @@ def shape(value, depth: int = 0, max_depth: int = 5) -> str:
     return pad + f"{type(value).__name__} = {str(value)[:60]!r}"
 
 
+def trim(value, depth: int = 0):
+    """Copy of a JSON value with lists cut to 2 items and long strings shortened (structure only)."""
+    if depth > 12:
+        return "..."
+    if isinstance(value, dict):
+        return {k: trim(v, depth + 1) for k, v in value.items()}
+    if isinstance(value, list):
+        return [trim(v, depth + 1) for v in value[:2]] + ([f"... {len(value) - 2} more"] if len(value) > 2 else [])
+    if isinstance(value, str) and len(value) > 50:
+        return value[:50] + "..."
+    return value
+
+
+def dump(title: str, value) -> None:
+    print(f"--- {title}")
+    print(json.dumps(trim(value), ensure_ascii=False, indent=1)[:9000])
+
+
+def zip_json(url: str) -> zipfile.ZipFile | None:
+    status, _, body = get(url)
+    print(f"zip {url} status={status} bytes={len(body)}")
+    return zipfile.ZipFile(io.BytesIO(body)) if status == 200 else None
+
+
 def describe(name: str, url: str) -> None:
     print(f"\n===== {name}\nURL {url}")
     status, ctype, body = get(url)
@@ -132,6 +156,31 @@ def datagouv(slug: str) -> list[str]:
 
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "an3":
+        zf = zip_json("https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip")
+        if zf:
+            acteur = json.loads(zf.read(next(n for n in zf.namelist() if "/acteur/" in n)))
+            mandats = acteur["acteur"]["mandats"]["mandat"]
+            mandats = mandats if isinstance(mandats, list) else [mandats]
+            acteur["acteur"]["mandats"]["mandat"] = [m for m in mandats if m.get("typeOrgane") == "ASSEMBLEE"][:1]
+            dump("acteur (ASSEMBLEE mandate only)", acteur)
+            print("typeOrgane values:", sorted({m.get("typeOrgane") for m in mandats}))
+        zf = zip_json("https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip")
+        if zf:
+            scrutin = json.loads(zf.read(sorted(zf.namelist())[-1]))
+            groupes = scrutin["scrutin"]["ventilationVotes"]["organe"]["groupes"]["groupe"]
+            dump("scrutin.ventilationVotes groupe[0]", groupes[0])
+            print("codeTypeVote values:", sorted({json.loads(zf.read(n))["scrutin"]["typeVote"]["codeTypeVote"] for n in zf.namelist()[:400]}))
+    if target == "pe3":
+        base = "https://data.europarl.europa.eu/api/v2"
+        fmt = "format=application%2Fld%2Bjson"
+        status, _, body = get(f"{base}/meps/show-current?{fmt}&offset=0&limit=1")
+        if status == 200:
+            mep = json.loads(body)["data"][0]
+            dump("current mep (list item)", mep)
+            status, _, body = get(f"{base}/meps/{mep['identifier']}?{fmt}")
+            if status == 200:
+                dump("mep detail", json.loads(body))
     if target == "an2":
         describe("AN AMO10", "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip")
         for url in links("https://data.assemblee-nationale.fr/travaux-parlementaires/votes", r"\.zip$")[:2]:

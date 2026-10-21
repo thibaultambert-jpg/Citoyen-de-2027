@@ -16,6 +16,13 @@ dev = [
     "ruff==0.17.1",           # MIT
 ]
 
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["citoyen_pipeline", "citoyen_pipeline.sources"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-p no:cacheprovider"
