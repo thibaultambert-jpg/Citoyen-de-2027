@@ -287,7 +287,13 @@ def probe_legi_details() -> None:
     with urllib.request.urlopen(req, timeout=600) as resp, open(path, "wb") as out:
         while chunk := resp.read(1 << 20):
             out.write(chunk)
-    contains = ("1789", "27 octobre 1946", "charte de l'environnement", "2005-205", "droits de l'homme et du citoyen")
+    contains = (
+        "1789",
+        "27 octobre 1946",
+        "charte de l'environnement",
+        "2005-205",
+        "droits de l'homme et du citoyen",
+    )
     found: dict[str, list[str]] = {c: [] for c in contains}
     wanted_dirs = {"JORFTEXT000000684037", "LEGITEXT000006071193"}
     wanted_sections = {"LEGISCTA000006085760"}
@@ -311,10 +317,14 @@ def probe_legi_details() -> None:
                         )
             for marker in wanted_dirs | wanted_sections:
                 if marker in name:
-                    kind = "section" if marker in wanted_sections else name.split(marker + "/")[-1].split("/")[0]
+                    kind = (
+                        "section" if marker in wanted_sections else name.split(marker + "/")[-1].split("/")[0]
+                    )
                     key = f"{marker}|{kind}"
                     limit = 3 if kind == "article" else 1
-                    if shown.get(key, 0) < limit and (marker in wanted_sections or "/" in name.split(marker)[-1]):
+                    if shown.get(key, 0) < limit and (
+                        marker in wanted_sections or "/" in name.split(marker)[-1]
+                    ):
                         shown[key] = shown.get(key, 0) + 1
                         body = tar.extractfile(member).read().decode("utf-8", "replace")
                         print(f"\n----- {name} ({len(body)} chars)\n{body[:4000]}")
