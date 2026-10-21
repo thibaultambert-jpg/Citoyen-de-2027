@@ -276,8 +276,58 @@ def probe_legi() -> None:
             print("legifrance", kind, text_id, status, ctype)
 
 
+def probe_legi_details() -> None:
+    """Second LEGI pass: texts of the constitutional block, the 1962 law and nested code sections."""
+    import tarfile
+
+    base = "https://echanges.dila.gouv.fr/OPENDATA/LEGI/"
+    url = [u for u in links(base, r"\.tar\.gz$") if "global" in u.lower()][-1]
+    path = "/tmp/legi_global.tar.gz"
+    req = urllib.request.Request(url, headers=UA)
+    with urllib.request.urlopen(req, timeout=600) as resp, open(path, "wb") as out:
+        while chunk := resp.read(1 << 20):
+            out.write(chunk)
+    contains = ("1789", "27 octobre 1946", "charte de l'environnement", "2005-205", "droits de l'homme et du citoyen")
+    found: dict[str, list[str]] = {c: [] for c in contains}
+    wanted_dirs = {"JORFTEXT000000684037", "LEGITEXT000006071193"}
+    wanted_sections = {"LEGISCTA000006085760"}
+    shown: dict[str, int] = {}
+    with tarfile.open(path, "r:gz") as tar:
+        for member in tar:
+            if not member.isfile():
+                continue
+            name = member.name
+            if "/texte/version/" in name:
+                xml = tar.extractfile(member).read().decode("utf-8", "replace")
+                title = re.search(r"<TITREFULL>(.*?)</TITREFULL>", xml, re.S)
+                nature = re.search(r"<NATURE>(.*?)</NATURE>", xml)
+                etat = re.search(r"<ETAT>(.*?)</ETAT>", xml)
+                folded = _fold(title.group(1)) if title else ""
+                for wanted in contains:
+                    if wanted in folded[:120] and len(found[wanted]) < 15:
+                        found[wanted].append(
+                            f"{name} | {nature.group(1) if nature else ''} | {etat.group(1) if etat else ''}"
+                            f" | {title.group(1)[:140]}"
+                        )
+            for marker in wanted_dirs | wanted_sections:
+                if marker in name:
+                    kind = "section" if marker in wanted_sections else name.split(marker + "/")[-1].split("/")[0]
+                    key = f"{marker}|{kind}"
+                    limit = 3 if kind == "article" else 1
+                    if shown.get(key, 0) < limit and (marker in wanted_sections or "/" in name.split(marker)[-1]):
+                        shown[key] = shown.get(key, 0) + 1
+                        body = tar.extractfile(member).read().decode("utf-8", "replace")
+                        print(f"\n----- {name} ({len(body)} chars)\n{body[:4000]}")
+    for wanted, hits in found.items():
+        print(f"\n== titles containing {wanted!r}:")
+        for hit in hits:
+            print("  ", hit)
+
+
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "j5legi2":
+        probe_legi_details()
     if target == "j5legi":
         probe_legi()
     if target == "j3gov":

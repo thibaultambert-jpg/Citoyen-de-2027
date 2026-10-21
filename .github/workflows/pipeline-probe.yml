@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [j5legi]
+        source: [j5legi2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
