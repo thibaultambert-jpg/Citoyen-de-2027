@@ -334,8 +334,38 @@ def probe_legi_details() -> None:
             print("  ", hit)
 
 
+def probe_legi_increments() -> None:
+    """Layout of the daily LEGI increments published after the global archive."""
+    import tarfile
+
+    base = "https://echanges.dila.gouv.fr/OPENDATA/LEGI/"
+    increments = [u for u in links(base, r"LEGI_[0-9-]+\.tar\.gz$") if "global" not in u]
+    print("increment count:", len(increments), "| first:", increments[:2], "| last:", increments[-3:])
+    for url in increments[-2:]:
+        status, _, body = get(url, 200 * 1024 * 1024)
+        print(f"\n===== {url} status={status} size={len(body)}")
+        with tarfile.open(fileobj=io.BytesIO(body), mode="r:gz") as tar:
+            names = [m.name for m in tar.getmembers()]
+            print("members:", len(names))
+            for name in names[:15]:
+                print("  ", name)
+            prefixes: dict[str, int] = {}
+            for name in names:
+                key = "/".join(name.split("/")[:4])
+                prefixes[key] = prefixes.get(key, 0) + 1
+            print("prefixes (4 levels):", sorted(prefixes.items(), key=lambda kv: -kv[1])[:15])
+            for member in tar.getmembers():
+                if member.isfile() and not member.name.endswith(".xml"):
+                    data = tar.extractfile(member).read()
+                    print(
+                        f"\n----- {member.name} ({len(data)} bytes)\n{data[:1500].decode('utf-8', 'replace')}"
+                    )
+
+
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "j5legi3":
+        probe_legi_increments()
     if target == "j5legi2":
         probe_legi_details()
     if target == "j5legi":
