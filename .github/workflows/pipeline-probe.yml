@@ -1,0 +1,28 @@
+name: Pipeline source probe
+
+# Prints the real structure of the official sources (the agent sandbox cannot reach them).
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'pipeline/tools/probe_sources.py'
+      - '.github/workflows/pipeline-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [rne, an, senat, pe]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe ${{ matrix.source }}
+        run: python -I pipeline/tools/probe_sources.py ${{ matrix.source }}
