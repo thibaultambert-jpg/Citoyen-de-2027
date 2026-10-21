@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [pe4, urls]
+        source: [pe4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -182,7 +182,7 @@ def main() -> int:
         status, _, body = get(f"{base}/meps/840?{fmt}")
         if status == 200:
             memberships = json.loads(body)["data"][0]["hasMembership"]
-            kinds = sorted({(m.get("membershipClassification"), m.get("role")) for m in memberships})
+            kinds = sorted({(str(m.get("membershipClassification")), str(m.get("role")), str(m.get("organization"))[:12]) for m in memberships})
             print("membership kinds:", kinds)
             for m in memberships:
                 if "COMMITTEE" not in str(m.get("membershipClassification")):
