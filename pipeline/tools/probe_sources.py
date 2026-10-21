@@ -156,6 +156,19 @@ def datagouv(slug: str) -> list[str]:
 
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "rne3":
+        for url in [u for u in datagouv("repertoire-national-des-elus-1") if u and u.endswith(".csv")]:
+            status, _, body = get(url, 64 * 1024)
+            header = body.decode("utf-8-sig", "replace").splitlines()[0] if body else ""
+            print(f"HEADER {url.rsplit('/', 1)[-1]} status={status}: {header}")
+        datagouv("les-senateurs")
+    if target == "an4":
+        for page in (
+            "https://data.assemblee-nationale.fr/acteurs/historique-des-deputes",
+            "https://data.assemblee-nationale.fr/archives-16e/votes",
+            "https://data.assemblee-nationale.fr/archives-16e/historique-des-deputes",
+        ):
+            links(page, r"\.zip$")
     if target == "an3":
         zf = zip_json("https://data.assemblee-nationale.fr/static/openData/repository/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip")
         if zf:
