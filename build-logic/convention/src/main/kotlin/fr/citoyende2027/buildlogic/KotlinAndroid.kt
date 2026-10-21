@@ -5,6 +5,8 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
@@ -54,6 +56,13 @@ private fun Project.configureJUnit5() {
     }
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
+        // Full stack traces in the console: CI reports are not always retrievable.
+        testLogging {
+            events(TestLogEvent.FAILED)
+            exceptionFormat = TestExceptionFormat.FULL
+            showCauses = true
+            showStackTraces = true
+        }
     }
 }
 
