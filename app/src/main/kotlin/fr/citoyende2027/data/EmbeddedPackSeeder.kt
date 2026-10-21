@@ -6,8 +6,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import fr.citoyende2027.core.data.pack.PackRuntime
 import fr.citoyende2027.core.data.repository.CorePackStore
 import java.io.File
-import kotlin.coroutines.cancellation.CancellationException
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Installs the `core` pack embedded in the APK (assets/packs/: manifest.json, manifest.json.sig,
