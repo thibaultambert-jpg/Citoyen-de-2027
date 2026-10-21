@@ -178,8 +178,108 @@ def datagouv(slug: str) -> list[str]:
     return urls
 
 
+LEGI_TITLES = (
+    "constitution du 4 octobre 1958",
+    "declaration des droits de l'homme",
+    "preambule de la constitution du 27 octobre 1946",
+    "charte de l'environnement",
+    "6 novembre 1962",
+    "code electoral",
+)
+
+
+def _fold(text: str) -> str:
+    import unicodedata
+
+    decomposed = unicodedata.normalize("NFKD", text.casefold())
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).replace("\u2019", "'")
+
+
+def probe_legi() -> None:
+    """Structure of the DILA LEGI dump: archive names, paths, and the texts of the legal corpus."""
+    import tarfile
+    import time
+
+    base = "https://echanges.dila.gouv.fr/OPENDATA/LEGI/"
+    archives = links(base, r"\.tar\.gz$")
+    print("archive count:", len(archives), "| last 5:", archives[-5:])
+    globals_ = [u for u in archives if "global" in u.lower()]
+    print("global archives:", globals_)
+    if not globals_:
+        return
+    url = globals_[-1]
+    path = "/tmp/legi_global.tar.gz"
+    started = time.time()
+    req = urllib.request.Request(url, headers=UA)
+    with urllib.request.urlopen(req, timeout=600) as resp, open(path, "wb") as out:
+        print("headers:", dict(resp.headers))
+        while chunk := resp.read(1 << 20):
+            out.write(chunk)
+    import os
+
+    print(f"downloaded {os.path.getsize(path)} bytes in {time.time() - started:.0f}s")
+    found: dict[str, list[tuple[str, str]]] = {t: [] for t in LEGI_TITLES}
+    first, prefixes, total = [], {}, 0
+    with tarfile.open(path, "r:gz") as tar:
+        for member in tar:
+            total += 1
+            if len(first) < 25:
+                first.append(member.name)
+            parts = member.name.split("/")
+            key = "/".join(parts[:5])
+            prefixes[key] = prefixes.get(key, 0) + 1
+            if member.isfile() and "/texte/version/" in member.name:
+                xml = tar.extractfile(member).read().decode("utf-8", "replace")
+                title = re.search(r"<TITREFULL>(.*?)</TITREFULL>", xml, re.S)
+                folded = _fold(title.group(1)) if title else ""
+                for wanted in LEGI_TITLES:
+                    if folded.startswith(wanted) or (wanted == "6 novembre 1962" and wanted in folded[:80]):
+                        if len(found[wanted]) < 15:
+                            found[wanted].append((member.name, title.group(1)[:160]))
+    print("member count:", total)
+    print("first members:")
+    for name in first:
+        print("  ", name)
+    print("path prefixes (5 levels), top 40:")
+    for key, count in sorted(prefixes.items(), key=lambda kv: -kv[1])[:40]:
+        print(f"   {count:8d} {key}")
+    for wanted, hits in found.items():
+        print(f"\n== titles starting with {wanted!r}:")
+        for name, title in hits:
+            print("  ", name, "|", title)
+    # Samples for the first hit of each wanted title: version, struct and two articles.
+    text_dirs = {}
+    for hits in found.values():
+        for name, _ in hits[:2]:
+            text_dirs[name.split("/texte/version/")[0]] = name
+    with tarfile.open(path, "r:gz") as tar:
+        articles: dict[str, int] = {}
+        shown: dict[str, int] = {}
+        for member in tar:
+            for text_dir in text_dirs:
+                if member.name.startswith(text_dir + "/") and member.isfile():
+                    kind = member.name[len(text_dir) + 1 :].split("/")[0]
+                    if kind == "article":
+                        articles[text_dir] = articles.get(text_dir, 0) + 1
+                    key = f"{text_dir}|{kind}"
+                    limit = 2 if kind in ("article", "texte") else 1
+                    if shown.get(key, 0) < limit:
+                        shown[key] = shown.get(key, 0) + 1
+                        body = tar.extractfile(member).read().decode("utf-8", "replace")
+                        print(f"\n----- {member.name} ({len(body)} chars)\n{body[:3500]}")
+        print("\narticle files per text:", articles)
+    # Official page patterns, checked with identifiers found above (never assumed).
+    for text_dir in text_dirs:
+        text_id = text_dir.rstrip("/").split("/")[-1]
+        for kind in ("loda/id", "codes/texte_lc", "jorf/id"):
+            status, ctype, _ = get(f"https://www.legifrance.gouv.fr/{kind}/{text_id}", 200_000)
+            print("legifrance", kind, text_id, status, ctype)
+
+
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "j5legi":
+        probe_legi()
     if target == "j3gov":
         zf = zip_json(
             "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/"
