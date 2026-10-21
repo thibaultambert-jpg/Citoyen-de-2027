@@ -1,0 +1,18 @@
+{
+  "embedding_model_id": null,
+  "generated_on": "2026-01-15",
+  "packs": [
+    {
+      "file": "core.sqlite",
+      "id": "core",
+      "licenses": [
+        "Licence fictive"
+      ],
+      "sha256": "299e530447731581c4fd2202586479bab22c55fd0f5252f81b4853a35bc091e2",
+      "size": 53248,
+      "sources": [],
+      "version": "2026-01-15+fixture"
+    }
+  ],
+  "schema_version": 1
+}

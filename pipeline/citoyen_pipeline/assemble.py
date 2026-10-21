@@ -1,0 +1,91 @@
+"""Assembles the `core` pack from the inputs and the cached sources."""
+
+from __future__ import annotations
+
+import hashlib
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import date
+from pathlib import Path
+
+from citoyen_pipeline.coverage import compute_coverage
+from citoyen_pipeline.fetch import Cache
+from citoyen_pipeline.identity import check_identities
+from citoyen_pipeline.inputs import load_candidates, load_identities
+from citoyen_pipeline.model import CorePack, Identity, SourceExtract
+from citoyen_pipeline.sources import assemblee, parlement_europeen, rne, senat
+
+
+@dataclass(frozen=True)
+class Adapter:
+    name: str
+    needed: Callable[[list[Identity]], bool]
+    fetch: Callable[[Cache, list[Identity]], None]
+    extract: Callable[[Cache, list[Identity]], SourceExtract]
+
+
+ADAPTERS = (
+    Adapter(
+        "assemblee", lambda ids: any(i.an_id for i in ids), lambda c, _: assemblee.fetch(c), assemblee.extract
+    ),
+    Adapter("senat", lambda ids: any(i.senat_id for i in ids), lambda c, _: senat.fetch(c), senat.extract),
+    Adapter("rne", lambda ids: bool(ids), lambda c, _: rne.fetch(c), rne.extract),
+    Adapter(
+        "parlement_europeen",
+        lambda ids: any(i.pe_id for i in ids),
+        parlement_europeen.fetch,
+        parlement_europeen.extract,
+    ),
+)
+
+
+def load_inputs(inputs: Path):
+    policy_date, candidates, status_sources = load_candidates(inputs / "candidates.yaml")
+    identities = load_identities(inputs / "identities.yaml", {c.id for c in candidates})
+    return policy_date, candidates, status_sources, identities
+
+
+def fetch_all(inputs: Path, cache: Cache) -> list[str]:
+    *_, identities = load_inputs(inputs)
+    used = [a for a in ADAPTERS if a.needed(identities)]
+    for adapter in used:
+        adapter.fetch(cache, identities)
+    return [a.name for a in used]
+
+
+def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
+    policy_date, candidates, status_sources, identities = load_inputs(inputs)
+    combined = SourceExtract(sources=list(status_sources))
+    for adapter in ADAPTERS:
+        if adapter.needed(identities):
+            part = adapter.extract(cache, identities)
+            combined.sources += part.sources
+            combined.people += part.people
+            combined.mandates += part.mandates
+            combined.votes += part.votes
+    # Every identifier written by hand must agree with its official source (AGENTS.md §7.2).
+    check_identities(identities, combined.people)
+    return CorePack(
+        generated_on=generated_on,
+        inclusion_policy_date=policy_date,
+        sources=_unique(combined.sources),
+        candidates=candidates,
+        coverage=compute_coverage(candidates, identities, combined.mandates, combined.votes),
+        mandates=combined.mandates,
+        votes=combined.votes,
+    )
+
+
+def inputs_digest(inputs: Path, cache: Cache) -> str:
+    digest = hashlib.sha256()
+    for path in (inputs / "candidates.yaml", inputs / "identities.yaml", cache.root / "fetch_log.json"):
+        if path.exists():
+            digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def _unique(sources):
+    seen = {}
+    for source in sources:
+        seen.setdefault(source.id, source)
+    return list(seen.values())

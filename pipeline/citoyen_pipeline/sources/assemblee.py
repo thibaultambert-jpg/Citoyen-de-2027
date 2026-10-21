@@ -36,7 +36,7 @@ def scrutins_url(legislature: int) -> str:
     return f"{REPOSITORY}/{legislature}/loi/scrutins/Scrutins.json.zip"
 
 
-# TODO(verify): official page pattern of a scrutin, checked by the `urls` probe before use.
+# Official page of a scrutin (pattern checked with the `urls` probe on 2026-10-21: HTTP 200).
 BALLOT_PAGE = "https://www.assemblee-nationale.fr/dyn/{legislature}/scrutins/{numero}"
 
 

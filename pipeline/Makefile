@@ -3,7 +3,7 @@ PYTHON ?= python3.12
 VENV ?= .venv
 PY = $(VENV)/bin/python
 
-.PHONY: venv test lint fetch pack clean
+.PHONY: venv test lint fetch pack test-pack clean
 
 venv:
 	$(PYTHON) -m venv $(VENV)
@@ -23,6 +23,10 @@ fetch:
 # Builds dist/ from inputs/ and cache/; signs when PACK_SIGNING_KEY is set.
 pack:
 	$(PY) -m citoyen_pipeline pack --inputs inputs --cache cache --out dist
+
+# Fictional, TEST-signed pack used as a contract by the app's unit tests.
+test-pack:
+	$(PY) -m citoyen_pipeline test-pack --out ../core/data/src/test/resources/packs
 
 clean:
 	rm -rf dist cache
