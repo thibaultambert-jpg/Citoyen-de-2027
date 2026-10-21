@@ -27,12 +27,13 @@ import fr.citoyende2027.navigation.TopLevelDestination
 fun CitoyenApp(navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    // navigationSuiteItems is not a composable scope: resolve labels beforehand.
+    val labels = TopLevelDestination.entries.associateWith { stringResource(it.label) }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach { destination ->
                 val selected = currentDestination?.hierarchy?.any { it.hasRoute(destination.routeClass) } == true
-                val label = stringResource(destination.label)
                 item(
                     selected = selected,
                     onClick = {
@@ -44,7 +45,7 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
                     },
                     // The label is always visible, so the icon carries no extra description.
                     icon = { Icon(painterResource(destination.icon), contentDescription = null) },
-                    label = { Text(label) },
+                    label = { Text(labels.getValue(destination)) },
                 )
             }
         },
