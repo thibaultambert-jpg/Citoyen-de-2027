@@ -1,0 +1,5 @@
+# Hand-maintained candidate list (AGENTS.md §6, §10). Filled and validated by a human only:
+# never from memory, never generated. See docs/pipeline-inputs.md for the inclusion rule.
+version: 1
+inclusion_policy_date: 2026-10-21  # TODO(verify): date of the validated docs/inclusion-policy.md
+candidates: []

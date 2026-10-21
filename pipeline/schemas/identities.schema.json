@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "identities.yaml — hand-validated links between candidates and official identifiers (AGENTS.md §7.2)",
+  "type": "object",
+  "required": ["version", "identities"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "identities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "family_name", "given_name", "birth_date", "validated_by", "validated_on"],
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {"type": "string"},
+          "family_name": {"type": "string", "minLength": 1},
+          "given_name": {"type": "string", "minLength": 1},
+          "birth_date": {"type": "string", "format": "date"},
+          "validated_by": {"type": "string", "minLength": 1},
+          "validated_on": {"type": "string", "format": "date"},
+          "an_id": {"type": "string", "minLength": 1},
+          "senat_id": {"type": "string", "minLength": 1},
+          "pe_id": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

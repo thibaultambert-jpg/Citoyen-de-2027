@@ -1,0 +1,28 @@
+[project]
+name = "citoyen-pipeline"
+version = "0.1.0"
+description = "Builds the signed data packs of the Citoyen de 2027 app from official open data."
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = [
+    "PyYAML==6.0.3",          # MIT
+    "jsonschema==4.26.0",     # MIT
+    "cryptography==50.0.2",   # Apache-2.0 OR BSD-3-Clause
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",          # MIT
+    "ruff==0.17.1",           # MIT
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
