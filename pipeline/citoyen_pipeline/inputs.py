@@ -105,4 +105,24 @@ def load_reserve(path: Path) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
 
 
-__all__ = ["InputError", "load_candidates", "load_identities", "load_rag_config", "load_reserve", "load_yaml"]
+def load_sponsorship_names(path: Path, candidate_ids: set[str]) -> tuple[str, dict[str, str]]:
+    """Dataset slug and hand-checked published names (sponsorships.yaml); absent file: no data."""
+    if not path.exists():
+        return "", {}
+    data = load_yaml(path, "sponsorships.schema.json")
+    if unknown := set(data["names"]) - candidate_ids:
+        raise InputError(f"{path}: unknown candidate ids {sorted(unknown)}")
+    if data["names"] and not data["dataset"]:
+        raise InputError(f"{path}: names are given but no dataset")
+    return data["dataset"], dict(data["names"])
+
+
+__all__ = [
+    "InputError",
+    "load_candidates",
+    "load_identities",
+    "load_rag_config",
+    "load_reserve",
+    "load_sponsorship_names",
+    "load_yaml",
+]

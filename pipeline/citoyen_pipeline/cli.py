@@ -40,6 +40,7 @@ def cmd_pack(args) -> int:
     write_core_pack(pack, version, pack_file)
     used = {m.source_id for m in pack.mandates} | {v.source_id for v in pack.votes}
     used |= {c.status_source_id for c in pack.candidates} | {s.source_id for s in pack.speeches}
+    used |= {s.source_id for s in pack.sponsorships}
     sources = [
         {"name": s.name, "url": s.url, "retrieved_on": s.retrieved_on.isoformat(), "license": s.license}
         for s in sorted(pack.sources, key=lambda s: s.id)
@@ -91,6 +92,14 @@ def cmd_pack(args) -> int:
                 },
             }
             for c in pack.candidates
+        },
+        "sponsorships": {
+            s.candidate_id: {
+                "total": s.total,
+                "departments": s.departments,
+                "as_of": s.published_on.isoformat(),
+            }
+            for s in pack.sponsorships
         },
         "programs_version": programs_version,
         "legal": {

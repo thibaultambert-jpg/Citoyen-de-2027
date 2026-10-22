@@ -12,13 +12,20 @@ from citoyen_pipeline import legal, programs
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import check_identities
-from citoyen_pipeline.inputs import load_candidates, load_identities, load_rag_config, load_reserve
+from citoyen_pipeline.inputs import (
+    load_candidates,
+    load_identities,
+    load_rag_config,
+    load_reserve,
+    load_sponsorship_names,
+)
 from citoyen_pipeline.model import CorePack, Identity, ProgramsPack, SourceExtract, ThemeTag
-from citoyen_pipeline.sources import assemblee, discours, parlement_europeen, rne, senat
+from citoyen_pipeline.sources import assemblee, discours, parlement_europeen, rne, senat, sponsorships
 from citoyen_pipeline.themes import load_overrides, load_taxonomy
 
 PROGRAMS_MANIFEST = Path("programs") / "manifest.yaml"
 LEGAL_TEXTS = Path("legal") / "texts.yaml"
+SPONSORSHIPS = "sponsorships.yaml"
 
 
 @dataclass(frozen=True)
@@ -65,7 +72,15 @@ def fetch_all(inputs: Path, cache: Cache) -> list[str]:
     programs.fetch(cache, entries)
     legal_inputs = legal.load_inputs(inputs / LEGAL_TEXTS)
     legal.fetch(cache, legal_inputs)
-    return [a.name for a in used] + (["programs"] if entries else []) + (["legi"] if legal_inputs else [])
+    dataset, _ = load_sponsorship_names(inputs / SPONSORSHIPS, {c.id for c in candidates})
+    if dataset:
+        sponsorships.fetch(cache, dataset)
+    return (
+        [a.name for a in used]
+        + (["programs"] if entries else [])
+        + (["legi"] if legal_inputs else [])
+        + (["sponsorships"] if dataset else [])
+    )
 
 
 def assemble(inputs: Path, cache: Cache, generated_on: date) -> CorePack:
@@ -103,6 +118,12 @@ def assemble_packs(
     check_identities(identities, combined.people)
     if unknown := set(overrides.ballots) - {v.ballot_id for v in combined.votes}:
         raise ValueError(f"theme_overrides.yaml: unknown ballot ids {sorted(unknown)}")
+    _, sponsorship_names = load_sponsorship_names(inputs / SPONSORSHIPS, {c.id for c in candidates})
+    sponsorship_counts, sponsorship_sources, sponsorship_review = (
+        sponsorships.extract(cache, sponsorship_names) if sponsorship_names else ([], [], [])
+    )
+    if sponsorship_review:
+        combined.review["sponsorships"] = sponsorship_review
     vote_themes: dict[str, list[ThemeTag]] = {}
     for vote in combined.votes:
         manual = overrides.ballots.get(vote.ballot_id)
@@ -110,7 +131,7 @@ def assemble_packs(
     pack = CorePack(
         generated_on=generated_on,
         inclusion_policy_date=policy_date,
-        sources=_unique(combined.sources),
+        sources=_unique(combined.sources + sponsorship_sources),
         candidates=candidates,
         coverage=compute_coverage(
             candidates,
@@ -127,6 +148,7 @@ def assemble_packs(
         vote_themes=vote_themes,
         rag_config=load_rag_config(inputs / "rag_config.json"),
         reserve=load_reserve(inputs / "reserve.json"),
+        sponsorships=sponsorship_counts,
     )
     return pack, programs_pack, {**combined.review, **programs_review}
 
@@ -141,6 +163,7 @@ def inputs_digest(inputs: Path, cache: Cache) -> str:
         str(PROGRAMS_MANIFEST),
         "rag_config.json",
         "reserve.json",
+        SPONSORSHIPS,
     )
     for path in [*(inputs / name for name in names), cache.root / "fetch_log.json"]:
         if path.exists():

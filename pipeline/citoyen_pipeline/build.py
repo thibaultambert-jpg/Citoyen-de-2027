@@ -67,6 +67,19 @@ CREATE TABLE votes (
     ballot_url TEXT NOT NULL,
     source_id TEXT NOT NULL REFERENCES sources(id)
 );
+CREATE TABLE sponsorships (
+    candidate_id TEXT PRIMARY KEY NOT NULL REFERENCES candidates(id),
+    total INTEGER NOT NULL,
+    departments INTEGER NOT NULL,
+    published_on TEXT NOT NULL,
+    source_id TEXT NOT NULL REFERENCES sources(id)
+);
+CREATE TABLE sponsorship_mandates (
+    candidate_id TEXT NOT NULL REFERENCES candidates(id),
+    mandate TEXT NOT NULL,
+    count INTEGER NOT NULL,
+    PRIMARY KEY (candidate_id, mandate)
+);
 CREATE TABLE themes (id TEXT PRIMARY KEY NOT NULL, label TEXT NOT NULL);
 CREATE TABLE vote_themes (
     vote_id TEXT NOT NULL REFERENCES votes(id),
@@ -126,6 +139,7 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
         | {m.source_id for m in pack.mandates}
         | {v.source_id for v in pack.votes}
         | {s.source_id for s in pack.speeches}
+        | {s.source_id for s in pack.sponsorships}
     )
     known = {s.id for s in pack.sources}
     if missing := referenced - known:
@@ -216,6 +230,21 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
                     s.source_id,
                 )
                 for s in sorted(pack.speeches, key=lambda s: s.id)
+            ],
+        )
+        db.executemany(
+            "INSERT INTO sponsorships VALUES (?, ?, ?, ?, ?)",
+            [
+                (s.candidate_id, s.total, s.departments, s.published_on.isoformat(), s.source_id)
+                for s in sorted(pack.sponsorships, key=lambda s: s.candidate_id)
+            ],
+        )
+        db.executemany(
+            "INSERT INTO sponsorship_mandates VALUES (?, ?, ?)",
+            [
+                (s.candidate_id, mandate, count)
+                for s in sorted(pack.sponsorships, key=lambda s: s.candidate_id)
+                for mandate, count in s.by_mandate
             ],
         )
         db.executemany(

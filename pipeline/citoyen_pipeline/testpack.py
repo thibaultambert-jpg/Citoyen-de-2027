@@ -28,6 +28,7 @@ from citoyen_pipeline.model import (
     ProgramStatus,
     Source,
     Speech,
+    SponsorshipCount,
     TagConfidence,
     TagMethod,
     ThemeTag,
@@ -104,6 +105,11 @@ def build(out: Path) -> dict[str, str]:
         vote_themes={"fictif-a-vote-1": [ThemeTag("fictif-01", TagMethod.RULE, TagConfidence.LOW)]},
         rag_config=load_rag_config(FIXTURES / "rag_config.json"),
         reserve=load_reserve(FIXTURES / "reserve.json"),
+        sponsorships=[
+            SponsorshipCount(
+                "fictif-a", 3, 2, (("Mandat fictif 1", 2), ("Mandat fictif 2", 1)), date(2026, 1, 10), fake.id
+            )
+        ],
     )
     out.mkdir(parents=True, exist_ok=True)
     pack_file = out / "core.sqlite"

@@ -216,6 +216,21 @@ class SourceExtract:
     review: dict[str, list[str]] = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class SponsorshipCount:
+    """Validated sponsorships of one candidate, as published by the Conseil constitutionnel."""
+
+    candidate_id: str
+    total: int
+    # Distinct values of the published "Département" column (departments and other collectivities).
+    departments: int
+    # Published mandate label -> number of sponsorships, sorted by label.
+    by_mandate: tuple[tuple[str, int], ...]
+    # Latest publication date included in the file: the date of these figures.
+    published_on: date
+    source_id: str
+
+
 @dataclass
 class CorePack:
     generated_on: date
@@ -232,6 +247,7 @@ class CorePack:
     rag_config: str | None = None
     # Electoral reserve period (AGENTS.md §10): campaign content hidden in the app when set (compact JSON).
     reserve: str | None = None
+    sponsorships: list[SponsorshipCount] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

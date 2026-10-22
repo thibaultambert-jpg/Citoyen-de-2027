@@ -119,6 +119,30 @@ humain : l’identifiant `cid` d’une section figure dans les fichiers `section
 l’adresse Légifrance des sections). Une section absente ou plus en vigueur fait échouer la construction.
 Le rapport `report.json` donne le nombre d’articles par texte et signale les versions à venir connues.
 
+## `pipeline/inputs/sponsorships.yaml`
+
+Parrainages validés publiés par le Conseil constitutionnel sur data.gouv.fr (au moins deux fois par
+semaine pendant la collecte). Format vérifié sur le jeu 2022 (sonde du 22/10/2026) : un fichier CSV
+cumulatif par publication, séparateur `;`, colonnes `Civilité;Nom;Prénom;Mandat;Circonscription;
+Département;Candidat;Date de publication`. Le pipeline prend le CSV le plus récent du jeu.
+
+```yaml
+version: 1
+dataset: ""   # slug data.gouv.fr du jeu 2027, dès sa publication
+names:
+  <id du candidat>: "NOM Prénom"   # copié tel quel depuis la colonne « Candidat » du fichier
+```
+
+- Le rattachement se fait **uniquement** par ces noms recopiés à la main et comparés à l’identique ;
+  jamais d’appariement automatique.
+- Le pack ne contient que des **décomptes** par candidat : total, nombre de départements ou
+  collectivités distincts, répartition par mandat, date de la dernière publication incluse. Les
+  noms des élus parrains ne sont pas copiés.
+- `report.json` (section `review`) signale un nom introuvable dans le fichier et les noms publiés
+  rattachés à aucun candidat.
+- Tant que `dataset` est vide, aucune donnée de parrainage n’est produite. L’affichage dans
+  l’application reste à faire (écran Infos ou fiche candidat).
+
 ## Publier
 
 1. Générer la clé de signature une seule fois : `python pipeline/tools/generate_signing_key.py`.
