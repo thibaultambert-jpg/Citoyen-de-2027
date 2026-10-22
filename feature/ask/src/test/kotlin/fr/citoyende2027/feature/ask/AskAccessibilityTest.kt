@@ -1,6 +1,6 @@
 package fr.citoyende2027.feature.ask
 
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import fr.citoyende2027.core.data.repository.AnswerGroup
 import fr.citoyende2027.core.data.repository.AskAnswer
 import fr.citoyende2027.core.data.repository.LegalPassage

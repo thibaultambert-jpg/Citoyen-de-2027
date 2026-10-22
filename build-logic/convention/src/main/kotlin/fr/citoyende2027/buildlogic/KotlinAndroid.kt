@@ -77,5 +77,8 @@ private inline fun <reified T : KotlinBaseExtension> Project.configureKotlin() =
     }.apply {
         jvmTarget = JvmTarget.JVM_17
         allWarningsAsErrors = warningsAsErrors
+        // Annotations on constructor properties (@ApplicationContext, @StringRes…) also go to the
+        // field: the future Kotlin default (KT-73255), adopted now to silence its warning.
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }

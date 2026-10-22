@@ -1,7 +1,7 @@
 package fr.citoyende2027.feature.about
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import fr.citoyende2027.core.data.repository.InstalledPack
 import fr.citoyende2027.core.data.repository.PackUpdate
 import fr.citoyende2027.core.designsystem.theme.CitoyenTheme

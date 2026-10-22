@@ -1,6 +1,6 @@
 package fr.citoyende2027.feature.institutions
 
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import fr.citoyende2027.core.designsystem.theme.CitoyenTheme
 import fr.citoyende2027.core.model.LegalSearchHit
 import fr.citoyende2027.core.testing.FictionalLegal

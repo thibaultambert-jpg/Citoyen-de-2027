@@ -20,8 +20,8 @@ jobs:
       run:
         working-directory: pipeline
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install
@@ -29,7 +29,7 @@ jobs:
       - name: Tests
         run: python -m pytest -q
       - name: Cache LEGI archives (global archive and daily increments)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: pipeline/cache/legi
           key: legi-v1-${{ github.run_id }}
@@ -44,7 +44,7 @@ jobs:
           python -m citoyen_pipeline pack --inputs inputs --cache cache --out dist
           test -f dist/manifest.json.sig
       - name: Set up JDK (evaluation harness)
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: '21'
@@ -54,7 +54,7 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
       - name: Evaluate retrieval on the golden set (blocking, AGENTS.md §7.7)
         working-directory: .
         run: >-

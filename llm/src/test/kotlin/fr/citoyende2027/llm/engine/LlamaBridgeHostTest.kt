@@ -26,11 +26,10 @@ class LlamaBridgeHostTest {
 
     @BeforeAll
     fun load() {
-        System.load(System.getProperty("llm.hostLib"))
-        LlamaNative.init(System.getProperty("java.io.tmpdir"))
-        model = checkNotNull(LlamaModel.load(System.getProperty("llm.testModel"), nThreads = 2, nCtx = 512)) {
-            "test model not loaded"
-        }
+        System.load(checkNotNull(System.getProperty("llm.hostLib")))
+        LlamaNative.init(checkNotNull(System.getProperty("java.io.tmpdir")))
+        val modelPath = checkNotNull(System.getProperty("llm.testModel"))
+        model = checkNotNull(LlamaModel.load(modelPath, nThreads = 2, nCtx = 512)) { "test model not loaded" }
     }
 
     @AfterAll

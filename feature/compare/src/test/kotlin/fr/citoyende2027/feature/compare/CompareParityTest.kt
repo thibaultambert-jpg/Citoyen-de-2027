@@ -3,7 +3,7 @@ package fr.citoyende2027.feature.compare
 import android.content.Context
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.isHeading
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.core.app.ApplicationProvider
 import fr.citoyende2027.core.designsystem.theme.CitoyenTheme
 import fr.citoyende2027.core.model.ThemeFacts
