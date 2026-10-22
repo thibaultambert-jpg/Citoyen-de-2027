@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="feature_candidate_title">Fiche candidat</string>
+    <string name="feature_candidate_back">Retour</string>
+    <string name="feature_candidate_not_found">Ce candidat ne figure pas dans les données installées.</string>
+
+    <string name="feature_candidate_tab_overview">Aperçu</string>
+    <string name="feature_candidate_tab_program">Programme</string>
+    <string name="feature_candidate_tab_mandates">Mandats</string>
+    <string name="feature_candidate_tab_votes">Votes</string>
+    <string name="feature_candidate_tab_speeches">Prises de parole</string>
+    <string name="feature_candidate_tab_program_and_votes">Mise en regard</string>
+    <string name="feature_candidate_tab_sources">Sources et méthode</string>
+
+    <string name="feature_candidate_section_status">Statut</string>
+    <string name="feature_candidate_section_coverage">Couverture des données</string>
+    <string name="feature_candidate_coverage_explanation">Indique quelles données les sources utilisées fournissent pour chaque rubrique. L’absence d’une donnée n’est pas l’absence d’une position.</string>
+
+    <string name="feature_candidate_mandates_scope">Mandats figurant dans les sources utilisées : Assemblée nationale (dont fonctions gouvernementales), Sénat, Parlement européen et Répertoire national des élus (mandats locaux en cours).</string>
+
+    <string name="feature_candidate_votes_limits">Seuls les scrutins publics figurent dans les données ouvertes des assemblées. L’absence d’un vote dans cette liste ne signifie pas une absence en séance. Un vote « contre » peut viser une disposition différente de celle que résume le titre du scrutin : consultez le scrutin officiel.</string>
+    <string name="feature_candidate_votes_none">Aucun vote enregistré dans les sources utilisées.</string>
+    <!-- %1$d: shown votes, %2$d: all votes -->
+    <string name="feature_candidate_votes_count">%1$d votes affichés sur %2$d</string>
+    <string name="feature_candidate_filter_body">Assemblée</string>
+    <string name="feature_candidate_filter_year">Année</string>
+    <string name="feature_candidate_filter_type">Type</string>
+    <string name="feature_candidate_filter_position">Position</string>
+    <string name="feature_candidate_filter_theme">Thème</string>
+
+    <string name="feature_candidate_speeches_scope">Interventions en séance du Parlement européen et discours officiels référencés par vie-publique.fr : titre, date et lien vers le texte officiel. Les interventions à l’Assemblée nationale et au Sénat ne sont pas encore intégrées.</string>
+    <string name="feature_candidate_speeches_plenary">Interventions en séance</string>
+    <string name="feature_candidate_speeches_statements">Discours et déclarations officiels</string>
+    <string name="feature_candidate_speech_official_link">Lire sur le site officiel</string>
+
+    <string name="feature_candidate_program_documents">Documents sources</string>
+    <string name="feature_candidate_program_excerpts">Extraits du programme</string>
+    <!-- %1$d: shown excerpts, %2$d: all excerpts -->
+    <string name="feature_candidate_program_count">%1$d extraits affichés sur %2$d</string>
+    <string name="feature_candidate_program_scope">Extraits des documents publiés par le candidat, découpés par paragraphe ou par mesure, sans reformulation. Les thèmes sont attribués par des règles de mots-clés ou après relecture humaine : un extrait peut traiter d’un thème sans être classé sous ce thème.</string>
+
+    <string name="feature_candidate_side_by_side_notice">Pour un thème choisi, les extraits du programme et les votes enregistrés sont placés côte à côte, sans appréciation ni conclusion. Un vote porte sur un texte précis, souvent antérieur au programme : consultez le scrutin officiel et le document source.</string>
+    <string name="feature_candidate_side_by_side_program">Programme (texte publié)</string>
+    <string name="feature_candidate_side_by_side_votes">Votes enregistrés</string>
+    <string name="feature_candidate_side_by_side_no_theme">Aucun thème commun aux données disponibles pour ce candidat.</string>
+    <string name="feature_candidate_side_by_side_no_excerpt">Aucun extrait classé sous ce thème dans les sources utilisées.</string>
+    <string name="feature_candidate_side_by_side_no_vote">Aucun vote classé sous ce thème dans les sources utilisées.</string>
+
+    <string name="feature_candidate_method_title">Méthode</string>
+    <string name="feature_candidate_method_text">Les informations de cette fiche proviennent uniquement des sources officielles listées ci-dessous, sans reformulation. Les identifiants officiels de chaque candidat sont rattachés à la main puis vérifiés automatiquement : nom et date de naissance doivent correspondre dans la source. Les votes sont affichés tels que publiés par chaque assemblée. Les extraits de programme proviennent des documents publiés par le candidat, ajoutés à la main avec leur empreinte numérique et leurs conditions de réutilisation.</string>
+    <string name="feature_candidate_sources_title">Sources</string>
+    <!-- %1$s: retrieval date, %2$s: licence -->
+    <string name="feature_candidate_source_line">Récupérée le %1$s · %2$s</string>
+</resources>

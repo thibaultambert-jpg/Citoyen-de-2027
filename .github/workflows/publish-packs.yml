@@ -1,0 +1,74 @@
+name: Publish data packs
+
+# Manual on purpose: a human checks inputs/candidates.yaml and inputs/identities.yaml first.
+# Requires the PACK_SIGNING_KEY secret (see pipeline/tools/generate_signing_key.py).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-packs
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install --quiet -e ".[dev]"
+      - name: Tests
+        run: python -m pytest -q
+      - name: Cache LEGI archives (global archive and daily increments)
+        uses: actions/cache@v6
+        with:
+          path: pipeline/cache/legi
+          key: legi-v1-${{ github.run_id }}
+          restore-keys: legi-v1-
+      - name: Fetch official sources
+        run: python -m citoyen_pipeline fetch --inputs inputs --cache cache
+      - name: Build and sign
+        env:
+          PACK_SIGNING_KEY: ${{ secrets.PACK_SIGNING_KEY }}
+        run: |
+          test -n "$PACK_SIGNING_KEY" || { echo "::error::PACK_SIGNING_KEY secret is missing"; exit 1; }
+          python -m citoyen_pipeline pack --inputs inputs --cache cache --out dist
+          test -f dist/manifest.json.sig
+      - name: Set up JDK (evaluation harness)
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '21'
+      - name: Install the NDK and CMake of :llm
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Evaluate retrieval on the golden set (blocking, AGENTS.md §7.7)
+        working-directory: .
+        run: >-
+          ./gradlew :tools:rag-eval:evaluate
+          -Ppacks="$GITHUB_WORKSPACE/pipeline/dist" -Preport="$GITHUB_WORKSPACE/pipeline/dist/eval_report.json"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python -c "import json;print(json.load(open('dist/report.json'))['version'])")
+          tag="packs-$(echo "$version" | tr '+:' '--')"
+          gh release create "$tag" dist/*.sqlite dist/manifest.json dist/manifest.json.sig dist/report.json dist/eval_report.json \
+            --title "Données $version" --notes "Pack core $version (voir report.json)." --latest=false
+          # Stable location read by the app: releases/download/packs-current/<file>.
+          gh release view packs-current >/dev/null 2>&1 || \
+            gh release create packs-current --title "Données actuelles" --notes "Dernier pack publié." --latest=false
+          gh release upload packs-current dist/*.sqlite dist/manifest.json dist/manifest.json.sig --clobber

@@ -1,0 +1,49 @@
+# Fictional taxonomy for tests (AGENTS.md §2.6): the real one is inputs/themes.yaml.
+version: 1
+unknown_label: Thème non déterminé
+themes:
+  - id: fictif-01
+    label: Thème fictif 01
+    patterns: ['motfictif01', 'autremot01s?']
+  - id: fictif-02
+    label: Thème fictif 02
+    patterns: ['motfictif02', 'autremot02s?']
+  - id: fictif-03
+    label: Thème fictif 03
+    patterns: ['motfictif03', 'autremot03s?']
+  - id: fictif-04
+    label: Thème fictif 04
+    patterns: ['motfictif04', 'autremot04s?']
+  - id: fictif-05
+    label: Thème fictif 05
+    patterns: ['motfictif05', 'autremot05s?']
+  - id: fictif-06
+    label: Thème fictif 06
+    patterns: ['motfictif06', 'autremot06s?']
+  - id: fictif-07
+    label: Thème fictif 07
+    patterns: ['motfictif07', 'autremot07s?']
+  - id: fictif-08
+    label: Thème fictif 08
+    patterns: ['motfictif08', 'autremot08s?']
+  - id: fictif-09
+    label: Thème fictif 09
+    patterns: ['motfictif09', 'autremot09s?']
+  - id: fictif-10
+    label: Thème fictif 10
+    patterns: ['motfictif10', 'autremot10s?']
+  - id: fictif-11
+    label: Thème fictif 11
+    patterns: ['motfictif11', 'autremot11s?']
+  - id: fictif-12
+    label: Thème fictif 12
+    patterns: ['motfictif12', 'autremot12s?']
+  - id: fictif-13
+    label: Thème fictif 13
+    patterns: ['motfictif13', 'autremot13s?']
+  - id: fictif-14
+    label: Thème fictif 14
+    patterns: ['motfictif14', 'autremot14s?']
+  - id: fictif-15
+    label: Thème fictif 15
+    patterns: ['motfictif15', 'autremot15s?']

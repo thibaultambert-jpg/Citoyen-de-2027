@@ -1,0 +1,8 @@
+.venv/
+cache/
+dist/
+__pycache__/
+*.egg-info/
+# Private signing keys never belong in the repository.
+*.key
+*.pem

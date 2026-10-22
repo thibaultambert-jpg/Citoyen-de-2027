@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "sponsorships.yaml (AGENTS.md §6: parrainages published by the Conseil constitutionnel)",
+  "type": "object",
+  "required": ["version", "dataset", "names"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "dataset": {
+      "description": "data.gouv.fr dataset slug of the Conseil constitutionnel for this election; empty until it exists",
+      "type": "string",
+      "pattern": "^([a-z0-9]+(-[a-z0-9]+)*)?$"
+    },
+    "names": {
+      "description": "candidate id -> name exactly as written in the published 'Candidat' column, checked by hand",
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    }
+  }
+}

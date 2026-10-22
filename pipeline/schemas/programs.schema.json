@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "programs/manifest.yaml",
+  "type": "object",
+  "required": ["version", "programs"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "programs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "status", "documents"],
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {"type": "string"},
+          "status": {"enum": ["COMPLET", "PARTIEL"]},
+          "documents": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "title", "url", "format", "sha256", "published_on", "version", "reuse_rights"],
+              "additionalProperties": false,
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+                "title": {"type": "string", "minLength": 1},
+                "url": {"type": "string", "pattern": "^https://"},
+                "format": {"enum": ["pdf", "html"]},
+                "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                "published_on": {"type": "string", "format": "date"},
+                "version": {"type": "string", "minLength": 1},
+                "reuse_rights": {
+                  "type": "object",
+                  "required": ["terms", "validated_on"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "terms": {"type": "string", "minLength": 1},
+                    "validated_on": {"type": "string", "format": "date"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

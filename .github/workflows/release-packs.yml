@@ -1,0 +1,111 @@
+name: Release data packs
+
+# Builds the data packs from the official sources (pipeline), signs them, checks them as the app
+# will (signature with the public key the app embeds, hashes, retrieval evaluation) and, only when
+# "publish" is ticked, uploads them to the release "packs-current" that the app syncs from, plus an
+# archived copy for rollback. Without "publish" it is a dry run: the packs are a workflow artifact.
+# Needs (docs/release.md): secret PACK_SIGNING_KEY, variable CITOYEN_PACKS_PUBLIC_KEY.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publier sur la release packs-current (sinon : essai à blanc)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-packs
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  packs:
+    name: Build, sign, check and publish packs
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install the pipeline
+        working-directory: pipeline
+        run: python -m pip install --quiet -e .
+
+      - name: Cache LEGI archives
+        uses: actions/cache@v6
+        with:
+          path: pipeline/cache/legi
+          key: legi-v1-${{ github.run_id }}
+          restore-keys: legi-v1-
+
+      - name: Fetch official sources
+        working-directory: pipeline
+        run: python -m citoyen_pipeline fetch --inputs inputs --cache cache
+
+      - name: Build and sign
+        working-directory: pipeline
+        env:
+          PACK_SIGNING_KEY: ${{ secrets.PACK_SIGNING_KEY }}
+        run: python -m citoyen_pipeline pack --inputs inputs --cache cache --out dist
+
+      - name: Check as the app will (signature, sizes, hashes)
+        working-directory: pipeline
+        env:
+          PACK_PUBLIC_KEY: ${{ vars.CITOYEN_PACKS_PUBLIC_KEY }}
+        run: python -m citoyen_pipeline verify --dist dist
+
+      - name: Set up JDK (evaluation harness)
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '21'
+      - name: Install the NDK and CMake of :llm
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Retrieval evaluation on the golden set (blocking, AGENTS.md §7.7)
+        run: ./gradlew :tools:rag-eval:evaluate -Ppacks="$GITHUB_WORKSPACE/pipeline/dist"
+
+      - name: Keep the packs and the report
+        uses: actions/upload-artifact@v7
+        with:
+          name: packs
+          path: pipeline/dist/
+          retention-days: 30
+
+      - name: Publish (packs first, manifest last)
+        if: inputs.publish
+        working-directory: pipeline/dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mapfile -t files < upload-order.txt
+          generated=$(python3 -c 'import json; print(json.load(open("manifest.json"))["generated_on"])')
+          archive="packs-$generated-r$GITHUB_RUN_NUMBER"
+          notes="Packs de données signés du $generated (manifest.json, manifest.json.sig, report.json)."
+          # Archived, immutable copy: rollback means re-uploading it to packs-current.
+          gh release create "$archive" --target "$GITHUB_SHA" --latest=false \
+            --title "Packs de données $generated (archive)" --notes "$notes" "${files[@]}" report.json
+          if ! gh release view packs-current > /dev/null 2>&1; then
+            gh release create packs-current --target "$GITHUB_SHA" --latest=false \
+              --title "Packs de données (version courante)" \
+              --notes "Version synchronisée par l’application. Ne pas supprimer."
+          fi
+          # One file at a time, manifest last: an app syncing mid-upload refuses the hash mismatch and
+          # installs at its next sync.
+          for file in "${files[@]}" report.json; do
+            gh release upload packs-current "$file" --clobber
+          done
+          echo "Published $archive and updated packs-current."

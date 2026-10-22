@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="feature_candidates_title">Candidats</string>
+    <string name="feature_candidates_search">Rechercher un nom</string>
+    <string name="feature_candidates_search_clear">Effacer la recherche</string>
+    <string name="feature_candidates_order_alphabetical">A → Z</string>
+    <string name="feature_candidates_order_random">Ordre aléatoire</string>
+    <string name="feature_candidates_empty">Aucune donnée sur les candidats n’est installée pour le moment.</string>
+    <string name="feature_candidates_no_match">Aucun nom ne correspond à la recherche.</string>
+</resources>

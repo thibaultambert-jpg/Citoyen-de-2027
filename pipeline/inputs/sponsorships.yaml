@@ -1,0 +1,9 @@
+# Parrainages (sponsorships) published by the Conseil constitutionnel on data.gouv.fr, at least twice a
+# week during the collection period (AGENTS.md §6). Filled by a human only.
+version: 1
+# data.gouv.fr slug of the dataset for 2027. TODO(verify): unknown until the Conseil publishes it
+# (2022: parrainages-des-candidats-a-lelection-presidentielle-francaise-de-2022). Empty: no data.
+dataset: ""
+# Candidate id -> name exactly as written in the published "Candidat" column, checked by hand
+# against the file: never matched automatically (homonyms, AGENTS.md §7.2).
+names: {}

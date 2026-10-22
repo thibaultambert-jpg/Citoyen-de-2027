@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="feature_institutions_title">Institutions</string>
+    <string name="feature_institutions_intro">Constitution et textes relatifs à l’élection présidentielle, dans leur version en vigueur à la date des données, consultables et recherchables hors ligne. Les textes sont affichés tels que publiés.</string>
+    <string name="feature_institutions_search_label">Rechercher dans les textes</string>
+    <string name="feature_institutions_clear">Effacer la recherche</string>
+    <string name="feature_institutions_texts">Textes</string>
+    <!-- %1$d: number of articles -->
+    <string name="feature_institutions_articles_count">%1$d articles</string>
+    <!-- %1$d: number of results -->
+    <string name="feature_institutions_results_count">%1$d articles contiennent tous les mots recherchés</string>
+    <string name="feature_institutions_no_result">Aucun article ne contient tous ces mots dans les textes de l’application.</string>
+    <string name="feature_institutions_no_data">Les textes juridiques ne sont pas encore installés.</string>
+    <!-- %1$s: article number -->
+    <string name="feature_institutions_article">Article %1$s</string>
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="feature_institutions_in_force">Version en vigueur depuis le %1$s</string>
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="feature_institutions_in_force_until">Selon la source, cette version cesse de s’appliquer le %1$s.</string>
+    <string name="feature_institutions_official">Voir le texte officiel</string>
+    <string name="feature_institutions_back">Retour</string>
+</resources>

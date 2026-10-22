@@ -1,0 +1,16 @@
+import fr.citoyende2027.buildlogic.configureKotlinJvm
+import fr.citoyende2027.buildlogic.configureSpotless
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.apply
+
+abstract class JvmLibraryConventionPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            apply(plugin = "org.jetbrains.kotlin.jvm")
+            apply(plugin = "citoyen.android.lint")
+            configureKotlinJvm()
+            configureSpotless()
+        }
+    }
+}

@@ -1,0 +1,4 @@
+# Human theme decisions (AGENTS.md §7.4), replacing the rule-based tags of one item.
+# target: "ballot" (an official ballot id, all its recorded votes) or "chunk" (a programme excerpt id).
+version: 1
+overrides: []
