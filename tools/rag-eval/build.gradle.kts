@@ -11,10 +11,8 @@ dependencies {
     implementation(libs.sqlite.jdbc)
 }
 
-/**
- * ./gradlew :tools:rag-eval:evaluate -Ppacks=<dir> [-Pgolden=<file>] [-Pthresholds=<file>]
- *   [-PragConfig=<file>] [-Pcalibrate=true] [-Preport=<file>]
- */
+// ./gradlew :tools:rag-eval:evaluate -Ppacks=<dir> [-Pgolden=<file>] [-Pthresholds=<file>]
+//   [-PragConfig=<file>] [-Pcalibrate=true] [-Preport=<file>]
 tasks.register<JavaExec>("evaluate") {
     group = "verification"
     description = "Evaluates the retrieval chain on the golden set (fails below the thresholds)."
