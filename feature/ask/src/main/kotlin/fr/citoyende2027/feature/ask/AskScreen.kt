@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
@@ -131,7 +132,10 @@ internal fun AskContent(
             label = { Text(stringResource(R.string.feature_ask_question)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { if (state.canSubmit) onSubmit(state.question) }),
-            modifier = Modifier.fillMaxWidth(),
+            // Found by the device benchmarks (benchmarks/, resource id "ask_question").
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("ask_question"),
         )
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = { onSubmit(state.question) }, enabled = state.canSubmit) {

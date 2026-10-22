@@ -55,6 +55,10 @@ gradlePlugin {
             id = libs.plugins.citoyen.android.feature.get().pluginId
             implementationClass = "AndroidFeatureConventionPlugin"
         }
+        register("androidTest") {
+            id = libs.plugins.citoyen.android.test.get().pluginId
+            implementationClass = "AndroidTestConventionPlugin"
+        }
         register("androidLint") {
             id = libs.plugins.citoyen.android.lint.get().pluginId
             implementationClass = "AndroidLintConventionPlugin"

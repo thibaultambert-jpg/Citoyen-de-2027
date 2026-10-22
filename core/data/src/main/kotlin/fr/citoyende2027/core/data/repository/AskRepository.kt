@@ -1,5 +1,6 @@
 package fr.citoyende2027.core.data.repository
 
+import fr.citoyende2027.core.data.trace.PerfTrace
 import fr.citoyende2027.core.database.dao.CorePackDao
 import fr.citoyende2027.core.database.model.asModel
 import fr.citoyende2027.core.model.Candidate
@@ -98,7 +99,11 @@ internal class OfflineAskRepository @Inject constructor(private val dao: CorePac
         withContext(Dispatchers.Default) { index() }
     }
 
-    override suspend fun ask(question: String, scope: AskScope): AskAnswer = withContext(Dispatchers.Default) {
+    override suspend fun ask(question: String, scope: AskScope): AskAnswer = PerfTrace.traced(PerfTrace.ASK) {
+        answer(question, scope)
+    }
+
+    private suspend fun answer(question: String, scope: AskScope): AskAnswer = withContext(Dispatchers.Default) {
         val index = index() ?: return@withContext AskAnswer.Unavailable
         val ragScope = when (scope) {
             AskScope.Legal -> RagScope.Legal

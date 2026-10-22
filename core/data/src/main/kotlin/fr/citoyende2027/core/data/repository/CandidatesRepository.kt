@@ -1,5 +1,7 @@
 package fr.citoyende2027.core.data.repository
 
+import fr.citoyende2027.core.data.trace.PerfTrace
+import fr.citoyende2027.core.data.trace.PerfTrace.tracedUntilFirst
 import fr.citoyende2027.core.database.dao.CorePackDao
 import fr.citoyende2027.core.database.model.asModel
 import fr.citoyende2027.core.database.model.programStatusOf
@@ -63,7 +65,7 @@ internal class OfflineCandidatesRepository @Inject constructor(private val dao: 
         dao.observeMandates(id.value).map { list -> list.map { it.asModel() } }
 
     override fun observeVotes(id: CandidateId): Flow<List<Vote>> =
-        dao.observeVotes(id.value).map { list -> list.map { it.asModel() } }
+        dao.observeVotes(id.value).map { list -> list.map { it.asModel() } }.tracedUntilFirst(PerfTrace.VOTES)
 
     override fun observeThemes(): Flow<List<Theme>> = dao.observeThemes().map { list -> list.map { it.asModel() } }
 

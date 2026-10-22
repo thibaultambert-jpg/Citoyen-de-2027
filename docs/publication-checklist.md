@@ -37,9 +37,10 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
 - [ ] Parcours complet avec TalkBack (liste, fiche, onglets, votes, comparateur, question, Infos).
 - [ ] Police système maximale et option « Taille du texte » de l’app : aucun texte coupé.
 - [ ] Démarrage à froid < 2 s sur un appareil d’entrée de gamme (Android 10, minSdk 29), mesuré
-      en release (Macrobenchmark ou `adb shell am start -W`).
-- [ ] Requêtes Room < 50 ms sur appareil (fiche d’un candidat avec beaucoup de votes, release).
-- [ ] Recherche dans les sources < 300 ms sur appareil d’entrée de gamme (avec le pack réel).
+      avec `:benchmarks` (`docs/benchmarks.md`).
+- [ ] Requêtes Room < 50 ms sur appareil (`ScreenBenchmark.candidateSheetVotes`, `docs/benchmarks.md`).
+- [ ] Recherche dans les sources < 300 ms sur appareil d’entrée de gamme, avec le pack réel
+      (`ScreenBenchmark.searchInSources`).
 - [ ] Mode avion : l’app est utile dès le premier lancement avec le pack `core` embarqué.
 - [ ] Assistant IA sur un appareil ≥ 6 Go de RAM (seuil confirmé le 22/10/2026) : temps au premier token, jetons/s, pic de RAM
       (écran de benchmark debug) ; comparaison Q4_K_M / Q4_0 avant de figer la quantification.

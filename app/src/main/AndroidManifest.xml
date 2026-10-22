@@ -14,6 +14,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Citoyen"
         android:usesCleartextTraffic="false">
+        <!-- Lets the shell profile the app (device benchmarks); grants nothing to other apps. -->
+        <profileable android:shell="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

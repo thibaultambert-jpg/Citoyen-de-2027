@@ -5,8 +5,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -26,6 +30,7 @@ import fr.citoyende2027.feature.institutions.navigation.institutionsScreen
 import fr.citoyende2027.feature.institutions.navigation.navigateToLegalText
 import fr.citoyende2027.navigation.TopLevelDestination
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CitoyenApp(navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -34,6 +39,8 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
     val labels = TopLevelDestination.entries.associateWith { stringResource(it.label) }
 
     NavigationSuiteScaffold(
+        // Test tags become resource ids, so the device benchmarks (benchmarks/) can find elements.
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach { destination ->
                 val selected = currentDestination?.hierarchy?.any { it.hasRoute(destination.routeClass) } == true

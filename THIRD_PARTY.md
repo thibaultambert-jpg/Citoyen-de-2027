@@ -33,6 +33,7 @@ chaque ajout est justifié ici. Versions : `gradle/libs.versions.toml`.
 | JUnit 5 (Jupiter, Platform) | **EPL-2.0** | Exigé par AGENTS.md §4 ; uniquement en `testImplementation`, jamais dans l’APK. À confirmer par l’humain. |
 | JUnit 4 + JUnit Vintage engine | **EPL-1.0 / EPL-2.0** | Requis par Robolectric (runner JUnit 4), tests uniquement. |
 | Robolectric | MIT | Tests JVM nécessitant le framework Android (Room, Compose UI). |
+| AndroidX Benchmark (macro-junit4), AndroidX Test (ext junit, runner), UiAutomator | Apache-2.0 | Module `:benchmarks` (mesures sur téléphone des budgets de AGENTS.md §4), jamais dans l’APK distribué. Versions de nowinandroid. |
 | AndroidX Test core, Compose UI test (junit4, manifest) | Apache-2.0 | Tests ; `ui-test-manifest` en `debugImplementation` des modules testés uniquement. |
 | Turbine | Apache-2.0 | Tests de Flow. |
 | kotlinx-coroutines-test | Apache-2.0 | Tests de coroutines. |

@@ -24,6 +24,12 @@ internal object Sdk {
 }
 
 internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension) {
+    configureAndroidLanguage(commonExtension)
+    configureJUnit5()
+}
+
+/** SDK levels and Kotlin, without unit tests: device test modules (com.android.test) have none. */
+internal fun Project.configureAndroidLanguage(commonExtension: CommonExtension) {
     commonExtension.apply {
         compileSdk = Sdk.COMPILE
         defaultConfig.apply {
@@ -35,7 +41,6 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension) {
         }
     }
     configureKotlin<KotlinAndroidProjectExtension>()
-    configureJUnit5()
 }
 
 internal fun Project.configureKotlinJvm() {

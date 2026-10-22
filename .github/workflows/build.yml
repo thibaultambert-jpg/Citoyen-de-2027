@@ -67,6 +67,9 @@ jobs:
             -Pcitoyen.signing.storePassword=throwaway -Pcitoyen.signing.keyAlias=ci \
             -Pcitoyen.signing.keyPassword=throwaway
 
+      - name: Compile the device benchmarks (run on a phone by hand, docs/benchmarks.md)
+        run: ./gradlew :benchmarks:assembleBenchmark
+
       - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages, signature)
         run: |
           apk=app/build/outputs/apk/release/app-release.apk

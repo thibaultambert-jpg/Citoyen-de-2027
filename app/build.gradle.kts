@@ -51,7 +51,17 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+        // Release code and settings, signed with the local debug key so the device benchmarks
+        // (benchmarks/) can install it; never distributed.
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+        }
     }
+
+    // The benchmark build uses the release data seeding (signed embedded pack, no fixtures).
+    sourceSets.getByName("benchmark").kotlin.srcDir("src/release/kotlin")
 }
 
 dependencies {

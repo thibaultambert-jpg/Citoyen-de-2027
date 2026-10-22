@@ -18,6 +18,7 @@ l’application ou un prompt contient un terme de `config/neutrality/evaluative-
 
 - Installer l’application (APK direct) : [`docs/installation.md`](docs/installation.md).
 - Publier une version ou des packs de données : [`docs/release.md`](docs/release.md).
+- Mesurer les performances sur téléphone : [`docs/benchmarks.md`](docs/benchmarks.md).
 
 ## Modules
 
@@ -32,5 +33,6 @@ l’application ou un prompt contient un terme de `config/neutrality/evaluative-
 | `:feature:*` | Écrans : candidats, fiche, comparer, question, institutions, infos. |
 | `:rag`, `:llm` | Recherche dans les sources, LLM local. |
 | `:tools:neutrality-check` | Garde-fou de neutralité exécuté au build. |
+| `:benchmarks` | Mesures sur téléphone (démarrage, votes, recherche). |
 
 Avancement par jalon : [`docs/jalons/`](docs/jalons/).
