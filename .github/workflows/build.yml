@@ -56,8 +56,8 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug
 
-      - name: Compile release (no fixtures in release)
-        run: ./gradlew :app:compileReleaseKotlin
+      - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
+        run: ./gradlew :app:assembleRelease
 
       - name: Report APK size and content
         run: |
@@ -66,6 +66,9 @@ jobs:
           # Native libraries (llama.cpp CPU variants) and the largest entries, compressed size.
           unzip -v app/build/outputs/apk/debug/app-debug.apk | grep '\.so$'
           unzip -v app/build/outputs/apk/debug/app-debug.apk | sort -k3 -n -r | head -12
+          # Size budget (AGENTS.md §4): release APK without the model < 60 MB.
+          ls -l app/build/outputs/apk/release/
+          unzip -v app/build/outputs/apk/release/*.apk | sort -k3 -n -r | head -15
 
       - name: Upload reports
         if: always()
