@@ -28,7 +28,9 @@ class LlamaBridgeHostTest {
     fun load() {
         System.load(System.getProperty("llm.hostLib"))
         LlamaNative.init(System.getProperty("java.io.tmpdir"))
-        model = assertNotNull(LlamaModel.load(System.getProperty("llm.testModel"), nThreads = 2, nCtx = 512))!!
+        model = checkNotNull(LlamaModel.load(System.getProperty("llm.testModel"), nThreads = 2, nCtx = 512)) {
+            "test model not loaded"
+        }
     }
 
     @AfterAll

@@ -16,6 +16,7 @@ import fr.citoyende2027.llm.device.PerformanceCores
 import fr.citoyende2027.llm.engine.LlamaModel
 import fr.citoyende2027.llm.engine.LlamaRuntime
 import fr.citoyende2027.llm.model.ModelStore
+import fr.citoyende2027.llm.model.ModelStores
 import fr.citoyende2027.rag.answer.GenerationRequest
 import fr.citoyende2027.rag.answer.GenerationResult
 import java.io.File
