@@ -17,7 +17,8 @@ class RepositoryNeutralityTest {
     @Test
     fun `string resources contain no evaluative term`() {
         val files = root.walkTopDown()
-            .onEnter { it.name != "build" && !it.name.startsWith(".") }
+            // Git submodules (third-party code such as llama.cpp, with a ".git" file) are not app texts.
+            .onEnter { it.name != "build" && !it.name.startsWith(".") && !File(it, ".git").isFile }
             .filter { it.name == "strings.xml" && it.parentFile.name.startsWith("values") }
             .filter { it.invariantSeparatorsPath.contains("/src/main/res/") }
             .toList()

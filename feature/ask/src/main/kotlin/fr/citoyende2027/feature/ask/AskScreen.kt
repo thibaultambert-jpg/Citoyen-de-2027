@@ -1,5 +1,7 @@
 package fr.citoyende2027.feature.ask
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -48,17 +50,32 @@ import fr.citoyende2027.core.ui.SourceButton
 import fr.citoyende2027.core.ui.VoteItem
 import fr.citoyende2027.core.ui.toFrenchDate
 import fr.citoyende2027.rag.RefusalCategory
+import fr.citoyende2027.rag.answer.GroundedAnswer
 
 @Composable
 internal fun AskScreen(modifier: Modifier = Modifier, viewModel: AskViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // The model file can also be copied from the device (Storage Access Framework), then verified.
+    val modelPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let(viewModel::importModel)
+    }
     AskContent(
         state = state,
         onScopeChange = viewModel::onScopeChange,
         onCandidateChange = viewModel::onCandidateChange,
         onQuestionChange = viewModel::onQuestionChange,
         onSubmit = viewModel::submit,
+        actions = AssistantActions(
+            onDownload = viewModel::downloadModel,
+            onCancelDownload = viewModel::cancelDownload,
+            onImport = { modelPicker.launch(arrayOf("*/*")) },
+            onRemove = viewModel::removeModel,
+            onEnabledChange = viewModel::setAssistantEnabled,
+            onStop = viewModel::stopGeneration,
+            onExtractsOnly = viewModel::showExtractsOnly,
+        ),
         modifier = modifier,
+        footer = { BenchmarkSection() },
     )
 }
 
@@ -70,7 +87,9 @@ internal fun AskContent(
     onCandidateChange: (Candidate) -> Unit,
     onQuestionChange: (String) -> Unit,
     onSubmit: (String) -> Unit,
+    actions: AssistantActions,
     modifier: Modifier = Modifier,
+    footer: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -84,13 +103,7 @@ internal fun AskContent(
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.semantics { heading() },
         )
-        Card {
-            Text(
-                text = stringResource(R.string.feature_ask_no_ai_mode),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(12.dp),
-            )
-        }
+        AssistantCard(state.assistant, state.importAccepted, actions)
         Text(stringResource(R.string.feature_ask_scope), style = MaterialTheme.typography.titleSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ScopeKind.entries.forEach { scope ->
@@ -131,9 +144,20 @@ internal fun AskContent(
             Column(
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) { Answer(answer) }
+            ) {
+                if (!state.extractsOnly) AiAnswerSection(state.ai, actions)
+                Answer(answer, sourceLabels = state.sourceLabels())
+            }
         }
+        footer()
     }
+}
+
+/** Passage id → label (S1…) of the sources given to the assistant, shown on the passage cards. */
+private fun AskUiState.sourceLabels(): Map<String, String> {
+    if (extractsOnly) return emptyMap()
+    val answered = (ai as? AiAnswer.Done)?.answer as? GroundedAnswer.Answered ?: return emptyMap()
+    return answered.sources.associate { it.passageId to it.label }
 }
 
 private val ScopeKind.label: Int
@@ -175,7 +199,7 @@ private fun Suggestions(state: AskUiState, onQuestionChange: (String) -> Unit, o
 }
 
 @Composable
-private fun Answer(answer: AskAnswer) {
+private fun Answer(answer: AskAnswer, sourceLabels: Map<String, String>) {
     when (answer) {
         AskAnswer.Unavailable -> Text(stringResource(R.string.feature_ask_unavailable))
 
@@ -214,26 +238,36 @@ private fun Answer(answer: AskAnswer) {
 
         is AskAnswer.Passages -> {
             Text(stringResource(R.string.feature_ask_passages_notice), style = MaterialTheme.typography.bodyMedium)
-            answer.groups.forEach { Group(it) }
+            answer.groups.forEach { Group(it, sourceLabels) }
         }
     }
 }
 
 /** Same template for every group; a candidate without a relevant passage keeps its place. */
 @Composable
-private fun Group(group: AnswerGroup) {
+private fun Group(group: AnswerGroup, sourceLabels: Map<String, String>) {
     group.candidate?.let { Heading(it.displayName) }
     if (group.isEmpty) Text(stringResource(R.string.feature_ask_group_empty))
-    group.legal.forEach { LegalPassageCard(it) }
-    group.programs.forEach { ProgramExcerptCard(it.chunk, it.document, themeLabels = emptyMap()) }
+    group.legal.forEach { LegalPassageCard(it, sourceLabels[it.article.id]) }
+    group.programs.forEach { passage ->
+        sourceLabels[passage.chunk.id]?.let { SourceLabel(it) }
+        ProgramExcerptCard(passage.chunk, passage.document, themeLabels = emptyMap())
+    }
+}
+
+/** "Source S1": links a citation of the generated answer to the passage card below. */
+@Composable
+private fun SourceLabel(label: String) {
+    Text(stringResource(R.string.feature_ask_ai_source, label), style = MaterialTheme.typography.labelLarge)
 }
 
 @Composable
-private fun LegalPassageCard(passage: LegalPassage) {
+private fun LegalPassageCard(passage: LegalPassage, sourceLabel: String?) {
     val uriHandler = LocalUriHandler.current
     val article = passage.article
     OutlinedCard {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            sourceLabel?.let { SourceLabel(it) }
             Text(passage.text.title, style = MaterialTheme.typography.labelLarge)
             if (article.headingPath.isNotEmpty()) {
                 Text(article.headingPath.joinToString(" › "), style = MaterialTheme.typography.labelMedium)

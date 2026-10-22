@@ -30,10 +30,16 @@ class CitoyenApplication :
 
     override fun onCreate() {
         super.onCreate()
+        // The ":llm" process only runs the local model (AGENTS.md §9): no data seeding, no sync there.
+        if (Application.getProcessName().endsWith(LLM_PROCESS_SUFFIX)) return
         // Never blocks startup; screens observe the database and update when data lands.
         applicationScope.launch {
             startupDataSeeder.seedIfNeeded()
             PackSyncWorker.schedule(WorkManager.getInstance(this@CitoyenApplication))
         }
+    }
+
+    private companion object {
+        const val LLM_PROCESS_SUFFIX = ":llm"
     }
 }

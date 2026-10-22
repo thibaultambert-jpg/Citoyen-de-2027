@@ -15,6 +15,14 @@ android {
         versionName = "0.0.1"
     }
 
+    packaging {
+        jniLibs {
+            // ggml loads its CPU variant (dotprod, i8mm…) from nativeLibraryDir: libraries must be
+            // extracted at install time, as in the Android example of llama.cpp.
+            useLegacyPackaging = true
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -34,6 +42,7 @@ dependencies {
     implementation(projects.feature.candidates)
     implementation(projects.feature.compare)
     implementation(projects.feature.institutions)
+    implementation(projects.llm)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

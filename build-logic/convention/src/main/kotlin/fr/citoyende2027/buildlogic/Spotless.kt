@@ -12,6 +12,8 @@ internal fun Project.configureSpotless() {
     extensions.configure<SpotlessExtension> {
         kotlin {
             target("src/**/*.kt")
+            // Third-party native sources (llama.cpp submodule) are not ours to format.
+            targetExclude("src/main/cpp/**")
             ktlint(ktlintVersion)
         }
         kotlinGradle {

@@ -37,6 +37,14 @@ chaque ajout est justifié ici. Versions : `gradle/libs.versions.toml`.
 | Turbine | Apache-2.0 | Tests de Flow. |
 | kotlinx-coroutines-test | Apache-2.0 | Tests de coroutines. |
 
+## Assistant local (`:llm`)
+
+| Dépendance | Licence | Justification |
+| --- | --- | --- |
+| llama.cpp et ggml, release b11400 (commit `0bb496dbd3af0add77ff82c406a915b41e839d56`), sous-module `llm/src/main/cpp/llama.cpp` | MIT | Inférence locale du modèle GGUF (AGENTS.md §9), compilée depuis les sources (NDK/CMake), sans AAR tiers. Une bibliothèque CPU par jeu d’instructions, choisie à l’exécution. KleidiAI et OpenSSL désactivés. |
+| Modèle Ministral-3-3B-Instruct-2512, GGUF Q4_K_M | Apache-2.0 | Téléchargé à la demande (non embarqué) ; URL et SHA-256 fournis par l’humain (`TODO(verify)`). |
+| Modèle de test `stories15M-q4_0.gguf` (ggml-org/models) | `TODO(verify)` | CI uniquement (test du pont natif), jamais embarqué ni publié ; nom et SHA-256 repris de `tests/CMakeLists.txt` de llama.cpp b11400. |
+
 ## Pipeline de données (`/pipeline`, hors APK)
 
 | Dépendance | Licence | Justification |
