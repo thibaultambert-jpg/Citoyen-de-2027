@@ -59,10 +59,13 @@ jobs:
       - name: Compile release (no fixtures in release)
         run: ./gradlew :app:compileReleaseKotlin
 
-      - name: Report APK size
+      - name: Report APK size and content
         run: |
           ls -l app/build/outputs/apk/debug/
           du -h app/build/outputs/apk/debug/*.apk
+          # Native libraries (llama.cpp CPU variants) and the largest entries, compressed size.
+          unzip -v app/build/outputs/apk/debug/app-debug.apk | grep '\.so$'
+          unzip -v app/build/outputs/apk/debug/app-debug.apk | sort -k3 -n -r | head -12
 
       - name: Upload reports
         if: always()
