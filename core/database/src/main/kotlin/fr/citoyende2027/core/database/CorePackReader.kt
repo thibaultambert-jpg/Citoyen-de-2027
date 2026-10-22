@@ -232,7 +232,8 @@ class LegalPackReader @Inject constructor() {
                 )
             }
             val articles = db.query(
-                "SELECT id, text_id, ordinal, number, heading_path, body, in_force_since, url FROM legal_articles",
+                "SELECT id, text_id, ordinal, number, heading_path, body, in_force_since, url, in_force_until " +
+                    "FROM legal_articles",
             ) {
                 LegalArticle(
                     id = it.getString(0),
@@ -243,6 +244,7 @@ class LegalPackReader @Inject constructor() {
                     text = it.getString(5),
                     inForceSince = it.getStringOrNull(6)?.let(LocalDate::parse),
                     url = it.getString(7),
+                    inForceUntil = it.getStringOrNull(8)?.let(LocalDate::parse),
                 )
             }
             val info = DataPackInfo(

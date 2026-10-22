@@ -214,8 +214,10 @@ def fictional_legal() -> LegalPack:
             license="Licence fictive",
         )
 
-    def article(text_id, ordinal, number, headings, body, start, url) -> LegalArticle:
-        return LegalArticle(f"{text_id}-art-{ordinal}", text_id, ordinal, number, headings, body, start, url)
+    def article(text_id, ordinal, number, headings, body, start, url, until=None) -> LegalArticle:
+        return LegalArticle(
+            f"{text_id}-art-{ordinal}", text_id, ordinal, number, headings, body, start, url, until
+        )
 
     a, b = "fictif-texte-a", "fictif-texte-b"
     return LegalPack(
@@ -239,6 +241,7 @@ def fictional_legal() -> LegalPack:
                 "L’élection fictive a lieu selon une règle fictive.",
                 date(2020, 1, 1),
                 "https://example.invalid/textes/a/1",
+                until=date(2030, 1, 1),
             ),
             article(
                 b,

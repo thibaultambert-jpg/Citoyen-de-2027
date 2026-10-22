@@ -27,6 +27,8 @@ data class LegalArticle(
     val inForceSince: LocalDate?,
     /** Official page of the article. */
     val url: String,
+    /** Date this version stops applying, when the source already announces it. */
+    val inForceUntil: LocalDate? = null,
 )
 
 /** Content of the `legal` pack. */

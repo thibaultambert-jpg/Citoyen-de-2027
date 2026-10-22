@@ -90,5 +90,9 @@ class CorePackReaderContractTest {
         val line = content.articles.first { it.id == "fictif-texte-b-art-1" }
         assertEquals("Ligne fictive.\nSeconde ligne fictive.", line.text)
         assertEquals(listOf("Livre fictif"), line.headingPath)
+        assertEquals(
+            java.time.LocalDate.of(2030, 1, 1),
+            content.articles.first { it.id == "fictif-texte-a-art-2" }.inForceUntil,
+        )
     }
 }

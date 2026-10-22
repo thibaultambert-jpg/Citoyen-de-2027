@@ -83,7 +83,9 @@ FILES = {
     section_path(ROOT, "LEGISCTA000000000021"): section(
         "LEGISCTA000000000021",
         "Chapitre fictif",
-        link_art("LEGIARTI000000000015", "4", "VIGUEUR", "2000-01-01", "2999-01-01"),
+        link_art("LEGIARTI000000000015", "4", "ABROGE_DIFF", "2000-01-01", "2030-01-01")
+        + link_art("LEGIARTI000000000016", "4", "VIGUEUR_DIFF", "2030-01-01", "2999-01-01")
+        + link_art("LEGIARTI000000000017", "5", "", "2999-01-01", "2999-01-01"),
     ),
     article_path(ROOT, "LEGIARTI000000000010"): article(
         "LEGIARTI000000000010", "PREAMBULE", "MODIFIE", "2000-01-01", "<p>Ancien texte fictif.</p>"
@@ -168,8 +170,15 @@ def test_articles_in_force_in_reading_order_with_headings(cache):
     assert text[0].body == "Premier paragraphe fictif.\nSecond paragraphe\navec un saut de ligne."
     assert text[0].in_force_since == date(2010, 1, 1)
     assert text[1].body == "Règle fictive n° 1."
+    # The version applying today ends on a date announced by the source.
+    assert (text[2].in_force_until, text[0].in_force_until) == (date(2030, 1, 1), None)
     assert text[0].url == "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000000000011"
-    assert review == {}
+    assert review == {
+        "legal texte-fictif: skipped links and future versions": [
+            "LEGIARTI000000000014 (art. 3): version applying from 2030-01-01",
+            "LEGIARTI000000000016 (art. 4): version applying from 2030-01-01",
+        ]
+    }
     first = pack.texts[0]
     assert (first.title, first.url) == (
         "Texte fictif de référence",
@@ -220,3 +229,74 @@ def test_legal_pack_version_follows_content(cache, tmp_path):
     db = sqlite3.connect(tmp_path / "2.sqlite")
     assert dict(db.execute("SELECT key, value FROM meta"))["pack_id"] == "legal"
     assert db.execute("SELECT COUNT(*) FROM legal_articles").fetchone()[0] == 4
+
+
+def test_sections_are_selected_by_their_stable_cid(cache):
+    # In LEGI a section keeps its `cid` while its `id` changes with each version.
+    path = cache.root / legal.EXTRACT_DIR / CODE / "texte" / "struct" / f"{CODE}.xml"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace('cid="LEGISCTA000000000031"', 'cid="LEGISCTA000000000131"'),
+        encoding="utf-8",
+    )
+    pack, _ = legal.assemble(
+        cache, [LegalInput("code-fictif", CODE, 1, ("LEGISCTA000000000131",))], date(2026, 10, 1)
+    )
+    assert [a.number for a in pack.articles] == ["L2"]
+
+
+def _archive(path, files: dict[str, bytes]) -> None:
+    with tarfile.open(path, "w:gz") as tar:
+        for name, data in files.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+
+
+def test_increments_after_the_global_archive_in_order():
+    html = "".join(
+        f'<a href="{n}">x</a>'
+        for n in (
+            "LEGI_20250712-211706.tar.gz",
+            "Freemium_legi_global_20250713-140000.tar.gz",
+            "LEGI_20250715-205701.tar.gz",
+            "LEGI_20250713-205013.tar.gz",
+        )
+    )
+    base = latest_global_archive(html)
+    assert [u.rsplit("/", 1)[-1] for u in legal.increments_after(html, base)] == [
+        "LEGI_20250713-205013.tar.gz",
+        "LEGI_20250715-205701.tar.gz",
+    ]
+    assert legal.stamp_date(base) == date(2025, 7, 13)
+
+
+def test_increment_updates_deletes_and_follows_a_moved_text(cache, tmp_path):
+    target = cache.root / legal.EXTRACT_DIR
+    directories = {TEXT: ROOT + "/", CODE: CODE_ROOT + "/"}
+    moved = ROOT.replace("TNC_en_vigueur/TNC_en_vigueur", "TNC_non_vigueur/TNC_non_vigueur")
+    stamp = "20261021-213023"
+    changed = article("LEGIARTI000000000012", "1", "VIGUEUR", "2000-01-01", "<p>Règle fictive modifiée.</p>")
+    increment = tmp_path / "LEGI_20261021-213023.tar.gz"
+    _archive(
+        increment,
+        {
+            f"{stamp}/liste_suppression_legi.dat": (
+                article_path(CODE_ROOT, "LEGIARTI000000000040").removesuffix(".xml") + "\n"
+            ).encode(),
+            f"{stamp}/liste_suppression_legi_dossier.dat": f"{ROOT} D\n".encode(),
+            # The text moves: all its files are published again under the new directory.
+            **{
+                f"{stamp}/{name.replace(ROOT, moved)}": body.encode()
+                for name, body in FILES.items()
+                if name.startswith(ROOT + "/")
+            },
+            f"{stamp}/{article_path(moved, 'LEGIARTI000000000012')}": changed.encode(),
+        },
+    )
+    legal.apply_increment(increment, target, directories)
+    assert directories[TEXT] == moved + "/"
+    assert not (target / CODE / "article/LEGI/ARTI/00/00/00/00/00/LEGIARTI000000000040.xml").exists()
+    pack, _ = legal.assemble(cache, INPUTS, date(2026, 10, 1))
+    bodies = {a.id: a.body for a in pack.articles}
+    assert bodies["LEGIARTI000000000012"] == "Règle fictive modifiée."
+    assert "LEGIARTI000000000040" not in bodies

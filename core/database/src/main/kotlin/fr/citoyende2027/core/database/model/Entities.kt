@@ -280,6 +280,7 @@ data class LegalArticleEntity(
     @ColumnInfo(name = "heading_path") val headingPath: String,
     val body: String,
     @ColumnInfo(name = "in_force_since") val inForceSince: LocalDate?,
+    @ColumnInfo(name = "in_force_until") val inForceUntil: LocalDate?,
     val url: String,
 )
 

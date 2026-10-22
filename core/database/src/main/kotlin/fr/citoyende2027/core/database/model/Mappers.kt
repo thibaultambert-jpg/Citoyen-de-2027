@@ -251,6 +251,7 @@ fun LegalArticle.asEntity() = LegalArticleEntity(
     headingPath = headingPath.joinToString(HEADING_SEPARATOR),
     body = text,
     inForceSince = inForceSince,
+    inForceUntil = inForceUntil,
     url = url,
 )
 
@@ -262,6 +263,7 @@ fun LegalArticleEntity.asModel() = LegalArticle(
     headingPath = headingPath.split(HEADING_SEPARATOR).filter { it.isNotEmpty() },
     text = body,
     inForceSince = inForceSince,
+    inForceUntil = inForceUntil,
     url = url,
 )
 

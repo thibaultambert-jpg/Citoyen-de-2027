@@ -43,6 +43,7 @@ object FictionalLegal {
             text = "L’élection fictive a lieu selon une règle fictive.",
             inForceSince = LocalDate.of(2020, 1, 1),
             url = "https://example.invalid/textes/a/1",
+            inForceUntil = LocalDate.of(2030, 1, 1),
         ),
         LegalArticle(
             id = "fictif-texte-a-art-3",

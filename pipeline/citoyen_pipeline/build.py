@@ -332,6 +332,7 @@ CREATE TABLE legal_articles (
     heading_path TEXT NOT NULL,
     body TEXT NOT NULL,
     in_force_since TEXT,
+    in_force_until TEXT,
     url TEXT NOT NULL
 );
 """
@@ -359,6 +360,7 @@ def write_legal_pack(pack: LegalPack, path: Path, version: str | None = None) ->
                 HEADING_SEPARATOR.join(a.heading_path),
                 a.body,
                 a.in_force_since.isoformat() if a.in_force_since else None,
+                a.in_force_until.isoformat() if a.in_force_until else None,
                 a.url,
             )
             for a in sorted(pack.articles, key=lambda a: (a.text_id, a.ordinal))

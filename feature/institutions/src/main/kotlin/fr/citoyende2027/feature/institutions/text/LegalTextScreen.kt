@@ -127,6 +127,12 @@ private fun ArticleItem(article: LegalArticle, text: LegalText) {
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+        article.inForceUntil?.let {
+            Text(
+                text = stringResource(R.string.feature_institutions_in_force_until, it.toFrenchDate()),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { uriHandler.openUri(article.url) }) {
                 Text(stringResource(R.string.feature_institutions_official))

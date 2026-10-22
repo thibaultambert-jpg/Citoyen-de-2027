@@ -253,6 +253,8 @@ class LegalArticle:
     body: str
     in_force_since: date | None
     url: str
+    # End of the version in force, when the source announces one (state ABROGE_DIFF).
+    in_force_until: date | None = None
 
 
 @dataclass
