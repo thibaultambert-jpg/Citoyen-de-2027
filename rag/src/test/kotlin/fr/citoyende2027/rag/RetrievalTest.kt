@@ -28,6 +28,7 @@ class RetrievalTest {
         )
         assertEquals("electi", TextAnalyzer.stem("election"))
         assertEquals("ecole", TextAnalyzer.stem("ecole"))
+        assertEquals("article12", TextAnalyzer.stem("article12"))
     }
 
     @Test

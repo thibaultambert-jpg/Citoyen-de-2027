@@ -26,10 +26,11 @@ object TextAnalyzer {
     /** Distinct query terms, in order. */
     fun queryTerms(question: String, maxTerms: Int = 16): List<String> = tokens(question).distinct().take(maxTerms)
 
-    /** Prefix used to match a query term: whole term up to 5 characters, then the term minus 2. */
-    fun stem(term: String): String = if (term.length <= 5 ||
-        term.all(Char::isDigit)
-    ) {
+    /**
+     * Prefix used to match a query term: whole term up to 5 characters, then the term minus 2. Terms with
+     * a digit (article numbers such as "l49") are matched whole: "l49" must not find "l491".
+     */
+    fun stem(term: String): String = if (term.length <= 5 || term.any(Char::isDigit)) {
         term
     } else {
         term.take(maxOf(5, term.length - 2))
