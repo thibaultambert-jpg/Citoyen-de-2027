@@ -7,6 +7,8 @@ plugins {
 
 android {
     namespace = "fr.citoyende2027"
+    // Same NDK as :llm: the app strips the debug symbols of every native library it packages.
+    ndkVersion = "29.0.13113456"
 
     defaultConfig {
         // TODO(verify): final applicationId to be chosen by the publisher before any release.
