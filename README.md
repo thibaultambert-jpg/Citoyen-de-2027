@@ -14,6 +14,11 @@ Prérequis : JDK 21, Android SDK (plateforme 37).
 `./gradlew test` exécute aussi le scan de neutralité (`:tools:neutrality-check`), qui échoue si un texte de
 l’application ou un prompt contient un terme de `config/neutrality/evaluative-terms-fr.txt`.
 
+## Installer et publier
+
+- Installer l’application (APK direct) : [`docs/installation.md`](docs/installation.md).
+- Publier une version ou des packs de données : [`docs/release.md`](docs/release.md).
+
 ## Modules
 
 | Module | Rôle |

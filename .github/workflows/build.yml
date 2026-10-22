@@ -56,11 +56,22 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug
 
-      - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
-        run: ./gradlew :app:assembleRelease
+      - name: Throwaway keystore (exercises the release signing path; worthless, never published)
+        run: |
+          keytool -genkeypair -keystore "$RUNNER_TEMP/throwaway.jks" -alias ci -keyalg RSA -keysize 2048 \
+            -validity 1 -storepass throwaway -keypass throwaway -dname "CN=CI throwaway" > /dev/null 2>&1
 
-      - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages)
-        run: python3 tools/release-checks/check_apk.py app/build/outputs/apk/release/*.apk
+      - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
+        run: |
+          ./gradlew :app:assembleRelease -Pcitoyen.signing.storeFile="$RUNNER_TEMP/throwaway.jks" \
+            -Pcitoyen.signing.storePassword=throwaway -Pcitoyen.signing.keyAlias=ci \
+            -Pcitoyen.signing.keyPassword=throwaway
+
+      - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages, signature)
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          python3 tools/release-checks/check_apk.py "$apk"
+          "$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner" verify --print-certs "$apk"
 
       - name: Report APK size and content
         run: |

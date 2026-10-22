@@ -62,7 +62,8 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
 - [ ] APK release signé publié sur la page de version GitHub, avec son empreinte SHA-256.
 - [ ] Empreinte SHA-256 du certificat de signature publiée (README, page de version) pour que chacun
       puisse vérifier l’APK (`apksigner verify --print-certs`).
-- [ ] Mode d’emploi d’installation (autoriser l’installation depuis cette source, vérifier l’empreinte).
+- [ ] Mode d’emploi d’installation à jour (`docs/installation.md`).
+- [ ] Procédure de publication suivie (`docs/release.md` : workflows `Release APK` et `Release data packs`).
 - [ ] `versionCode` incrémenté à chaque version (sinon l’installation par-dessus est refusée).
 - [ ] `applicationId` définitif choisi avant la première diffusion (il ne peut plus changer ensuite).
 - [ ] Politique de confidentialité publiée à une URL stable (reprend la page « Vie privée » de l’app).

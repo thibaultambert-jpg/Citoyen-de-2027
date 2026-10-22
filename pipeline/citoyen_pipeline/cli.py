@@ -1,4 +1,4 @@
-"""Command line: `python -m citoyen_pipeline {fetch,pack,test-pack}`."""
+"""Command line: `python -m citoyen_pipeline {fetch,pack,test-pack,verify}`."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import sys
 from datetime import UTC, date, datetime
 from pathlib import Path
 
-from citoyen_pipeline import testpack
+from citoyen_pipeline import testpack, verify_dist
 from citoyen_pipeline.assemble import assemble_legal, assemble_packs, fetch_all, inputs_digest
 from citoyen_pipeline.build import pack_version, write_core_pack, write_legal_pack, write_programs_pack
 from citoyen_pipeline.fetch import Cache
@@ -130,6 +130,19 @@ def cmd_test_pack(args) -> int:
     return 0
 
 
+def cmd_verify(args) -> int:
+    dist = Path(args.dist)
+    problems = verify_dist.check(dist, args.public_key or os.environ.get("PACK_PUBLIC_KEY", ""))
+    for problem in problems:
+        print("NOT PUBLISHABLE:", problem)
+    if problems:
+        return 1
+    # Upload order for the release workflow, one file per line.
+    (dist / "upload-order.txt").write_text("\n".join(verify_dist.publishable_files(dist)) + "\n")
+    print("Publishable:", ", ".join(verify_dist.publishable_files(dist)))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="citoyen_pipeline")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -147,6 +160,10 @@ def main(argv: list[str] | None = None) -> int:
     test = sub.add_parser("test-pack", help="write the fictional, test-signed pack used by app tests")
     test.add_argument("--out", required=True)
     test.set_defaults(func=cmd_test_pack)
+    check = sub.add_parser("verify", help="check a dist/ directory as the app will (signature, hashes)")
+    check.add_argument("--dist", default="dist")
+    check.add_argument("--public-key", help="base64 Ed25519 public key (default: $PACK_PUBLIC_KEY)")
+    check.set_defaults(func=cmd_verify)
     args = parser.parse_args(argv)
     return args.func(args)
 

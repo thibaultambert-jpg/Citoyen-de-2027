@@ -1,0 +1,120 @@
+name: Release APK
+
+# Builds the signed release APK for direct distribution (no store) and attaches it to a DRAFT GitHub
+# release: nothing is public until the publisher reviews and publishes the draft by hand.
+# Trigger: push a tag vX.Y.Z matching versionName in app/build.gradle.kts.
+# Needs (docs/release.md): secrets APP_KEYSTORE_BASE64, APP_KEYSTORE_PASSWORD, APP_KEY_ALIAS,
+# APP_KEY_PASSWORD; variables CITOYEN_PACKS_PUBLIC_KEY and CITOYEN_LEGAL_* (optional CITOYEN_LLM_*,
+# CITOYEN_REPORT_URL, CITOYEN_PACKS_BASE_URL).
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: release-app-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Signed APK (draft release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Tag matches versionName
+        run: |
+          version=$(sed -nE 's/^ *versionName = "([^"]+)".*/\1/p' app/build.gradle.kts)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match versionName $version (app/build.gradle.kts)." >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Install the NDK and CMake of :llm
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # The release properties hold secrets: never save this Gradle home to the shared cache.
+          cache-read-only: true
+
+      - name: Release properties (secrets and variables, never on the command line)
+        env:
+          APP_KEYSTORE_BASE64: ${{ secrets.APP_KEYSTORE_BASE64 }}
+          APP_KEYSTORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          APP_KEY_ALIAS: ${{ secrets.APP_KEY_ALIAS }}
+          APP_KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
+          CITOYEN_PACKS_PUBLIC_KEY: ${{ vars.CITOYEN_PACKS_PUBLIC_KEY }}
+          CITOYEN_PACKS_BASE_URL: ${{ vars.CITOYEN_PACKS_BASE_URL }}
+          CITOYEN_LEGAL_PUBLISHER: ${{ vars.CITOYEN_LEGAL_PUBLISHER }}
+          CITOYEN_LEGAL_DIRECTOR: ${{ vars.CITOYEN_LEGAL_DIRECTOR }}
+          CITOYEN_LEGAL_CONTACT: ${{ vars.CITOYEN_LEGAL_CONTACT }}
+          CITOYEN_LEGAL_HOSTING: ${{ vars.CITOYEN_LEGAL_HOSTING }}
+          CITOYEN_LLM_URL: ${{ vars.CITOYEN_LLM_URL }}
+          CITOYEN_LLM_SHA256: ${{ vars.CITOYEN_LLM_SHA256 }}
+          CITOYEN_LLM_SIZE_BYTES: ${{ vars.CITOYEN_LLM_SIZE_BYTES }}
+          CITOYEN_REPORT_URL: ${{ vars.CITOYEN_REPORT_URL }}
+        run: |
+          if [ -z "$APP_KEYSTORE_BASE64" ]; then echo "Secret APP_KEYSTORE_BASE64 is missing." >&2; exit 1; fi
+          export APP_KEYSTORE_FILE="$RUNNER_TEMP/release.keystore"
+          printf '%s' "$APP_KEYSTORE_BASE64" | base64 --decode > "$APP_KEYSTORE_FILE"
+          chmod 600 "$APP_KEYSTORE_FILE"
+          python3 -I tools/release/write_gradle_properties.py
+
+      - name: Unit tests (incl. neutrality scan)
+        run: ./gradlew test
+
+      - name: Assemble signed release APK
+        run: ./gradlew :app:assembleRelease
+
+      - name: Release gates and signature
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          test -f "$apk" || { echo "No signed APK: signing properties were not applied." >&2; exit 1; }
+          python3 tools/release-checks/check_apk.py "$apk"
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner"
+          "$apksigner" verify --verbose "$apk"
+          name="citoyen-2027-$VERSION.apk"
+          mkdir -p dist && cp "$apk" "dist/$name"
+          (cd dist && sha256sum "$name" > SHA256SUMS.txt)
+          "$apksigner" verify --print-certs "$apk" | grep -i 'SHA-256' > dist/certificate.txt
+          cat dist/SHA256SUMS.txt dist/certificate.txt
+
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk_sha=$(cut -d' ' -f1 dist/SHA256SUMS.txt)
+          cert_sha=$(sed -E 's/.*digest: *//' dist/certificate.txt | head -1)
+          cat > dist/notes.md <<NOTES
+          Version $VERSION de l’application (APK direct, Android 10 ou plus récent, arm64).
+
+          - Empreinte SHA-256 de l’APK : \`$apk_sha\`
+          - Empreinte SHA-256 du certificat de signature : \`$cert_sha\`
+
+          Installation et vérification : docs/installation.md.
+          Brouillon créé par la CI : à relire avant publication (docs/publication-checklist.md).
+          NOTES
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag \
+            --title "Citoyen 2027 $VERSION" --notes-file dist/notes.md \
+            "dist/citoyen-2027-$VERSION.apk" dist/SHA256SUMS.txt dist/certificate.txt
