@@ -61,6 +61,7 @@ class CandidateSheetParityTest {
         }
         assertEquals(
             listOf(
+                candidate.displayName,
                 context.getString(R.string.feature_candidate_section_status),
                 context.getString(R.string.feature_candidate_section_coverage),
             ),

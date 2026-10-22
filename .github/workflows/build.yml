@@ -59,6 +59,9 @@ jobs:
       - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
         run: ./gradlew :app:assembleRelease
 
+      - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages)
+        run: python3 tools/release-checks/check_apk.py app/build/outputs/apk/release/app-release-unsigned.apk
+
       - name: Report APK size and content
         run: |
           ls -l app/build/outputs/apk/debug/

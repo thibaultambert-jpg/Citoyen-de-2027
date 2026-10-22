@@ -11,6 +11,7 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.testing.FictionalCandidates
 import fr.citoyende2027.core.ui.R as CoreUiR
+import fr.citoyende2027.core.uitesting.TALL_WINDOW
 import fr.citoyende2027.core.uitesting.accessibilityProblems
 import fr.citoyende2027.core.uitesting.assertAccessible
 import java.time.LocalDate
@@ -19,9 +20,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /** AGENTS.md §11 on every tab of the sheet; §10 reserve period notice in place of campaign content. */
 @RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = TALL_WINDOW)
 class CandidateAccessibilityTest {
     @get:Rule
     val composeRule = createComposeRule()

@@ -26,8 +26,15 @@ fun SemanticsNodeInteractionsProvider.accessibilityProblems(): List<String> {
         SemanticsActions.OnClick in node.config && SemanticsProperties.Disabled !in node.config
     }.forEach { node ->
         val label = node.label()
-        if (label.isBlank()) problems += "Clickable element without a label (node ${node.id})"
+        if (label.isBlank()) {
+            problems +=
+                "Clickable element without a label (node ${node.id}, ${node.config.getOrNull(
+                    SemanticsProperties.Role,
+                )})"
+        }
         val bounds = node.touchBoundsInRoot
+        // Clipped to nothing: outside the window, its size cannot be measured here (tests use a tall window).
+        if (bounds.isEmpty) return@forEach
         if (bounds.width < minPx || bounds.height < minPx) {
             problems += "Touch target smaller than 48 dp: '$label' (${bounds.width} x ${bounds.height} px)"
         }
@@ -43,6 +50,7 @@ private fun SemanticsNode.label(): String {
     val own = listOfNotNull(
         config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(" "),
         config.getOrNull(SemanticsProperties.Text)?.joinToString(" ") { it.text },
+        config.getOrNull(SemanticsProperties.EditableText)?.text,
         config.getOrNull(SemanticsProperties.StateDescription),
     )
     return (own + children.map { it.label() }).joinToString(" ").trim()

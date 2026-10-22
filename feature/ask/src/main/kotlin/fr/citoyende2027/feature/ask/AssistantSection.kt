@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -26,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -127,11 +130,20 @@ internal fun AssistantCard(status: AssistantStatus?, importAccepted: Boolean?, a
 
                 is AssistantStatus.Ready -> {
                     Text(stringResource(R.string.feature_ask_ai_ready))
+                    // The whole row is the switch, so it carries the label and a 48 dp target.
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .toggleable(
+                                value = status.enabled,
+                                onValueChange = actions.onEnabledChange,
+                                role = Role.Switch,
+                            ),
                     ) {
-                        Switch(checked = status.enabled, onCheckedChange = actions.onEnabledChange)
+                        Switch(checked = status.enabled, onCheckedChange = null)
                         Text(stringResource(R.string.feature_ask_ai_use))
                     }
                     TextButton(onClick = actions.onRemove) { Text(stringResource(R.string.feature_ask_ai_remove)) }

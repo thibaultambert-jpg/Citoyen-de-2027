@@ -15,20 +15,39 @@ data class LexicalHit(val passage: Passage, val score: Double, val matchedTerms:
 class LexicalIndex(passages: List<Passage>, private val k1: Double = 1.2, private val b: Double = 0.75) {
     private val docs = passages.toList()
     private val lengths = IntArray(docs.size)
-    private val postings: Map<String, Map<Int, Int>>
+
+    /** Term → (document, term frequency) pairs, flattened, in document order (no boxing). */
+    private val postings: Map<String, IntArray>
     private val vocabulary: List<String>
     private val averageLength: Double
 
     init {
-        val map = HashMap<String, HashMap<Int, Int>>()
+        val builders = HashMap<String, IntPairs>()
+        val counts = HashMap<String, Int>()
         docs.forEachIndexed { index, passage ->
             val tokens = TextAnalyzer.tokens(passage.text)
             lengths[index] = tokens.size
-            tokens.forEach { token -> map.getOrPut(token) { HashMap() }.merge(index, 1, Int::plus) }
+            counts.clear()
+            tokens.forEach { token -> counts[token] = (counts[token] ?: 0) + 1 }
+            counts.forEach { (token, tf) -> builders.getOrPut(token) { IntPairs() }.add(index, tf) }
         }
-        postings = map
-        vocabulary = map.keys.sorted()
+        postings = builders.mapValues { it.value.toArray() }
+        vocabulary = postings.keys.sorted()
         averageLength = if (docs.isEmpty()) 0.0 else lengths.average().coerceAtLeast(1.0)
+    }
+
+    /** Growable array of (document, frequency) pairs. */
+    private class IntPairs {
+        private var values = IntArray(4)
+        private var size = 0
+
+        fun add(doc: Int, tf: Int) {
+            if (size + 2 > values.size) values = values.copyOf(values.size * 2)
+            values[size++] = doc
+            values[size++] = tf
+        }
+
+        fun toArray(): IntArray = values.copyOf(size)
     }
 
     val size: Int get() = docs.size
@@ -41,7 +60,8 @@ class LexicalIndex(passages: List<Passage>, private val k1: Double = 1.2, privat
         for (term in terms) {
             val frequencies = HashMap<Int, Int>()
             wordsFor(term).forEach { word ->
-                postings[word]?.forEach { (doc, tf) -> frequencies.merge(doc, tf, Int::plus) }
+                val pairs = postings[word] ?: return@forEach
+                for (i in pairs.indices step 2) frequencies.merge(pairs[i], pairs[i + 1], Int::plus)
             }
             if (frequencies.isEmpty()) continue
             val df = frequencies.size.toDouble()

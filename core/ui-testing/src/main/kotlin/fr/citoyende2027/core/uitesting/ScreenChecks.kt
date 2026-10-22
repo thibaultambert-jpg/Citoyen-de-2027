@@ -6,6 +6,9 @@ import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import org.junit.Assert.assertEquals
 
+/** Robolectric qualifiers: a window tall enough for whole screens to be laid out and measured. */
+const val TALL_WINDOW = "w411dp-h6000dp"
+
 /** Font sizes checked for every screen: default, and the largest system setting (AGENTS.md §11). */
 val CHECKED_FONT_SCALES = listOf(1f, 2f)
 

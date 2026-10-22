@@ -19,9 +19,43 @@ object TextAnalyzer {
             "est-ce ce-que t il-y"
         ).split(' ').filter { it.isNotBlank() }.toSet()
 
-    /** Index tokens of a text, with repetitions (term frequencies). */
-    fun tokens(text: String): List<String> =
+    /**
+     * Index tokens of a text, with repetitions (term frequencies): runs of `[\p{L}\p{N}]` in the
+     * normalised text, function words removed. A code-point scan, equal to [tokensReference] but several
+     * times faster when the index is built (J8).
+     */
+    fun tokens(text: String): List<String> {
+        val normalized = SearchText.normalize(text)
+        val tokens = ArrayList<String>()
+        var i = 0
+        while (i < normalized.length) {
+            val codePoint = normalized.codePointAt(i)
+            if (!isWordCharacter(codePoint)) {
+                i += Character.charCount(codePoint)
+                continue
+            }
+            val start = i
+            while (i < normalized.length) {
+                val next = normalized.codePointAt(i)
+                if (!isWordCharacter(next)) break
+                i += Character.charCount(next)
+            }
+            val token = normalized.substring(start, i)
+            if (token !in stopwords) tokens += token
+        }
+        return tokens
+    }
+
+    /** The definition of [tokens] (regular expression), kept for the equivalence test. */
+    internal fun tokensReference(text: String): List<String> =
         word.findAll(SearchText.normalize(text)).map { it.value }.filter { it !in stopwords }.toList()
+
+    /** `\p{L}` or `\p{N}`. */
+    private fun isWordCharacter(codePoint: Int): Boolean = Character.isLetter(codePoint) ||
+        when (Character.getType(codePoint).toByte()) {
+            Character.DECIMAL_DIGIT_NUMBER, Character.LETTER_NUMBER, Character.OTHER_NUMBER -> true
+            else -> false
+        }
 
     /** Distinct query terms, in order. */
     fun queryTerms(question: String, maxTerms: Int = 16): List<String> = tokens(question).distinct().take(maxTerms)

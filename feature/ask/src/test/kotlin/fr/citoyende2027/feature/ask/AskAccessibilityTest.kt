@@ -7,6 +7,7 @@ import fr.citoyende2027.core.data.repository.LegalPassage
 import fr.citoyende2027.core.designsystem.theme.CitoyenTheme
 import fr.citoyende2027.core.testing.FictionalCandidates
 import fr.citoyende2027.core.testing.FictionalLegal
+import fr.citoyende2027.core.uitesting.TALL_WINDOW
 import fr.citoyende2027.core.uitesting.assertAccessible
 import fr.citoyende2027.llm.assistant.AssistantStatus
 import fr.citoyende2027.rag.answer.AnswerSource
@@ -16,9 +17,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /** AGENTS.md §11 on the question screen: assistant card, passages and a verified generated answer. */
 @RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = TALL_WINDOW)
 class AskAccessibilityTest {
     @get:Rule
     val composeRule = createComposeRule()

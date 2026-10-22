@@ -77,6 +77,9 @@ sealed interface AskAnswer {
 interface AskRepository {
     /** The question never leaves the device and is not logged (AGENTS.md §2.4). */
     suspend fun ask(question: String, scope: AskScope): AskAnswer
+
+    /** Builds the search index ahead of the first question (after start-up or a pack update). */
+    suspend fun warmUp() = Unit
 }
 
 internal class OfflineAskRepository @Inject constructor(private val dao: CorePackDao) : AskRepository {
@@ -90,6 +93,10 @@ internal class OfflineAskRepository @Inject constructor(private val dao: CorePac
         val legal: Map<String, LegalPassage>,
         val programs: Map<String, ProgramPassage>,
     )
+
+    override suspend fun warmUp() {
+        withContext(Dispatchers.Default) { index() }
+    }
 
     override suspend fun ask(question: String, scope: AskScope): AskAnswer = withContext(Dispatchers.Default) {
         val index = index() ?: return@withContext AskAnswer.Unavailable
