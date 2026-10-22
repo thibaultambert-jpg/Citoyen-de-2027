@@ -8,6 +8,8 @@ on:
       - 'pipeline/tools/probe_sources.py'
       - 'pipeline/tools/legal_dry_run.py'
       - '.github/workflows/pipeline-probe.yml'
+      - 'pipeline/eval/**'
+      - 'pipeline/inputs/rag_config.json'
 
 permissions:
   contents: read
@@ -41,3 +43,17 @@ jobs:
         run: |
           python -m pip install --quiet -e .
           python tools/legal_dry_run.py
+      - name: Set up JDK (evaluation harness)
+        if: matrix.source == 'j5legal'
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '21'
+      - name: Set up Gradle
+        if: matrix.source == 'j5legal'
+        uses: gradle/actions/setup-gradle@v4
+      - name: Calibrate and evaluate retrieval on the real legal pack
+        if: matrix.source == 'j5legal'
+        run: |
+          ./gradlew :tools:rag-eval:evaluate -Ppacks="$GITHUB_WORKSPACE/pipeline/dist" -Pcalibrate=true
+          ./gradlew :tools:rag-eval:evaluate -Ppacks="$GITHUB_WORKSPACE/pipeline/dist"

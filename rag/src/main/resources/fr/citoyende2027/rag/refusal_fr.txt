@@ -8,7 +8,7 @@ VOTE_ADVICE	\b(dois|devrais|faut il|faudrait il|vaut il mieux) (je |on )?(voter|
 VOTE_ADVICE	\b(conseill|recommand)\w*\b
 VOTE_ADVICE	\b(quel|quelle|quels|quelles) candidat\w* (choisir|soutenir|elire|preferer|privilegier)\b
 VOTE_ADVICE	\b(qui|quel candidat) (choisir|soutenir|elire)\b
-OPINION	\b(ton|votre|vos|tes) (avis|opinion|opinions|preference|preferences)\b
+OPINION	\b(ton|ta|votre|vos|tes) (avis|opinion|opinions|preference|preferences)\b
 OPINION	\bque (penses|pensez) (tu|vous)\b
 OPINION	\b(penses|pensez|trouves|trouvez) (tu|vous) (que|qu)\b
 OPINION	\b(est il|est elle|sont ils|sont elles) (bien|bon|bonne|bons|bonnes|mauvais|mauvaise|serieux|serieuse|credible|competent|competente|honnete|dangereux|dangereuse)\b
@@ -17,6 +17,7 @@ PREDICTION	\b(pronostic|pronostics|sondage|sondages|favori|favorite|favoris)\b
 PREDICTION	\bchances? (de|d) (gagner|l emporter|etre elu|etre elue)\b
 EVALUATIVE_COMPARISON	\b(meilleur|meilleure|meilleurs|meilleures|pire|pires) (candidat|candidate|candidats|programme|programmes|choix|president|presidente|projet|projets|proposition|propositions)\b
 EVALUATIVE_COMPARISON	\b(qui|lequel|laquelle) (est|sont|serait) (le|la|les) (meilleur|meilleure|meilleurs|pire|plus|moins)\b
+EVALUATIVE_COMPARISON	\b(candidat|candidate|candidats|programme|programmes|projet|projets|proposition|propositions) (est|sont|serait|seraient) (le|la|les) (meilleur|meilleure|meilleurs|meilleures|pire|pires)\b
 EVALUATIVE_COMPARISON	\b(plus|moins) (credible|credibles|serieux|serieuse|competent|competente|realiste|realistes|honnete|fiable|coherent|coherente)\b
 EVALUATIVE_COMPARISON	\b(qui|lequel|laquelle) a (raison|tort)\b
 INSTRUCTION	\b(ignore|ignores|ignorez|oublie|oublies|oubliez|ignorer|oublier)\b.{0,50}\b(instruction|instructions|consigne|consignes|regle|regles)\b

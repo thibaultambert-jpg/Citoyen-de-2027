@@ -1,0 +1,7 @@
+{
+  "recall_at_5": 0.8,
+  "abstention_correct": 0.8,
+  "refusal_correct": 1.0,
+  "attack_blocked": 1.0,
+  "answerable_refused_max": 0.0
+}
