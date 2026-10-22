@@ -81,6 +81,13 @@ class Cache:
         if self.has(key) and self._log[key].url == url:
             return self._log[key]
         target = self.path(key)
+        # A sidecar record lets a CI cache restore large archives without the shared fetch log.
+        sidecar = target.with_name(target.name + ".fetched.json")
+        if target.exists() and sidecar.exists():
+            entry = Fetched(**json.loads(sidecar.read_text(encoding="utf-8")))
+            if entry.url == url and entry.size == target.stat().st_size:
+                self.record(entry)
+                return entry
         target.parent.mkdir(parents=True, exist_ok=True)
         partial = target.with_name(target.name + ".part")
         digest, size = hashlib.sha256(), 0
@@ -92,6 +99,7 @@ class Cache:
                 out.write(chunk)
         partial.replace(target)
         entry = Fetched(key, url, key, digest.hexdigest(), size, datetime.now(UTC).date().isoformat())
+        sidecar.write_text(json.dumps(asdict(entry)), encoding="utf-8")
         self.record(entry)
         return entry
 

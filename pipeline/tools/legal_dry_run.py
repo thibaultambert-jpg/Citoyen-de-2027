@@ -32,6 +32,17 @@ def main() -> int:
             if article.in_force_until:
                 print("      until", article.in_force_until)
     print("\nreview:", json.dumps(review, indent=2, ensure_ascii=False)[:6000])
+    # Every article, one JSON line (used to write and check eval/golden.jsonl by hand).
+    print("\n== ARTICLES (jsonl)")
+    for article in pack.articles:
+        line = {
+            "id": article.id,
+            "text": article.text_id,
+            "num": article.number,
+            "headings": list(article.heading_path),
+            "body": article.body[:400],
+        }
+        print("ARTICLE", json.dumps(line, ensure_ascii=False))
     version = write_legal_pack(pack, Path("dist/legal.sqlite"))
     print("legal pack", version, Path("dist/legal.sqlite").stat().st_size, "bytes")
     return 0

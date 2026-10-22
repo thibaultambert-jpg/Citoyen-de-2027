@@ -28,6 +28,13 @@ jobs:
       - name: Probe ${{ matrix.source }}
         if: matrix.source != 'j5legal'
         run: python -I pipeline/tools/probe_sources.py ${{ matrix.source }}
+      - name: Cache LEGI archives
+        if: matrix.source == 'j5legal'
+        uses: actions/cache@v4
+        with:
+          path: pipeline/cache/legi
+          key: legi-v1-${{ github.run_id }}
+          restore-keys: legi-v1-
       - name: Legal pack dry run (real LEGI data)
         if: matrix.source == 'j5legal'
         working-directory: pipeline

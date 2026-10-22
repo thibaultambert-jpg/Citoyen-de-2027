@@ -28,6 +28,12 @@ jobs:
         run: python -m pip install --quiet -e ".[dev]"
       - name: Tests
         run: python -m pytest -q
+      - name: Cache LEGI archives (global archive and daily increments)
+        uses: actions/cache@v4
+        with:
+          path: pipeline/cache/legi
+          key: legi-v1-${{ github.run_id }}
+          restore-keys: legi-v1-
       - name: Fetch official sources
         run: python -m citoyen_pipeline fetch --inputs inputs --cache cache
       - name: Build and sign
