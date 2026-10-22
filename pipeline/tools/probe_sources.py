@@ -362,8 +362,37 @@ def probe_legi_increments() -> None:
                     )
 
 
+def probe_sponsorships() -> None:
+    """Where and how the Conseil constitutionnel publishes sponsorships (parrainages)."""
+    query = urllib.parse.urlencode({"q": "parrainages présidentielle", "page_size": 20})
+    status, _, body = get(f"https://www.data.gouv.fr/api/1/datasets/?{query}", 10 * 1024 * 1024)
+    print(f"\n===== data.gouv search status={status}")
+    slugs = []
+    if status == 200:
+        for item in json.loads(body).get("data", []):
+            org = (item.get("organization") or {}).get("name")
+            title, slug, lic = item.get("title"), item.get("slug"), item.get("license")
+            print(f"  - {title!r} slug={slug} org={org!r} license={lic}")
+            if org and "conseil constitutionnel" in org.lower():
+                slugs.append(item["slug"])
+    for slug in slugs[:3]:
+        for url in datagouv(slug)[:6]:
+            describe(f"resource of {slug}", url)
+    for site in (
+        "https://presidentielle2022.conseil-constitutionnel.fr/",
+        "https://presidentielle2022.conseil-constitutionnel.fr/les-parrainages/",
+        "https://presidentielle2027.conseil-constitutionnel.fr/",
+        "https://www.conseil-constitutionnel.fr/",
+    ):
+        for url in links(site, r"(?i)parrain|telecharg|\.csv|open|donnees|data")[:10]:
+            if re.search(r"(?i)\.(csv|json|xlsx?)($|\?)", url):
+                describe("linked file", url)
+
+
 def main() -> int:
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if target == "sponsorships":
+        probe_sponsorships()
     if target == "j5legi3":
         probe_legi_increments()
     if target == "j5legi2":
