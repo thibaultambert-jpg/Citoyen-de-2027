@@ -25,7 +25,7 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
       sur 16 Ko (exigence Google Play).
 - [ ] Tests de neutralité : liste de mots évaluatifs, ordre alphabétique, parité des gabarits.
 - [ ] Tests d’accessibilité : libellés, cibles ≥ 48 dp, titres, police ×2, contraste AA des deux thèmes.
-- [ ] Budgets : requêtes Room < 50 ms, récupération RAG < 300 ms (tests `*BudgetTest`).
+- [ ] Budgets : récupération RAG < 300 ms (`PerformanceBudgetTest`) ; requêtes Room indexées (`QueryBudgetTest`).
 - [ ] `targetSdk` = dernière version stable au moment de la publication (actuellement API 36,
       `build-logic`) ; à revérifier.
 
@@ -35,6 +35,7 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
 - [ ] Police système maximale et option « Taille du texte » de l’app : aucun texte coupé.
 - [ ] Démarrage à froid < 2 s sur un appareil d’entrée de gamme (Android 10, minSdk 29), mesuré
       en release (Macrobenchmark ou `adb shell am start -W`).
+- [ ] Requêtes Room < 50 ms sur appareil (fiche d’un candidat avec beaucoup de votes, release).
 - [ ] Mode avion : l’app est utile dès le premier lancement avec le pack `core` embarqué.
 - [ ] Assistant IA sur un appareil ≥ 6 Go de RAM : temps au premier token, jetons/s, pic de RAM
       (écran de benchmark debug) ; comparaison Q4_K_M / Q4_0 avant de figer la quantification.
