@@ -71,7 +71,11 @@ internal fun CandidatesContent(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        TopAppBar(title = { Text(stringResource(R.string.feature_candidates_title)) })
+        TopAppBar(
+            title = {
+                Text(stringResource(R.string.feature_candidates_title), modifier = Modifier.semantics { heading() })
+            },
+        )
         when (uiState) {
             CandidatesUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()

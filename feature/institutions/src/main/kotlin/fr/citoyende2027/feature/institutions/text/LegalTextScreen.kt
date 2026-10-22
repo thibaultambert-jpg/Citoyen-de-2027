@@ -56,6 +56,7 @@ internal fun LegalTextContent(state: LegalTextUiState, onBack: () -> Unit, modif
                     (state as? LegalTextUiState.Ready)?.text?.title ?: stringResource(
                         R.string.feature_institutions_title,
                     ),
+                    modifier = Modifier.semantics { heading() },
                 )
             },
             navigationIcon = {

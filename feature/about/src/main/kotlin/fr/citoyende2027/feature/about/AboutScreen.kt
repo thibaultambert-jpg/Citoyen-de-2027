@@ -114,7 +114,7 @@ internal fun AboutPageScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(stringResource(page.title)) },
+            title = { Text(stringResource(page.title), modifier = Modifier.semantics { heading() }) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(painterResource(CitoyenIcons.Back), stringResource(R.string.feature_about_back))

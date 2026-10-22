@@ -67,6 +67,7 @@ internal fun CandidateContent(
                 Text(
                     text = (uiState as? CandidateUiState.Ready)?.candidate?.displayName
                         ?: stringResource(R.string.feature_candidate_title),
+                    modifier = Modifier.semantics { heading() },
                 )
             },
             navigationIcon = {

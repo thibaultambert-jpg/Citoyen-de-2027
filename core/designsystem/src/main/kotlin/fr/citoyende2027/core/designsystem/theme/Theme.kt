@@ -6,12 +6,13 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val LightColors = lightColorScheme(
+internal val LightColors = lightColorScheme(
     primary = Slate40,
     onPrimary = Neutral98,
     primaryContainer = Slate90,
     onPrimaryContainer = Slate10,
-    secondary = NeutralVariant50,
+    // NeutralVariant50 reached only 4.3:1 against Neutral98 (WCAG AA needs 4.5:1 for text).
+    secondary = NeutralVariant40,
     onSecondary = Neutral98,
     secondaryContainer = NeutralVariant90,
     onSecondaryContainer = Neutral10,
@@ -22,9 +23,14 @@ private val LightColors = lightColorScheme(
     surfaceVariant = NeutralVariant90,
     onSurfaceVariant = NeutralVariant30,
     outline = NeutralVariant50,
+    surfaceContainerLowest = NeutralLowest,
+    surfaceContainerLow = Neutral96,
+    surfaceContainer = Neutral94,
+    surfaceContainerHigh = Neutral92,
+    surfaceContainerHighest = Neutral90,
 )
 
-private val DarkColors = darkColorScheme(
+internal val DarkColors = darkColorScheme(
     primary = Slate80,
     onPrimary = Slate20,
     primaryContainer = Slate30,
@@ -40,6 +46,11 @@ private val DarkColors = darkColorScheme(
     surfaceVariant = NeutralVariant30,
     onSurfaceVariant = NeutralVariant80,
     outline = NeutralVariant50,
+    surfaceContainerLowest = Neutral4,
+    surfaceContainerLow = Neutral12,
+    surfaceContainer = Neutral17,
+    surfaceContainerHigh = Neutral22,
+    surfaceContainerHighest = Neutral24,
 )
 
 /**

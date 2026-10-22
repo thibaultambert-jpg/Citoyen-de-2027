@@ -3,6 +3,8 @@ package fr.citoyende2027.feature.about
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
@@ -48,6 +50,9 @@ private fun packName(id: String): String = stringResource(
     },
 )
 
+/** Whole rows are the touch targets of radio buttons and switches (48 dp, AGENTS.md §11). */
+private val MIN_TOUCH_TARGET = 48.dp
+
 private fun megabytes(bytes: Long) = String.format(Locale.FRANCE, "%.1f", bytes / 1_000_000.0)
 
 @Composable
@@ -92,11 +97,15 @@ internal fun SettingsPage(
         TextScale.entries.forEach { scale ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.selectable(
-                    selected = state.textScale == scale,
-                    onClick = { onTextScale(scale) },
-                    role = Role.RadioButton,
-                ),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = MIN_TOUCH_TARGET)
+                    .selectable(
+                        selected = state.textScale == scale,
+                        onClick = { onTextScale(scale) },
+                        role = Role.RadioButton,
+                    ),
             ) {
                 RadioButton(selected = state.textScale == scale, onClick = null)
                 Text(
@@ -132,11 +141,14 @@ internal fun SettingsPage(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.toggleable(
-                    value = assistant.enabled,
-                    onValueChange = onAssistantEnabled,
-                    role = Role.Switch,
-                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = MIN_TOUCH_TARGET)
+                    .toggleable(
+                        value = assistant.enabled,
+                        onValueChange = onAssistantEnabled,
+                        role = Role.Switch,
+                    ),
             ) {
                 Switch(checked = assistant.enabled, onCheckedChange = null)
                 Text(stringResource(R.string.feature_about_assistant_use))
