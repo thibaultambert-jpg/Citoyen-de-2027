@@ -1,3 +1,6 @@
 # :rag
 
-Retrieval: refusal gate, routing, FTS5 + int8 vector search, RRF fusion, abstention gate (AGENTS.md §8). Arrives with J6.
+Retrieval without LLM (AGENTS.md §8): refusal gate, routing of structured questions, lexical BM25 index
+and int8 vector index with RRF fusion, metadata filters, balanced retrieval across candidates,
+abstention gate driven by `rag_config` (shipped in the `core` pack). Plain Kotlin (JVM): used by the app
+and by the evaluation harness `:tools:rag-eval`.

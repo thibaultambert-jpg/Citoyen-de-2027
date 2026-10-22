@@ -85,4 +85,14 @@ def load_identities(path: Path, candidate_ids: set[str]) -> list[Identity]:
     return identities
 
 
-__all__ = ["InputError", "load_candidates", "load_identities", "load_yaml"]
+def load_rag_config(path: Path) -> str:
+    """Validated retrieval thresholds, returned as compact JSON for the core pack meta."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    schema = json.loads((SCHEMAS / "rag_config.schema.json").read_text(encoding="utf-8"))
+    errors = list(Draft202012Validator(schema).iter_errors(data))
+    if errors:
+        raise InputError(f"{path} is invalid: {[e.message for e in errors]}")
+    return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
+
+__all__ = ["InputError", "load_candidates", "load_identities", "load_rag_config", "load_yaml"]

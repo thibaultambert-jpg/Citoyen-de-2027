@@ -37,3 +37,18 @@ def test_invalid_candidate_is_rejected(tmp_path):
 def test_identity_for_unknown_candidate_is_rejected(fixtures):
     with pytest.raises(InputError):
         load_identities(fixtures / "identities.yaml", {"fictif-b"})
+
+
+def test_rag_config_is_validated_and_compacted(tmp_path, fixtures):
+    import json
+
+    import pytest
+
+    from citoyen_pipeline.inputs import InputError, load_rag_config
+
+    compact = load_rag_config(fixtures / "rag_config.json")
+    assert json.loads(compact)["min_matched_terms"] >= 1 and " " not in compact
+    bad = tmp_path / "rag_config.json"
+    bad.write_text('{"top_k": 0, "pool_size": 30, "rrf_k": 60, "min_matched_terms": 1, "min_coverage": 2}')
+    with pytest.raises(InputError):
+        load_rag_config(bad)

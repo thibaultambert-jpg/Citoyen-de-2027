@@ -143,6 +143,8 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
             "generated_on": pack.generated_on.isoformat(),
             "inclusion_policy_date": pack.inclusion_policy_date.isoformat(),
         }
+        if pack.rag_config is not None:
+            meta["rag_config"] = pack.rag_config
         db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
         db.executemany(
             "INSERT INTO sources VALUES (?, ?, ?, ?, ?)",

@@ -228,6 +228,8 @@ class CorePack:
     speeches: list[Speech] = field(default_factory=list)
     themes: list[Theme] = field(default_factory=list)
     vote_themes: dict[str, list[ThemeTag]] = field(default_factory=dict)
+    # Retrieval thresholds calibrated on eval/golden.jsonl (compact JSON), read by the app (AGENTS.md §8).
+    rag_config: str | None = None
 
 
 @dataclass(frozen=True)

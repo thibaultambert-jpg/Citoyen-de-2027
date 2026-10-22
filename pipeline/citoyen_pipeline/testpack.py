@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from citoyen_pipeline.build import write_core_pack, write_legal_pack, write_programs_pack
 from citoyen_pipeline.coverage import compute_coverage
-from citoyen_pipeline.inputs import load_candidates, load_identities
+from citoyen_pipeline.inputs import load_candidates, load_identities, load_rag_config
 from citoyen_pipeline.model import (
     Body,
     CorePack,
@@ -102,6 +102,7 @@ def build(out: Path) -> dict[str, str]:
         speeches,
         themes=taxonomy.all_themes,
         vote_themes={"fictif-a-vote-1": [ThemeTag("fictif-01", TagMethod.RULE, TagConfidence.LOW)]},
+        rag_config=load_rag_config(FIXTURES / "rag_config.json"),
     )
     out.mkdir(parents=True, exist_ok=True)
     pack_file = out / "core.sqlite"

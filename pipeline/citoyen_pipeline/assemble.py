@@ -12,7 +12,7 @@ from citoyen_pipeline import legal, programs
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import check_identities
-from citoyen_pipeline.inputs import load_candidates, load_identities
+from citoyen_pipeline.inputs import load_candidates, load_identities, load_rag_config
 from citoyen_pipeline.model import CorePack, Identity, ProgramsPack, SourceExtract, ThemeTag
 from citoyen_pipeline.sources import assemblee, discours, parlement_europeen, rne, senat
 from citoyen_pipeline.themes import load_overrides, load_taxonomy
@@ -125,6 +125,7 @@ def assemble_packs(
         speeches=combined.speeches,
         themes=taxonomy.all_themes,
         vote_themes=vote_themes,
+        rag_config=load_rag_config(inputs / "rag_config.json"),
     )
     return pack, programs_pack, {**combined.review, **programs_review}
 
@@ -137,6 +138,7 @@ def inputs_digest(inputs: Path, cache: Cache) -> str:
         "themes.yaml",
         "theme_overrides.yaml",
         str(PROGRAMS_MANIFEST),
+        "rag_config.json",
     )
     for path in [*(inputs / name for name in names), cache.root / "fetch_log.json"]:
         if path.exists():
