@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - 'pipeline/tools/probe_sources.py'
+      - 'pipeline/tools/legal_dry_run.py'
       - '.github/workflows/pipeline-probe.yml'
 
 permissions:
@@ -18,11 +19,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [j5legi3]
+        source: [j5legal]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Probe ${{ matrix.source }}
+        if: matrix.source != 'j5legal'
         run: python -I pipeline/tools/probe_sources.py ${{ matrix.source }}
+      - name: Legal pack dry run (real LEGI data)
+        if: matrix.source == 'j5legal'
+        working-directory: pipeline
+        run: |
+          python -m pip install --quiet -e .
+          python tools/legal_dry_run.py
