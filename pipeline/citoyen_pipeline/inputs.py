@@ -95,4 +95,14 @@ def load_rag_config(path: Path) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
 
 
-__all__ = ["InputError", "load_candidates", "load_identities", "load_rag_config", "load_yaml"]
+def load_reserve(path: Path) -> str:
+    """Reserve-period flag (AGENTS.md §10), set on legal advice; compact JSON for the core pack meta."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    schema = json.loads((SCHEMAS / "reserve.schema.json").read_text(encoding="utf-8"))
+    errors = list(Draft202012Validator(schema).iter_errors(data))
+    if errors:
+        raise InputError(f"{path} is invalid: {[e.message for e in errors]}")
+    return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
+
+__all__ = ["InputError", "load_candidates", "load_identities", "load_rag_config", "load_reserve", "load_yaml"]

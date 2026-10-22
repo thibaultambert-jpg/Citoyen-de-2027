@@ -6,6 +6,7 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
 import fr.citoyende2027.core.data.pack.PackSyncWorker
+import fr.citoyende2027.core.data.repository.AppInfoRepository
 import fr.citoyende2027.data.StartupDataSeeder
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +24,9 @@ class CitoyenApplication :
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var appInfo: AppInfoRepository
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val workManagerConfiguration: Configuration
@@ -36,6 +40,10 @@ class CitoyenApplication :
         applicationScope.launch {
             startupDataSeeder.seedIfNeeded()
             PackSyncWorker.schedule(WorkManager.getInstance(this@CitoyenApplication))
+        }
+        // "Historique des mises à jour": every pack version activated on this device.
+        applicationScope.launch {
+            appInfo.observeInstalledPacks().collect { appInfo.recordHistory(it) }
         }
     }
 

@@ -27,6 +27,10 @@ data class CorePackContent(
     val themes: List<Theme> = emptyList(),
     /** Retrieval thresholds (JSON), calibrated by the pipeline on its golden set (AGENTS.md §8). */
     val ragConfig: String? = null,
+    /** Electoral reserve period flag of the published pack (AGENTS.md §10). */
+    val reserve: ReservePeriod = ReservePeriod.NONE,
+    /** Version date of the candidate inclusion rule used for this pack (AGENTS.md §10). */
+    val inclusionPolicyDate: LocalDate? = null,
 ) {
     init {
         require(info.id == DataPackInfo.CORE) { "Not a core pack: ${info.id}" }

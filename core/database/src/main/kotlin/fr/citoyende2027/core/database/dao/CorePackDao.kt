@@ -58,6 +58,9 @@ interface CorePackDao {
     @Query("SELECT * FROM data_packs WHERE id = :id")
     fun observePack(id: String): Flow<DataPackEntity?>
 
+    @Query("SELECT * FROM data_packs ORDER BY id")
+    fun observePacks(): Flow<List<DataPackEntity>>
+
     @Query("SELECT * FROM data_packs WHERE id = :id")
     suspend fun getPack(id: String): DataPackEntity?
 

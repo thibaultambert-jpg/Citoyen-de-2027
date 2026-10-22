@@ -11,6 +11,7 @@ import fr.citoyende2027.core.model.LegalText
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.ProgramChunk
 import fr.citoyende2027.core.model.ProgramDocument
+import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.Vote
 import fr.citoyende2027.core.model.orderedBy
 import fr.citoyende2027.rag.CandidateName
@@ -68,6 +69,9 @@ sealed interface AskAnswer {
     data class Votes(val candidate: Candidate, val votes: List<Vote>) : AskAnswer
 
     data class Passages(val groups: List<AnswerGroup>) : AskAnswer
+
+    /** Programme questions during the electoral reserve period (AGENTS.md §10): nothing is searched. */
+    data class Reserved(val reserve: ReservePeriod) : AskAnswer
 }
 
 interface AskRepository {
@@ -94,7 +98,12 @@ internal class OfflineAskRepository @Inject constructor(private val dao: CorePac
             is AskScope.Candidate -> RagScope.Candidate(scope.id)
             AskScope.AllPrograms -> RagScope.Programs(index.candidates.map { it.id })
         }
-        when (val result = index.engine.answer(question, ragScope)) {
+        val result = index.engine.answer(question, ragScope)
+        // Official records stay available; programme excerpts are campaign content (AGENTS.md §10).
+        if ((result is RagResult.Passages || result == RagResult.Abstained) && scope != AskScope.Legal) {
+            reserve()?.takeIf { it.hideCampaignContent }?.let { return@withContext AskAnswer.Reserved(it) }
+        }
+        when (result) {
             is RagResult.Refused -> AskAnswer.Refused(result.category)
 
             RagResult.Abstained -> AskAnswer.Abstained(dataDate(scope))
@@ -112,6 +121,9 @@ internal class OfflineAskRepository @Inject constructor(private val dao: CorePac
             )
         }
     }
+
+    private suspend fun reserve(): ReservePeriod? =
+        dao.getPack(DataPackInfo.CORE)?.let { ReservePeriod(it.hideCampaignContent, it.reserveSince) }
 
     private suspend fun structured(intent: StructuredIntent, index: Index): AskAnswer {
         val candidate = index.candidates.first { it.id == intent.candidateId }

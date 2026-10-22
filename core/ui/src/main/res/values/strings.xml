@@ -71,4 +71,7 @@
     <!-- %1$s: start date, %2$s: end date -->
     <string name="core_ui_period">Du %1$s au %2$s</string>
     <string name="core_ui_period_open">Depuis le %1$s (en cours selon la source)</string>
+    <string name="core_ui_reserve">Période de réserve électorale : les contenus de campagne (programmes, prises de parole) ne sont pas affichés. Les mandats, les votes enregistrés et les textes juridiques restent consultables.</string>
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="core_ui_reserve_since">Depuis le %1$s.</string>
 </resources>

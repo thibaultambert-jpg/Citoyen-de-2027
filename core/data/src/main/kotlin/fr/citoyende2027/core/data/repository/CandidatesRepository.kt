@@ -8,12 +8,14 @@ import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.CandidateProgram
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.Vote
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 interface CandidatesRepository {
@@ -39,6 +41,9 @@ interface CandidatesRepository {
 
     /** Programme of a candidate: status, documents and excerpts in document order. */
     fun observeProgram(id: CandidateId): Flow<CandidateProgram>
+
+    /** Reserve-period flag of the installed `core` pack (AGENTS.md §10). */
+    fun observeReserve(): Flow<ReservePeriod> = flowOf(ReservePeriod.NONE)
 }
 
 internal class OfflineCandidatesRepository @Inject constructor(private val dao: CorePackDao) : CandidatesRepository {
@@ -49,6 +54,10 @@ internal class OfflineCandidatesRepository @Inject constructor(private val dao: 
         dao.observeCandidate(id.value).map { it?.asModel() }
 
     override fun observeCorePackInfo(): Flow<DataPackInfo?> = dao.observePack(DataPackInfo.CORE).map { it?.asModel() }
+
+    override fun observeReserve(): Flow<ReservePeriod> = dao.observePack(DataPackInfo.CORE).map { pack ->
+        pack?.let { ReservePeriod(it.hideCampaignContent, it.reserveSince) } ?: ReservePeriod.NONE
+    }
 
     override fun observeMandates(id: CandidateId): Flow<List<Mandate>> =
         dao.observeMandates(id.value).map { list -> list.map { it.asModel() } }

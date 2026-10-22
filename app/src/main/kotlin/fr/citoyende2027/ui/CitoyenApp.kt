@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import fr.citoyende2027.feature.about.navigation.aboutScreen
+import fr.citoyende2027.feature.about.navigation.navigateToInfoPage
 import fr.citoyende2027.feature.ask.navigation.askScreen
 import fr.citoyende2027.feature.candidate.navigation.candidateScreen
 import fr.citoyende2027.feature.candidate.navigation.navigateToCandidate
@@ -61,7 +62,10 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
                 onOpenText = navController::navigateToLegalText,
                 onBack = { navController.popBackStack() },
             )
-            aboutScreen()
+            aboutScreen(
+                onOpenPage = navController::navigateToInfoPage,
+                onBack = { navController.popBackStack() },
+            )
         }
     }
 }

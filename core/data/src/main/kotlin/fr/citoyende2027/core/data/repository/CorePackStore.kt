@@ -30,7 +30,12 @@ class CorePackStore @Inject internal constructor(private val dao: CorePackDao) {
     ) {
         programs?.let(core::requireConsistent)
         dao.replaceCorePack(
-            pack = core.info.asEntity().copy(ragConfig = core.ragConfig),
+            pack = core.info.asEntity().copy(
+                ragConfig = core.ragConfig,
+                hideCampaignContent = core.reserve.hideCampaignContent,
+                reserveSince = core.reserve.since,
+                inclusionPolicyDate = core.inclusionPolicyDate,
+            ),
             candidates = core.candidates.map { it.asEntity() },
             coverage = core.candidates.flatMap { it.coverageEntities() },
             mandates = core.mandates.map { it.asEntity() },

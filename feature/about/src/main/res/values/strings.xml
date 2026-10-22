@@ -1,4 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="feature_about_title">Infos</string>
+    <string name="feature_about_back">Retour</string>
+    <!-- %1$s: app version -->
+    <string name="feature_about_version">Version de l’application : %1$s</string>
+    <string name="feature_about_open">Ouvrir</string>
+
+    <!-- Pages -->
+    <string name="feature_about_page_data">Données et mises à jour</string>
+    <string name="feature_about_page_data_summary">Date des données, versions installées, historique</string>
+    <string name="feature_about_page_settings">Paramètres</string>
+    <string name="feature_about_page_settings_summary">Taille du texte, assistant IA, stockage</string>
+    <string name="feature_about_page_methodology">Méthodologie</string>
+    <string name="feature_about_page_methodology_summary">Principes, traitement des données, recherche et assistant</string>
+    <string name="feature_about_page_sources">Sources et licences</string>
+    <string name="feature_about_page_sources_summary">Origine des données et logiciels utilisés</string>
+    <string name="feature_about_page_inclusion">Règle d’inclusion des candidats</string>
+    <string name="feature_about_page_inclusion_summary">Quelles candidatures figurent dans l’application</string>
+    <string name="feature_about_page_privacy">Vie privée</string>
+    <string name="feature_about_page_privacy_summary">Ce qui reste sur l’appareil, usage du réseau</string>
+    <string name="feature_about_page_legal">Mentions légales</string>
+    <string name="feature_about_page_legal_summary">Éditeur, contact, hébergement</string>
+    <string name="feature_about_report">Signaler une erreur</string>
+    <string name="feature_about_report_summary">Ouvre la page de signalement dans le navigateur ; aucune donnée n’est envoyée automatiquement.</string>
+
+    <!-- Data and updates -->
+    <string name="feature_about_data_installed">Données installées</string>
+    <string name="feature_about_data_none">Aucune donnée installée pour le moment.</string>
+    <string name="feature_about_pack_core">Candidats, mandats, votes, prises de parole</string>
+    <string name="feature_about_pack_programs">Programmes</string>
+    <string name="feature_about_pack_legal">Constitution et textes juridiques</string>
+    <!-- %1$s: date JJ/MM/AAAA, %2$s: version -->
+    <string name="feature_about_pack_line">Données du %1$s · version %2$s</string>
+    <string name="feature_about_pack_fictional">Données fictives de démonstration (version de développement)</string>
+    <string name="feature_about_check_updates">Rechercher une mise à jour</string>
+    <string name="feature_about_check_requested">Recherche demandée : elle a lieu dès qu’une connexion est disponible.</string>
+    <string name="feature_about_updates_explain">Les mises à jour sont des fichiers signés, vérifiés avant d’être activés. Elles sont recherchées automatiquement une fois par jour en Wi-Fi.</string>
+    <string name="feature_about_history">Historique des mises à jour sur cet appareil</string>
+    <string name="feature_about_history_empty">Aucune mise à jour enregistrée.</string>
+    <!-- %1$s: pack name, %2$s: data date, %3$s: installation date -->
+    <string name="feature_about_history_line">%1$s : données du %2$s, installées le %3$s</string>
+
+    <!-- Settings -->
+    <string name="feature_about_text_size">Taille du texte</string>
+    <string name="feature_about_text_size_explain">S’ajoute à la taille de police choisie dans les réglages de l’appareil.</string>
+    <string name="feature_about_text_size_system">Normale</string>
+    <string name="feature_about_text_size_large">Grande</string>
+    <string name="feature_about_text_size_largest">Très grande</string>
+    <string name="feature_about_assistant">Assistant IA</string>
+    <string name="feature_about_assistant_not_configured">Non disponible dans cette version de l’application.</string>
+    <string name="feature_about_assistant_unsupported">Mode sans IA : cet appareil ne remplit pas les conditions (6 Go de mémoire vive, 4 Go d’espace libre).</string>
+    <string name="feature_about_assistant_not_installed">Non installé. Il s’active depuis l’écran « Question ».</string>
+    <string name="feature_about_assistant_downloading">Téléchargement du modèle en cours.</string>
+    <string name="feature_about_assistant_failed">Le dernier téléchargement n’a pas abouti.</string>
+    <string name="feature_about_assistant_ready">Modèle installé sur l’appareil.</string>
+    <string name="feature_about_assistant_use">Utiliser l’assistant IA</string>
+    <string name="feature_about_assistant_remove">Supprimer le modèle (libère environ 2 Go)</string>
+    <string name="feature_about_storage">Stockage</string>
+    <!-- %1$s: size -->
+    <string name="feature_about_storage_data">Données de l’application : %1$s</string>
+    <!-- %1$s: size -->
+    <string name="feature_about_storage_model">Modèle de l’assistant : %1$s</string>
+    <!-- %1$s: number with one decimal -->
+    <string name="feature_about_size_mb">%1$s Mo</string>
+
+    <!-- Methodology -->
+    <string name="feature_about_m_principles">Principes</string>
+    <string name="feature_about_m_principles_text">Tous les candidats sont présentés de la même façon : mêmes rubriques, même ordre, ordre alphabétique par défaut (un ordre aléatoire peut être choisi). L’application n’attribue aucune note, ne classe pas les candidats et ne donne aucun conseil de vote. Les couleurs ne servent jamais à juger une position.</string>
+    <string name="feature_about_m_facts">Uniquement des faits sourcés</string>
+    <string name="feature_about_m_facts_text">Chaque information vient d’une source officielle ou d’un document publié par le candidat. Le bouton « Source » indique son origine, sa date de récupération, sa licence et la version des données. Une information absente est signalée par « Non disponible dans les sources utilisées » : l’absence d’une donnée n’est pas l’absence d’une position.</string>
+    <string name="feature_about_m_coverage">Couverture des données</string>
+    <string name="feature_about_m_coverage_text">Un candidat qui a exercé un mandat parlementaire a des votes et des interventions publiés, un candidat qui n’en a pas exercé n’en a pas. Le badge de couverture rend cette différence visible pour chaque rubrique : disponible, partiel, non applicable ou indisponible.</string>
+    <string name="feature_about_m_votes">Votes</string>
+    <string name="feature_about_m_votes_text">Les positions sont affichées telles que publiées (pour, contre, abstention, non-votant…), avec le type de scrutin et le lien officiel. Seuls les scrutins publics sont en open data. Un vote « contre » peut viser une autre disposition du texte. Quand l’appartenance à l’assemblée à la date du scrutin n’est pas établie, l’application affiche « Pas de vote enregistré ».</string>
+    <string name="feature_about_m_programs">Programmes et thèmes</string>
+    <string name="feature_about_m_programs_text">Les programmes sont repris mot pour mot, avec leur page ou leur ancre, et découpés en extraits. Chaque extrait est rattaché à des thèmes par des règles explicites ou par une décision humaine ; la méthode est affichée. La mise en regard place le texte du programme à côté des votes, sans dire s’ils concordent.</string>
+    <string name="feature_about_m_search">Recherche et assistant</string>
+    <string name="feature_about_m_search_text">La recherche montre des extraits exacts des documents. Les demandes d’avis, de pronostic, de comparaison évaluative ou de conseil de vote reçoivent une réponse fixe. Quand aucun document ne répond à la question, l’application le dit au lieu de deviner. L’assistant IA, facultatif, rédige une réponse sur l’appareil à partir des extraits trouvés ; chaque affirmation doit citer un extrait, et celles dont les nombres, dates, noms ou citations ne figurent pas dans l’extrait cité sont retirées. La réponse peut néanmoins contenir des erreurs : les extraits restent toujours affichés.</string>
+    <string name="feature_about_m_updates">Mises à jour</string>
+    <string name="feature_about_m_updates_text">Les données sont préparées à partir des sources officielles, puis publiées sous forme de fichiers signés. L’application vérifie la signature et l’empreinte de chaque fichier avant de l’utiliser, et garde la version précédente en cas de problème. La date des données est affichée sur chaque écran.</string>
+
+    <!-- Sources and licences -->
+    <string name="feature_about_s_data">Données</string>
+    <string name="feature_about_s_constitutional_council">Conseil constitutionnel : liste officielle des candidats et parrainages.</string>
+    <string name="feature_about_s_rne">Répertoire national des élus (data.gouv.fr) : mandats en cours. Licence Ouverte.</string>
+    <string name="feature_about_s_an">Assemblée nationale (open data) : députés, mandats, scrutins, interventions. Licence Ouverte.</string>
+    <string name="feature_about_s_senat">Sénat (open data) : sénateurs, mandats, scrutins, débats. Licence Ouverte 2.0.</string>
+    <string name="feature_about_s_pe">Parlement européen (données ouvertes) : eurodéputés, votes nominatifs, interventions. CC BY 4.0.</string>
+    <string name="feature_about_s_legi">DILA, base LEGI et Légifrance : Constitution et textes juridiques. Licence Ouverte.</string>
+    <string name="feature_about_s_vie_publique">Vie-publique (DILA) : liste des discours publics, avec lien vers la page officielle.</string>
+    <string name="feature_about_s_programs">Programmes : documents publiés par les candidats ; leurs conditions de réutilisation sont indiquées derrière chaque bouton « Source ».</string>
+    <string name="feature_about_s_each">Chaque information affichée renvoie à sa source exacte (adresse, date de récupération, licence) par son bouton « Source ».</string>
+    <string name="feature_about_s_software">Logiciels</string>
+    <string name="feature_about_s_software_text">Application écrite en Kotlin avec Jetpack Compose et les bibliothèques AndroidX (Apache-2.0). Assistant IA : llama.cpp et ggml (MIT), modèle Ministral 3 3B Instruct (Apache-2.0), téléchargé à la demande. Vérification des signatures : Tink (Apache-2.0). La liste complète figure dans le fichier THIRD_PARTY.md du code source.</string>
+
+    <!-- Inclusion rule -->
+    <string name="feature_about_i_before">Avant la liste officielle, une personne figure dans l’application avec le statut « déclaré » si sa candidature est annoncée publiquement par elle-même ou son parti sur un canal daté, et rapportée par au moins deux médias nationaux indépendants. Une candidature retirée reste visible avec le statut « retiré » et sa date.</string>
+    <string name="feature_about_i_after">Dès la publication de la liste par le Conseil constitutionnel, seuls les candidats retenus figurent avec le statut « officiel ».</string>
+    <string name="feature_about_i_count">Le nombre de candidats « déclarés » varie selon les médias : il dépend de la règle appliquée, rappelée ici.</string>
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="feature_about_i_date">Version de la règle appliquée aux données installées : %1$s.</string>
+    <string name="feature_about_i_no_date">Version de la règle : non disponible dans les données installées.</string>
+
+    <!-- Privacy -->
+    <string name="feature_about_p_device">Tout reste sur l’appareil</string>
+    <string name="feature_about_p_device_text">Vos questions, vos recherches et vos réglages ne quittent jamais l’appareil et ne sont pas enregistrés. L’application n’utilise ni compte, ni statistiques d’usage, ni publicité, ni outil de suivi.</string>
+    <string name="feature_about_p_network">Usage du réseau</string>
+    <string name="feature_about_p_network_text">Le réseau sert uniquement à télécharger les mises à jour des données et, si vous l’activez, le modèle de l’assistant IA. Ces téléchargements se font en HTTPS ; seule l’adresse du fichier demandé est transmise, comme pour toute page web. Les liens vers les sources officielles s’ouvrent dans votre navigateur.</string>
+    <string name="feature_about_p_delete">Suppression</string>
+    <string name="feature_about_p_delete_text">Le modèle de l’assistant se supprime depuis Paramètres. Désinstaller l’application efface toutes ses données. Les données de l’application ne sont pas incluses dans les sauvegardes de l’appareil.</string>
+
+    <!-- Legal notice -->
+    <string name="feature_about_l_publisher">Éditeur</string>
+    <string name="feature_about_l_director">Directeur ou directrice de la publication</string>
+    <string name="feature_about_l_contact">Contact</string>
+    <string name="feature_about_l_hosting">Hébergement des données téléchargées</string>
+    <string name="feature_about_l_missing">Non renseigné dans cette version.</string>
+    <string name="feature_about_l_ai">Les réponses de l’assistant IA sont générées sur l’appareil et signalées comme telles ; elles ne remplacent pas les documents sources.</string>
+
+    <!-- Electoral reserve period -->
+    <string name="feature_about_reserve">Période de réserve électorale : les contenus de campagne (programmes, prises de parole) sont masqués. Les mandats, les votes enregistrés et les textes juridiques restent consultables.</string>
 </resources>

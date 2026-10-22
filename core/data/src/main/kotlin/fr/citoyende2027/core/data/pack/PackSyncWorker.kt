@@ -6,7 +6,9 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -32,6 +34,7 @@ class PackSyncWorker @AssistedInject constructor(
 
     companion object {
         private const val UNIQUE_NAME = "pack-sync"
+        private const val UNIQUE_NAME_NOW = "pack-sync-now"
 
         fun schedule(workManager: WorkManager) {
             val request = PeriodicWorkRequestBuilder<PackSyncWorker>(1, TimeUnit.DAYS)
@@ -44,6 +47,14 @@ class PackSyncWorker @AssistedInject constructor(
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
                 .build()
             workManager.enqueueUniquePeriodicWork(UNIQUE_NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+        }
+
+        /** One sync at the user's request ("Rechercher une mise à jour"), on any network. */
+        fun syncNow(workManager: WorkManager) {
+            val request = OneTimeWorkRequestBuilder<PackSyncWorker>()
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                .build()
+            workManager.enqueueUniqueWork(UNIQUE_NAME_NOW, ExistingWorkPolicy.KEEP, request)
         }
     }
 }

@@ -46,6 +46,7 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.ui.DropdownFilterChip
 import fr.citoyende2027.core.ui.MandateItem
 import fr.citoyende2027.core.ui.ProgramExcerptCard
+import fr.citoyende2027.core.ui.ReserveNotice
 import fr.citoyende2027.core.ui.SourceButton
 import fr.citoyende2027.core.ui.VoteItem
 import fr.citoyende2027.core.ui.toFrenchDate
@@ -235,6 +236,8 @@ private fun Answer(answer: AskAnswer, sourceLabels: Map<String, String>) {
                 HorizontalDivider()
             }
         }
+
+        is AskAnswer.Reserved -> ReserveNotice(answer.reserve)
 
         is AskAnswer.Passages -> {
             Text(stringResource(R.string.feature_ask_passages_notice), style = MaterialTheme.typography.bodyMedium)

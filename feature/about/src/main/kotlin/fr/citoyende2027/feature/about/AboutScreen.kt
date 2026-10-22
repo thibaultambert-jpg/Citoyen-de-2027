@@ -1,11 +1,153 @@
 package fr.citoyende2027.feature.about
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import fr.citoyende2027.core.designsystem.component.PlaceholderScreen
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.citoyende2027.core.designsystem.icon.CitoyenIcons
+
+/** Pages of the "Infos" screen (AGENTS.md §10, §11). */
+enum class InfoPage(val title: Int, val summary: Int) {
+    DATA(R.string.feature_about_page_data, R.string.feature_about_page_data_summary),
+    SETTINGS(R.string.feature_about_page_settings, R.string.feature_about_page_settings_summary),
+    METHODOLOGY(R.string.feature_about_page_methodology, R.string.feature_about_page_methodology_summary),
+    SOURCES(R.string.feature_about_page_sources, R.string.feature_about_page_sources_summary),
+    INCLUSION(R.string.feature_about_page_inclusion, R.string.feature_about_page_inclusion_summary),
+    PRIVACY(R.string.feature_about_page_privacy, R.string.feature_about_page_privacy_summary),
+    LEGAL(R.string.feature_about_page_legal, R.string.feature_about_page_legal_summary),
+}
 
 @Composable
-internal fun AboutScreen(modifier: Modifier = Modifier) {
-    PlaceholderScreen(title = stringResource(R.string.feature_about_title), modifier = modifier)
+internal fun AboutScreen(
+    onOpenPage: (InfoPage) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: AboutViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    AboutContent(state, onOpenPage, modifier)
+}
+
+@Composable
+internal fun AboutContent(state: AboutUiState, onOpenPage: (InfoPage) -> Unit, modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+    val version = remember(context) {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull()
+    }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        Text(
+            text = stringResource(R.string.feature_about_title),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier
+                .padding(16.dp)
+                .semantics { heading() },
+        )
+        if (state.reserve.hideCampaignContent) ReserveCard()
+        InfoPage.entries.forEach { page ->
+            ListItem(
+                headlineContent = { Text(stringResource(page.title)) },
+                supportingContent = { Text(stringResource(page.summary)) },
+                modifier = Modifier.clickable(role = Role.Button) { onOpenPage(page) },
+            )
+            HorizontalDivider()
+        }
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.feature_about_report)) },
+            supportingContent = { Text(stringResource(R.string.feature_about_report_summary)) },
+            modifier = Modifier.clickable(role = Role.Button) { uriHandler.openUri(BuildConfig.REPORT_URL) },
+        )
+        version?.let {
+            Text(
+                text = stringResource(R.string.feature_about_version, it),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+internal fun ReserveCard() {
+    Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Text(stringResource(R.string.feature_about_reserve), modifier = Modifier.padding(12.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun AboutPageScreen(
+    page: InfoPage,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: AboutViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    Column(modifier = modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text(stringResource(page.title)) },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(painterResource(CitoyenIcons.Back), stringResource(R.string.feature_about_back))
+                }
+            },
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            when (page) {
+                InfoPage.DATA -> DataPage(state, viewModel::checkForUpdates)
+
+                InfoPage.SETTINGS -> SettingsPage(
+                    state,
+                    viewModel::setTextScale,
+                    viewModel::setAssistantEnabled,
+                    viewModel::removeModel,
+                )
+
+                InfoPage.METHODOLOGY -> MethodologyPage()
+
+                InfoPage.SOURCES -> SourcesPage()
+
+                InfoPage.INCLUSION -> InclusionPage(state)
+
+                InfoPage.PRIVACY -> PrivacyPage()
+
+                InfoPage.LEGAL -> LegalPage()
+            }
+        }
+    }
 }

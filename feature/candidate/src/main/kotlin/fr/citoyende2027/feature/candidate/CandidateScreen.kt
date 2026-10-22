@@ -38,6 +38,7 @@ import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.ui.CandidateStatusText
 import fr.citoyende2027.core.ui.CoverageBadge
 import fr.citoyende2027.core.ui.DataDateBanner
+import fr.citoyende2027.core.ui.ReserveNotice
 import fr.citoyende2027.core.ui.SourceButton
 import fr.citoyende2027.feature.candidate.tab.MandatesTab
 import fr.citoyende2027.feature.candidate.tab.ProgramAndVotesTab
@@ -105,7 +106,12 @@ private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (V
             )
         }
     }
-    when (CandidateSheetTab.entries[selected]) {
+    val tab = CandidateSheetTab.entries[selected]
+    if (state.reserve.hideCampaignContent && tab in CAMPAIGN_TABS) {
+        ScrollableTab { ReserveNotice(state.reserve) }
+        return
+    }
+    when (tab) {
         CandidateSheetTab.OVERVIEW -> ScrollableTab { OverviewTab(state.candidate) }
         CandidateSheetTab.MANDATES -> MandatesTab(state.mandates)
         CandidateSheetTab.PROGRAM -> ProgramTab(state.program, state.themes)
@@ -115,6 +121,13 @@ private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (V
         CandidateSheetTab.SOURCES -> SourcesTab(state)
     }
 }
+
+/** Campaign content, hidden during the electoral reserve period (AGENTS.md §10). */
+private val CAMPAIGN_TABS = setOf(
+    CandidateSheetTab.PROGRAM,
+    CandidateSheetTab.SPEECHES,
+    CandidateSheetTab.PROGRAM_AND_VOTES,
+)
 
 @Composable
 private fun ScrollableTab(content: @Composable () -> Unit) {

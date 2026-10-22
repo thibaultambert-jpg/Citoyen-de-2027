@@ -230,6 +230,8 @@ class CorePack:
     vote_themes: dict[str, list[ThemeTag]] = field(default_factory=dict)
     # Retrieval thresholds calibrated on eval/golden.jsonl (compact JSON), read by the app (AGENTS.md §8).
     rag_config: str | None = None
+    # Electoral reserve period (AGENTS.md §10): campaign content hidden in the app when set (compact JSON).
+    reserve: str | None = None
 
 
 @dataclass(frozen=True)

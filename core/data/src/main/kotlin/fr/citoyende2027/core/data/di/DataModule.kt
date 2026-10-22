@@ -11,9 +11,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import fr.citoyende2027.core.data.repository.AppInfoRepository
 import fr.citoyende2027.core.data.repository.AskRepository
 import fr.citoyende2027.core.data.repository.CandidatesRepository
 import fr.citoyende2027.core.data.repository.DataStoreUserPreferencesRepository
+import fr.citoyende2027.core.data.repository.DefaultAppInfoRepository
 import fr.citoyende2027.core.data.repository.LegalRepository
 import fr.citoyende2027.core.data.repository.OfflineAskRepository
 import fr.citoyende2027.core.data.repository.OfflineCandidatesRepository
@@ -32,6 +34,9 @@ internal abstract class DataModule {
 
     @Binds
     abstract fun bindsLegalRepository(impl: OfflineLegalRepository): LegalRepository
+
+    @Binds
+    abstract fun bindsAppInfoRepository(impl: DefaultAppInfoRepository): AppInfoRepository
 
     @Binds
     abstract fun bindsUserPreferencesRepository(impl: DataStoreUserPreferencesRepository): UserPreferencesRepository

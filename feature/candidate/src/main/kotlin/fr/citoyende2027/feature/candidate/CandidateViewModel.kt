@@ -46,7 +46,8 @@ class CandidateViewModel @Inject constructor(
         candidatesRepository.observeCorePackInfo(),
         facts,
         voteFilter,
-    ) { candidate, info, facts, filter ->
+        candidatesRepository.observeReserve(),
+    ) { candidate, info, facts, filter, reserve ->
         val votes = facts.votes
         if (candidate == null) {
             CandidateUiState.NotFound
@@ -66,6 +67,7 @@ class CandidateViewModel @Inject constructor(
                 program = facts.program,
                 themes = facts.themes,
                 allVotes = votes,
+                reserve = reserve,
             )
         }
     }.stateIn(

@@ -22,6 +22,7 @@ import fr.citoyende2027.core.model.ProgramChunk
 import fr.citoyende2027.core.model.ProgramDocument
 import fr.citoyende2027.core.model.ProgramStatus
 import fr.citoyende2027.core.model.ProgramsPackContent
+import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
@@ -130,7 +131,17 @@ class CorePackReader @Inject constructor() {
                 generatedOn = LocalDate.parse(meta.getValue("generated_on")),
                 isFictional = false,
             )
-            return CorePackContent(info, candidates, mandates, votes, speeches, themes, meta["rag_config"])
+            return CorePackContent(
+                info = info,
+                candidates = candidates,
+                mandates = mandates,
+                votes = votes,
+                speeches = speeches,
+                themes = themes,
+                ragConfig = meta["rag_config"],
+                reserve = ReservePeriod.parse(meta["reserve"]),
+                inclusionPolicyDate = meta["inclusion_policy_date"]?.let(LocalDate::parse),
+            )
         } finally {
             db.close()
         }

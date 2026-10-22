@@ -32,6 +32,7 @@ import fr.citoyende2027.core.ui.DataDateBanner
 import fr.citoyende2027.core.ui.DropdownFilterChip
 import fr.citoyende2027.core.ui.ProgramExcerptCard
 import fr.citoyende2027.core.ui.ProgramStatusText
+import fr.citoyende2027.core.ui.ReserveNotice
 import fr.citoyende2027.core.ui.VoteItem
 
 @Composable
@@ -123,11 +124,15 @@ private fun CandidateColumnCard(column: CandidateColumn, state: CompareUiState) 
                     modifier = Modifier.semantics { heading() },
                 )
             }
-            ProgramStatusText(facts.programStatus)
             SubHeading(stringResource(R.string.feature_compare_program))
-            if (facts.excerpts.isEmpty()) Text(stringResource(R.string.feature_compare_no_excerpt))
-            facts.excerpts.forEach { chunk ->
-                ProgramExcerptCard(chunk, column.documents.firstOrNull { it.id == chunk.documentId }, themeLabels)
+            if (state.reserve.hideCampaignContent) {
+                ReserveNotice(state.reserve)
+            } else {
+                ProgramStatusText(facts.programStatus)
+                if (facts.excerpts.isEmpty()) Text(stringResource(R.string.feature_compare_no_excerpt))
+                facts.excerpts.forEach { chunk ->
+                    ProgramExcerptCard(chunk, column.documents.firstOrNull { it.id == chunk.documentId }, themeLabels)
+                }
             }
             SubHeading(stringResource(R.string.feature_compare_votes))
             if (facts.votes.isEmpty()) Text(stringResource(R.string.feature_compare_no_vote))

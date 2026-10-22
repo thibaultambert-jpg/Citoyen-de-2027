@@ -4,9 +4,11 @@ import fr.citoyende2027.core.data.repository.AskAnswer
 import fr.citoyende2027.core.data.repository.AskScope
 import fr.citoyende2027.core.data.repository.CorePackStore
 import fr.citoyende2027.core.data.repository.OfflineAskRepository
+import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.testing.FictionalCandidates
 import fr.citoyende2027.core.testing.FictionalLegal
 import fr.citoyende2027.rag.RefusalCategory
+import java.time.LocalDate
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -63,5 +65,28 @@ class OfflineAskRepositoryTest {
         assertEquals(FictionalCandidates.all, answer.groups.map { it.candidate })
         assertEquals(listOf(true, false, true), answer.groups.map { it.isEmpty })
         assertEquals("fictif-b-programme-0001", answer.groups[1].programs.single().chunk.id)
+    }
+
+    @Test
+    fun `during the reserve period programme passages are not shown, official records are`() = runTest {
+        CorePackStore(dao).install(
+            FictionalCandidates.corePack.copy(reserve = ReservePeriod(true, LocalDate.of(2026, 1, 20))),
+            FictionalCandidates.programsPack,
+            FictionalLegal.pack,
+        )
+        val reserved = AskAnswer.Reserved(ReservePeriod(true, LocalDate.of(2026, 1, 20)))
+        assertEquals(reserved, repository.ask("Une mesure sur le motfictif02 ?", AskScope.AllPrograms))
+        assertEquals(
+            reserved,
+            repository.ask("Quel est le budget des armées ?", AskScope.Candidate(FictionalCandidates.candidateA.id)),
+        )
+        assertInstanceOf(
+            AskAnswer.Mandates::class.java,
+            repository.ask("Quels mandats pour Candidat A ?", AskScope.AllPrograms),
+        )
+        assertInstanceOf(
+            AskAnswer.Passages::class.java,
+            repository.ask("Selon quelle règle a lieu l'élection fictive ?", AskScope.Legal),
+        )
     }
 }
