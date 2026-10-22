@@ -5,6 +5,14 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Direct APK distribution (no store): the release key belongs to the publisher and is never in the
+// repository. Its keystore path and passwords come from Gradle properties (CI secrets); without them
+// the release APK is built unsigned, as for the CI checks.
+val signing = listOf("storeFile", "storePassword", "keyAlias", "keyPassword").associateWith { key ->
+    providers.gradleProperty("citoyen.signing.$key").orNull
+}
+val releaseSigning = signing.values.all { !it.isNullOrBlank() }
+
 android {
     namespace = "fr.citoyende2027"
     // Same NDK as :llm: the app strips the debug symbols of every native library it packages.
@@ -25,8 +33,20 @@ android {
         }
     }
 
+    if (releaseSigning) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(signing.getValue("storeFile")!!)
+                storePassword = signing.getValue("storePassword")
+                keyAlias = signing.getValue("keyAlias")
+                keyPassword = signing.getValue("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (releaseSigning) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

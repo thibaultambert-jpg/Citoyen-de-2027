@@ -60,7 +60,7 @@ jobs:
         run: ./gradlew :app:assembleRelease
 
       - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages)
-        run: python3 tools/release-checks/check_apk.py app/build/outputs/apk/release/app-release-unsigned.apk
+        run: python3 tools/release-checks/check_apk.py app/build/outputs/apk/release/*.apk
 
       - name: Report APK size and content
         run: |

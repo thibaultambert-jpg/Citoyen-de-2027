@@ -14,8 +14,11 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
       Ministral-3-3B-Instruct-2512 Q4_K_M (AGENTS.md §9). Sans valeurs, l’assistant reste indisponible.
 - [ ] Modèle d’embeddings (`embed.gguf`) : choix final après benchmark sur le jeu golden ; même modèle
       et même quantification dans le pipeline et sur l’appareil.
-- [ ] Clé de signature de l’application (keystore de publication) : aucune configuration de signature
-      release n’existe encore dans `app/build.gradle.kts`. `TODO(verify)` : signature d’app Play ou APK direct.
+- [ ] Clé de signature de l’application (distribution par APK direct, décision du 22/10/2026) : keystore
+      généré et conservé par l’éditeur, jamais dans le dépôt ni visible de l’agent ; fourni au build par
+      `citoyen.signing.storeFile`, `citoyen.signing.storePassword`, `citoyen.signing.keyAlias`,
+      `citoyen.signing.keyPassword` (secrets de CI). Sans ces valeurs, l’APK release n’est pas signé.
+      La perte de cette clé empêche toute mise à jour des installations existantes : sauvegarde hors ligne.
 
 ## 2. Contrôles automatiques (CI)
 
@@ -38,7 +41,7 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
 - [ ] Requêtes Room < 50 ms sur appareil (fiche d’un candidat avec beaucoup de votes, release).
 - [ ] Recherche dans les sources < 300 ms sur appareil d’entrée de gamme (avec le pack réel).
 - [ ] Mode avion : l’app est utile dès le premier lancement avec le pack `core` embarqué.
-- [ ] Assistant IA sur un appareil ≥ 6 Go de RAM : temps au premier token, jetons/s, pic de RAM
+- [ ] Assistant IA sur un appareil ≥ 6 Go de RAM (seuil confirmé le 22/10/2026) : temps au premier token, jetons/s, pic de RAM
       (écran de benchmark debug) ; comparaison Q4_K_M / Q4_0 avant de figer la quantification.
 - [ ] « Mode sans IA » sur un appareil sous le seuil : message clair.
 - [ ] Aucune question dans `adb logcat`.
@@ -54,12 +57,14 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
 - [ ] Période de réserve électorale : avis d’un juriste (par exemple art. L49 du Code électoral) ;
       `pipeline/inputs/reserve.json` mis à jour en conséquence, pack republié.
 
-## 5. Store et conformité
+## 5. Distribution (APK direct, sans Play Store)
 
-- [ ] Distribution choisie (Play Store ou APK direct).
+- [ ] APK release signé publié sur la page de version GitHub, avec son empreinte SHA-256.
+- [ ] Empreinte SHA-256 du certificat de signature publiée (README, page de version) pour que chacun
+      puisse vérifier l’APK (`apksigner verify --print-certs`).
+- [ ] Mode d’emploi d’installation (autoriser l’installation depuis cette source, vérifier l’empreinte).
+- [ ] `versionCode` incrémenté à chaque version (sinon l’installation par-dessus est refusée).
+- [ ] `applicationId` définitif choisi avant la première diffusion (il ne peut plus changer ensuite).
 - [ ] Politique de confidentialité publiée à une URL stable (reprend la page « Vie privée » de l’app).
-- [ ] Formulaire « Sécurité des données » Play : aucune donnée collectée ni partagée.
-- [ ] `TODO(verify)` : règles Google Play applicables aux applications d’information électorale ou
-      politique (déclarations éventuelles).
 - [ ] `THIRD_PARTY.md` à jour ; licences Apache-2.0, MIT ou BSD seulement ; textes de licence inclus.
 - [ ] Page « Historique des mises à jour » cohérente avec les packs publiés.
