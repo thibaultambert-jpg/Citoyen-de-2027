@@ -43,13 +43,25 @@ jobs:
           test -n "$PACK_SIGNING_KEY" || { echo "::error::PACK_SIGNING_KEY secret is missing"; exit 1; }
           python -m citoyen_pipeline pack --inputs inputs --cache cache --out dist
           test -f dist/manifest.json.sig
+      - name: Set up JDK (evaluation harness)
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Evaluate retrieval on the golden set (blocking, AGENTS.md §7.7)
+        working-directory: .
+        run: >-
+          ./gradlew :tools:rag-eval:evaluate
+          -Ppacks="$GITHUB_WORKSPACE/pipeline/dist" -Preport="$GITHUB_WORKSPACE/pipeline/dist/eval_report.json"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           version=$(python -c "import json;print(json.load(open('dist/report.json'))['version'])")
           tag="packs-$(echo "$version" | tr '+:' '--')"
-          gh release create "$tag" dist/*.sqlite dist/manifest.json dist/manifest.json.sig dist/report.json \
+          gh release create "$tag" dist/*.sqlite dist/manifest.json dist/manifest.json.sig dist/report.json dist/eval_report.json \
             --title "Données $version" --notes "Pack core $version (voir report.json)." --latest=false
           # Stable location read by the app: releases/download/packs-current/<file>.
           gh release view packs-current >/dev/null 2>&1 || \
