@@ -49,6 +49,11 @@ jobs:
         with:
           distribution: zulu
           java-version: '21'
+      - name: Install the NDK and CMake of :llm
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
+
       - name: Set up Gradle
         if: matrix.source == 'j5legal'
         uses: gradle/actions/setup-gradle@v4
