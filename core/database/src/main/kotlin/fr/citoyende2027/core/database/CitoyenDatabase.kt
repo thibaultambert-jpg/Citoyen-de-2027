@@ -40,7 +40,7 @@ import java.time.LocalDate
         LegalArticleEntity::class,
         LegalFtsEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class)

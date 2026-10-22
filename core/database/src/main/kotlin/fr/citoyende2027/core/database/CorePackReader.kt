@@ -130,7 +130,7 @@ class CorePackReader @Inject constructor() {
                 generatedOn = LocalDate.parse(meta.getValue("generated_on")),
                 isFictional = false,
             )
-            return CorePackContent(info, candidates, mandates, votes, speeches, themes)
+            return CorePackContent(info, candidates, mandates, votes, speeches, themes, meta["rag_config"])
         } finally {
             db.close()
         }

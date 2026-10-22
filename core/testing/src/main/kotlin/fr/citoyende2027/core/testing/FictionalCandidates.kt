@@ -137,7 +137,11 @@ object FictionalCandidates {
         ),
     )
 
-    val corePack = CorePackContent(packInfo, all, mandates, votes, speeches, themes)
+    /** Same thresholds as pipeline/tests/fixtures/rag_config.json. */
+    const val RAG_CONFIG =
+        """{"min_coverage":0.5,"min_matched_terms":2,"min_similarity":2.0,"pool_size":30,"rrf_k":60,"top_k":5}"""
+
+    val corePack = CorePackContent(packInfo, all, mandates, votes, speeches, themes, RAG_CONFIG)
 
     val programsInfo = packInfo.copy(id = DataPackInfo.PROGRAMS)
 

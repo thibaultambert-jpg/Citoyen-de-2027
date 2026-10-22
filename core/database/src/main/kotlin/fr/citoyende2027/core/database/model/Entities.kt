@@ -60,6 +60,8 @@ data class DataPackEntity(
     val version: String,
     @ColumnInfo(name = "generated_on") val generatedOn: LocalDate,
     @ColumnInfo(name = "is_fictional") val isFictional: Boolean,
+    /** Retrieval thresholds shipped in the `core` pack (null for other packs). */
+    @ColumnInfo(name = "rag_config") val ragConfig: String? = null,
 )
 
 @Entity(

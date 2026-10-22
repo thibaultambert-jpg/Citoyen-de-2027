@@ -27,6 +27,7 @@ enableRobolectricTests()
 
 dependencies {
     api(projects.core.model)
+    api(projects.rag)
     implementation(projects.core.database)
     implementation(projects.core.network)
     implementation(libs.androidx.dataStore.preferences)

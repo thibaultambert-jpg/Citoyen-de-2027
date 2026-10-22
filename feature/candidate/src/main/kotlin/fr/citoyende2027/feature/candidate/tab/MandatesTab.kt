@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import fr.citoyende2027.core.designsystem.R as DesignR
 import fr.citoyende2027.core.model.Body
 import fr.citoyende2027.core.model.Mandate
+import fr.citoyende2027.core.ui.MandateItem
 import fr.citoyende2027.core.ui.R as UiR
-import fr.citoyende2027.core.ui.SourceButton
 import fr.citoyende2027.core.ui.labelRes
 import fr.citoyende2027.core.ui.toFrenchDate
 import fr.citoyende2027.feature.candidate.R
@@ -58,21 +58,5 @@ internal fun MandatesTab(mandates: List<Mandate>, modifier: Modifier = Modifier)
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun MandateItem(mandate: Mandate) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(mandate.label, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = mandate.endDate?.let {
-                    stringResource(UiR.string.core_ui_period, mandate.startDate.toFrenchDate(), it.toFrenchDate())
-                } ?: stringResource(UiR.string.core_ui_period_open, mandate.startDate.toFrenchDate()),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        SourceButton(mandate.source)
     }
 }

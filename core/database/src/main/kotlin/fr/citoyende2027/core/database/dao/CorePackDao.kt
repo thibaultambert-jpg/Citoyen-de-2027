@@ -132,6 +132,23 @@ interface CorePackDao {
     @Upsert
     suspend fun upsertPack(pack: DataPackEntity)
 
+    @Query("SELECT rag_config FROM data_packs WHERE id = :id")
+    suspend fun getRagConfig(id: String): String?
+
+    @Transaction
+    @Query("SELECT * FROM candidates")
+    suspend fun getCandidates(): List<CandidateWithCoverage>
+
+    @Query("SELECT * FROM legal_articles ORDER BY text_id, ordinal")
+    suspend fun getAllLegalArticles(): List<LegalArticleEntity>
+
+    @Transaction
+    @Query("SELECT * FROM program_chunks ORDER BY candidate_id, document_id, ordinal")
+    suspend fun getAllProgramChunks(): List<ChunkWithThemes>
+
+    @Query("SELECT * FROM program_documents")
+    suspend fun getAllProgramDocuments(): List<ProgramDocumentEntity>
+
     @Query("SELECT * FROM legal_texts ORDER BY position, id")
     fun observeLegalTexts(): Flow<List<LegalTextEntity>>
 

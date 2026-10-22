@@ -25,6 +25,8 @@ data class CorePackContent(
     val votes: List<Vote> = emptyList(),
     val speeches: List<Speech> = emptyList(),
     val themes: List<Theme> = emptyList(),
+    /** Retrieval thresholds (JSON), calibrated by the pipeline on its golden set (AGENTS.md §8). */
+    val ragConfig: String? = null,
 ) {
     init {
         require(info.id == DataPackInfo.CORE) { "Not a core pack: ${info.id}" }

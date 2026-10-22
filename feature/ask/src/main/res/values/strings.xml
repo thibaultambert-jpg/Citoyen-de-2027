@@ -1,4 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
-    <string name="feature_ask_title">Poser une question</string>
+    <string name="feature_ask_title">Rechercher dans les sources</string>
+    <string name="feature_ask_no_ai_mode">Mode sans IA : l’application affiche les extraits des documents sources et les données officielles, sans réponse rédigée.</string>
+    <string name="feature_ask_scope">Rechercher dans</string>
+    <string name="feature_ask_scope_legal">Constitution et textes</string>
+    <string name="feature_ask_scope_candidate">Un candidat</string>
+    <string name="feature_ask_scope_programs">Programmes en parallèle</string>
+    <string name="feature_ask_candidate">Candidat</string>
+    <string name="feature_ask_question">Votre question</string>
+    <string name="feature_ask_submit">Rechercher</string>
+    <string name="feature_ask_suggestions">Exemples de questions</string>
+    <string name="feature_ask_suggestion_legal_1">Quelle est la durée du mandat du Président de la République ?</string>
+    <string name="feature_ask_suggestion_legal_2">Comment le Président de la République est-il élu ?</string>
+    <string name="feature_ask_suggestion_legal_3">Que se passe-t-il en cas de vacance de la présidence ?</string>
+    <string name="feature_ask_suggestion_programs_1">Que disent les programmes sur la santé ?</string>
+    <string name="feature_ask_suggestion_programs_2">Que disent les programmes sur l’école ?</string>
+    <string name="feature_ask_suggestion_programs_3">Que disent les programmes sur le logement ?</string>
+    <string name="feature_ask_privacy">Votre question reste sur cet appareil : elle n’est ni envoyée ni enregistrée.</string>
+
+    <string name="feature_ask_refused">Cette application ne donne ni avis, ni conseil de vote, ni pronostic, et ne classe pas les candidats. Elle présente les textes publiés et les données officielles : consultez les fiches des candidats, la mise en regard par thème ou le comparateur.</string>
+    <string name="feature_ask_refused_instruction">Cette demande contient une consigne adressée à l’assistant : elle n’est pas suivie. Posez une question sur les textes ou les données de l’application.</string>
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="feature_ask_abstained">Je n’ai pas trouvé cette information dans les documents de l’application (données du %1$s).</string>
+    <string name="feature_ask_abstained_no_date">Je n’ai pas trouvé cette information dans les documents de l’application.</string>
+    <string name="feature_ask_unavailable">La recherche n’est pas disponible avec les données installées.</string>
+    <string name="feature_ask_passages_notice">Extraits des documents, tels que publiés. Vérifiez le contexte dans le document source.</string>
+    <string name="feature_ask_group_empty">Aucun extrait pertinent trouvé pour ce candidat dans les documents de l’application.</string>
+    <!-- %1$s: candidate name -->
+    <string name="feature_ask_mandates">Mandats de %1$s selon les sources officielles</string>
+    <!-- %1$s: candidate name -->
+    <string name="feature_ask_votes">Votes enregistrés de %1$s (scrutins publics)</string>
+    <string name="feature_ask_none_recorded">Aucune donnée dans les sources utilisées.</string>
+    <string name="feature_ask_open_sheet">Ouvrir la fiche</string>
+    <!-- %1$s: article number -->
+    <string name="feature_ask_article">Article %1$s</string>
+    <string name="feature_ask_official">Voir le texte officiel</string>
 </resources>

@@ -163,6 +163,23 @@ internal class FakeCorePackDao : CorePackDao {
 
     override suspend fun searchLegal(match: String): List<LegalFtsMatch> = legalMatches(match)
 
+    override suspend fun getRagConfig(id: String): String? = packs.value[id]?.ragConfig
+
+    override suspend fun getCandidates(): List<CandidateWithCoverage> = observeCandidatesNow()
+
+    override suspend fun getAllLegalArticles(): List<LegalArticleEntity> =
+        legalArticles.value.sortedWith(compareBy({ it.textId }, { it.ordinal }))
+
+    override suspend fun getAllProgramChunks(): List<ChunkWithThemes> =
+        programChunks.value.sortedWith(compareBy({ it.candidateId }, { it.documentId }, { it.ordinal }))
+            .map { chunk -> ChunkWithThemes(chunk, chunkThemes.value.filter { it.chunkId == chunk.id }) }
+
+    override suspend fun getAllProgramDocuments(): List<ProgramDocumentEntity> = programDocuments.value
+
+    private fun observeCandidatesNow() = candidates.value.map { c ->
+        CandidateWithCoverage(c, coverage.value.filter { it.candidateId == c.id })
+    }
+
     override suspend fun deleteLegalTexts() {
         legalArticles.value = emptyList()
         legalTexts.value = emptyList()

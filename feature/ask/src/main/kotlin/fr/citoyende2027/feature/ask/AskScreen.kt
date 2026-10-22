@@ -1,11 +1,263 @@
 package fr.citoyende2027.feature.ask
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import fr.citoyende2027.core.designsystem.component.PlaceholderScreen
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.citoyende2027.core.data.repository.AnswerGroup
+import fr.citoyende2027.core.data.repository.AskAnswer
+import fr.citoyende2027.core.data.repository.LegalPassage
+import fr.citoyende2027.core.model.Candidate
+import fr.citoyende2027.core.ui.DropdownFilterChip
+import fr.citoyende2027.core.ui.MandateItem
+import fr.citoyende2027.core.ui.ProgramExcerptCard
+import fr.citoyende2027.core.ui.SourceButton
+import fr.citoyende2027.core.ui.VoteItem
+import fr.citoyende2027.core.ui.toFrenchDate
+import fr.citoyende2027.rag.RefusalCategory
 
 @Composable
-internal fun AskScreen(modifier: Modifier = Modifier) {
-    PlaceholderScreen(title = stringResource(R.string.feature_ask_title), modifier = modifier)
+internal fun AskScreen(modifier: Modifier = Modifier, viewModel: AskViewModel = hiltViewModel()) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    AskContent(
+        state = state,
+        onScopeChange = viewModel::onScopeChange,
+        onCandidateChange = viewModel::onCandidateChange,
+        onQuestionChange = viewModel::onQuestionChange,
+        onSubmit = viewModel::submit,
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun AskContent(
+    state: AskUiState,
+    onScopeChange: (ScopeKind) -> Unit,
+    onCandidateChange: (Candidate) -> Unit,
+    onQuestionChange: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.feature_ask_title),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() },
+        )
+        Card {
+            Text(
+                text = stringResource(R.string.feature_ask_no_ai_mode),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(12.dp),
+            )
+        }
+        Text(stringResource(R.string.feature_ask_scope), style = MaterialTheme.typography.titleSmall)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ScopeKind.entries.forEach { scope ->
+                FilterChip(
+                    selected = state.scope == scope,
+                    onClick = { onScopeChange(scope) },
+                    label = { Text(stringResource(scope.label)) },
+                )
+            }
+        }
+        if (state.scope == ScopeKind.CANDIDATE) {
+            DropdownFilterChip(
+                title = stringResource(R.string.feature_ask_candidate),
+                selected = state.candidate,
+                options = state.candidates,
+                label = { it.displayName },
+                onSelect = { it?.let(onCandidateChange) },
+                allLabel = null,
+            )
+        }
+        OutlinedTextField(
+            value = state.question,
+            onValueChange = onQuestionChange,
+            label = { Text(stringResource(R.string.feature_ask_question)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { if (state.canSubmit) onSubmit(state.question) }),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = { onSubmit(state.question) }, enabled = state.canSubmit) {
+                Text(stringResource(R.string.feature_ask_submit))
+            }
+            Text(stringResource(R.string.feature_ask_privacy), style = MaterialTheme.typography.bodySmall)
+        }
+        if (state.answer == null && !state.searching) Suggestions(state, onQuestionChange, onSubmit)
+        if (state.searching) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        state.answer?.let { answer ->
+            Column(
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) { Answer(answer) }
+        }
+    }
+}
+
+private val ScopeKind.label: Int
+    get() = when (this) {
+        ScopeKind.LEGAL -> R.string.feature_ask_scope_legal
+        ScopeKind.CANDIDATE -> R.string.feature_ask_scope_candidate
+        ScopeKind.PROGRAMS -> R.string.feature_ask_scope_programs
+    }
+
+/** Neutral example questions, the same whatever the candidate (AGENTS.md §11). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Suggestions(state: AskUiState, onQuestionChange: (String) -> Unit, onSubmit: (String) -> Unit) {
+    val suggestions = if (state.scope == ScopeKind.LEGAL) {
+        listOf(
+            R.string.feature_ask_suggestion_legal_1,
+            R.string.feature_ask_suggestion_legal_2,
+            R.string.feature_ask_suggestion_legal_3,
+        )
+    } else {
+        listOf(
+            R.string.feature_ask_suggestion_programs_1,
+            R.string.feature_ask_suggestion_programs_2,
+            R.string.feature_ask_suggestion_programs_3,
+        )
+    }.map { stringResource(it) }
+    Text(stringResource(R.string.feature_ask_suggestions), style = MaterialTheme.typography.titleSmall)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        suggestions.forEach { suggestion ->
+            AssistChip(
+                onClick = {
+                    onQuestionChange(suggestion)
+                    if (state.scope != ScopeKind.CANDIDATE || state.candidate != null) onSubmit(suggestion)
+                },
+                label = { Text(suggestion) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun Answer(answer: AskAnswer) {
+    when (answer) {
+        AskAnswer.Unavailable -> Text(stringResource(R.string.feature_ask_unavailable))
+
+        is AskAnswer.Refused -> Card {
+            Text(
+                text = stringResource(
+                    if (answer.category == RefusalCategory.INSTRUCTION) {
+                        R.string.feature_ask_refused_instruction
+                    } else {
+                        R.string.feature_ask_refused
+                    },
+                ),
+                modifier = Modifier.padding(12.dp),
+            )
+        }
+
+        is AskAnswer.Abstained -> Text(
+            answer.dataDate?.let { stringResource(R.string.feature_ask_abstained, it.toFrenchDate()) }
+                ?: stringResource(R.string.feature_ask_abstained_no_date),
+        )
+
+        is AskAnswer.Mandates -> {
+            Heading(stringResource(R.string.feature_ask_mandates, answer.candidate.displayName))
+            if (answer.mandates.isEmpty()) Text(stringResource(R.string.feature_ask_none_recorded))
+            answer.mandates.forEach { MandateItem(it) }
+        }
+
+        is AskAnswer.Votes -> {
+            Heading(stringResource(R.string.feature_ask_votes, answer.candidate.displayName))
+            if (answer.votes.isEmpty()) Text(stringResource(R.string.feature_ask_none_recorded))
+            answer.votes.forEach { vote ->
+                VoteItem(vote)
+                HorizontalDivider()
+            }
+        }
+
+        is AskAnswer.Passages -> {
+            Text(stringResource(R.string.feature_ask_passages_notice), style = MaterialTheme.typography.bodyMedium)
+            answer.groups.forEach { Group(it) }
+        }
+    }
+}
+
+/** Same template for every group; a candidate without a relevant passage keeps its place. */
+@Composable
+private fun Group(group: AnswerGroup) {
+    group.candidate?.let { Heading(it.displayName) }
+    if (group.isEmpty) Text(stringResource(R.string.feature_ask_group_empty))
+    group.legal.forEach { LegalPassageCard(it) }
+    group.programs.forEach { ProgramExcerptCard(it.chunk, it.document, themeLabels = emptyMap()) }
+}
+
+@Composable
+private fun LegalPassageCard(passage: LegalPassage) {
+    val uriHandler = LocalUriHandler.current
+    val article = passage.article
+    OutlinedCard {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(passage.text.title, style = MaterialTheme.typography.labelLarge)
+            if (article.headingPath.isNotEmpty()) {
+                Text(article.headingPath.joinToString(" › "), style = MaterialTheme.typography.labelMedium)
+            }
+            if (article.number.any(Char::isDigit)) {
+                Text(
+                    stringResource(R.string.feature_ask_article, article.number),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            } else if (article.number.isNotBlank()) {
+                Text(article.number, style = MaterialTheme.typography.titleSmall)
+            }
+            Text(article.text, style = MaterialTheme.typography.bodyLarge)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = {
+                    uriHandler.openUri(article.url)
+                }) { Text(stringResource(R.string.feature_ask_official)) }
+                SourceButton(passage.text.source)
+            }
+        }
+    }
+}
+
+@Composable
+private fun Heading(text: String) {
+    Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
 }
