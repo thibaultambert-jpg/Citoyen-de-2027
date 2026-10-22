@@ -50,6 +50,7 @@ chaque ajout est justifié ici. Versions : `gradle/libs.versions.toml`.
 Données réutilisées (dans les packs, pas dans le code) : Assemblée nationale et Sénat (Licence Ouverte),
 Répertoire national des élus (Licence Ouverte v2.0), Parlement européen (CC BY 4.0). Chaque fait garde sa
 source, sa date de récupération et sa licence.
+Textes juridiques : base LEGI de la DILA (Licence Ouverte), lien vers Légifrance pour chaque article.
 Programmes des candidats : hors open data, intégrés seulement après validation humaine de leurs conditions de
 réutilisation (`pipeline/inputs/programs/manifest.yaml`), conditions affichées derrière le bouton « Source ».
 

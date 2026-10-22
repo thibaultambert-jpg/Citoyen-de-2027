@@ -96,6 +96,29 @@ overrides:
     themes: [sante]
 ```
 
+## `pipeline/inputs/legal/texts.yaml`
+
+Liste des textes juridiques de l’application (AGENTS.md §8), tirés de la base LEGI de la DILA (Licence
+Ouverte) : archive globale puis toutes les mises à jour quotidiennes publiées depuis. Seuls les articles
+en vigueur à la date de construction sont gardés, mot pour mot, avec leurs titres et le lien Légifrance de
+l’article. L’ordre du fichier est l’ordre d’affichage.
+
+```yaml
+version: 1
+texts:
+  - id: constitution-1958            # identifiant dans l’app
+    legi_id: LEGITEXT000006071194    # identifiant LEGI du texte
+  - id: code-electoral
+    legi_id: LEGITEXT000006070239
+    sections:                        # facultatif : ne garder que ces sections (et leur contenu)
+      - LEGISCTA000000000000         # « cid » de la section, stable d’une version à l’autre
+```
+
+Pour le Code électoral, les sections applicables à l’élection présidentielle sont à choisir par un
+humain : l’identifiant `cid` d’une section figure dans les fichiers `section_ta` de LEGI (et dans
+l’adresse Légifrance des sections). Une section absente ou plus en vigueur fait échouer la construction.
+Le rapport `report.json` donne le nombre d’articles par texte et signale les versions à venir connues.
+
 ## Publier
 
 1. Générer la clé de signature une seule fois : `python pipeline/tools/generate_signing_key.py`.
