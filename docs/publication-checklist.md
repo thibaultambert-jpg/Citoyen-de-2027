@@ -36,6 +36,7 @@ Rien ici n’est rempli par l’agent : les valeurs marquées `TODO(verify)` son
 - [ ] Démarrage à froid < 2 s sur un appareil d’entrée de gamme (Android 10, minSdk 29), mesuré
       en release (Macrobenchmark ou `adb shell am start -W`).
 - [ ] Requêtes Room < 50 ms sur appareil (fiche d’un candidat avec beaucoup de votes, release).
+- [ ] Recherche dans les sources < 300 ms sur appareil d’entrée de gamme (avec le pack réel).
 - [ ] Mode avion : l’app est utile dès le premier lancement avec le pack `core` embarqué.
 - [ ] Assistant IA sur un appareil ≥ 6 Go de RAM : temps au premier token, jetons/s, pic de RAM
       (écran de benchmark debug) ; comparaison Q4_K_M / Q4_0 avant de figer la quantification.
