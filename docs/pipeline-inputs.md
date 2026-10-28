@@ -6,7 +6,7 @@ fichiers d’entrée. Aucun nom ni identifiant n’y est jamais ajouté de mémo
 
 ## `pipeline/inputs/candidates.yaml`
 
-Un candidat entre dans la liste selon la règle d’inclusion (`docs/inclusion-policy.md`).
+Usage personnel (28/10/2026) : pas de règle d’inclusion formelle ; la liste est celle que tu choisis.
 
 ```yaml
 version: 1

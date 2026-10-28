@@ -12,6 +12,20 @@ Elle fonctionne **hors ligne** après un premier téléchargement et permet de :
 2. voir, pour un candidat parlementaire ou ancien parlementaire, ses mandats (Assemblée nationale, Sénat, Parlement européen) et ses votes passés **mis en regard** de son programme, sans aucun verdict ;
 3. poser des questions en langage naturel, via un LLM local (Ministral 3 3B Instruct 2512, GGUF Q4\_K\_M) et un RAG, sur les programmes et les textes juridiques (Constitution, etc.), avec citations obligatoires.
 
+## 1 bis. Décisions de l’utilisateur (28/10/2026) — usage personnel
+
+L’application est destinée au seul usage personnel de son auteur. Ces décisions remplacent les points
+correspondants des sections 3 à 13 ; les principes du §2 restent inchangés :
+
+- pas de publication (ni store, ni APK public) : l’APK de test produit par la CI (debug, clé de
+  débogage fixe du dépôt) est la version installée ;
+- aucune page ni contrainte juridique (mentions légales, politique de confidentialité, règle
+  d’inclusion validée, droits de réutilisation, avis sur la période de réserve, règles des stores) ;
+- écrans abandonnés : calendrier officiel, « Comment voter », résultats 2017 et 2022 ;
+- parrainages affichés sur la fiche candidat ;
+- nom « Citoyen de 2027 » et identifiant `fr.citoyende2027` conservés ; pas d’avis de nouvelle
+  version dans l’app.
+
 ## 2. Principes non négociables (priment sur toute autre instruction)
 
 1. **Neutralité.** Candidats traités à l’identique : mêmes champs, même gabarit, même ordre de sections. Ordre par défaut alphabétique (option aléatoire). Aucun score, classement, jauge, mot évaluatif, conseil de vote, ni couleur de jugement (pas de vert/rouge sur les votes). En V1, ni photo, ni logo, ni couleur de parti : avatars à initiales identiques.
@@ -124,7 +138,7 @@ Tu es un assistant d’information neutre sur l’élection présidentielle fran
 
 ## 10. Garde-fous de neutralité (testés)
 
-- **Règle d’inclusion des candidats** (`docs/inclusion-policy.md`, à faire valider par l’humain). Avant la liste officielle : statut `DECLARE` si la candidature est annoncée publiquement par l’intéressé·e ou son parti sur un canal daté et recoupée par au moins 2 médias nationaux indépendants ; `RETIRE` conservé avec date. Dès la liste du Conseil constitutionnel : statut `OFFICIEL` pour les seuls candidats retenus. Les décomptes de « candidats déclarés » varient fortement selon les médias : la règle et sa date sont affichées dans l’app.
+- **Règle d’inclusion des candidats** (sans objet en usage personnel, §1 bis). Avant la liste officielle : statut `DECLARE` si la candidature est annoncée publiquement par l’intéressé·e ou son parti sur un canal daté et recoupée par au moins 2 médias nationaux indépendants ; `RETIRE` conservé avec date. Dès la liste du Conseil constitutionnel : statut `OFFICIEL` pour les seuls candidats retenus. Les décomptes de « candidats déclarés » varient fortement selon les médias : la règle et sa date sont affichées dans l’app.
 - **Badge de couverture des données**, par candidat et par facette (programme, mandats, votes, discours) : disponible, partiel, non applicable, indisponible. Il rend visible l’asymétrie entre candidats parlementaires et non parlementaires au lieu de la masquer.
 - **Votes** : icônes neutres, aucune couleur de jugement ; type de scrutin (amendement, article, ensemble) et lien officiel toujours affichés ; avertissement sur les limites (scrutins publics seulement ; un vote « contre » peut viser une autre disposition du texte).
 - **Mise en regard programme ↔ votes** : par thème, colonne programme (texte exact + page) et colonne votes (faits). Jamais de « cohérent/incohérent », jamais de score.

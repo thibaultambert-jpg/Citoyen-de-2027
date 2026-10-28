@@ -19,7 +19,7 @@ import org.robolectric.RobolectricTestRunner
 /**
  * Room budget of AGENTS.md §4 (< 50 ms) on the heaviest screen query, a candidate's votes with their
  * themes. Robolectric's SQLite is far slower than a device's, so wall-clock time is only reported
- * here (the budget itself is measured on a device, docs/publication-checklist.md); what is asserted is
+ * here (the budget itself is measured on a device, docs/benchmarks.md); what is asserted is
  * that both statements Room runs go through an index instead of scanning whole tables.
  */
 @RunWith(RobolectricTestRunner::class)

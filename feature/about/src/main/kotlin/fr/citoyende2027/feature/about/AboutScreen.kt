@@ -32,15 +32,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.citoyende2027.core.designsystem.icon.CitoyenIcons
 
-/** Pages of the "Infos" screen (AGENTS.md §10, §11). */
+/** Pages of the "Infos" screen (AGENTS.md §10, §11; personal use: no legal pages, 28/10/2026). */
 enum class InfoPage(val title: Int, val summary: Int) {
     DATA(R.string.feature_about_page_data, R.string.feature_about_page_data_summary),
     SETTINGS(R.string.feature_about_page_settings, R.string.feature_about_page_settings_summary),
     METHODOLOGY(R.string.feature_about_page_methodology, R.string.feature_about_page_methodology_summary),
     SOURCES(R.string.feature_about_page_sources, R.string.feature_about_page_sources_summary),
-    INCLUSION(R.string.feature_about_page_inclusion, R.string.feature_about_page_inclusion_summary),
-    PRIVACY(R.string.feature_about_page_privacy, R.string.feature_about_page_privacy_summary),
-    LEGAL(R.string.feature_about_page_legal, R.string.feature_about_page_legal_summary),
 }
 
 @Composable
@@ -141,12 +138,6 @@ internal fun AboutPageScreen(
                 InfoPage.METHODOLOGY -> MethodologyPage()
 
                 InfoPage.SOURCES -> SourcesPage()
-
-                InfoPage.INCLUSION -> InclusionPage(state)
-
-                InfoPage.PRIVACY -> PrivacyPage()
-
-                InfoPage.LEGAL -> LegalPage()
             }
         }
     }

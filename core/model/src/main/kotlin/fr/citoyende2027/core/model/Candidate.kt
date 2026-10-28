@@ -39,7 +39,7 @@ data class Candidate(
             .joinToString(separator = "") { it.first().uppercase() }
 }
 
-/** Inclusion status, see docs/inclusion-policy.md (AGENTS.md §10). */
+/** Inclusion status (AGENTS.md §10). */
 enum class CandidacyStatus {
     /** Publicly announced, before the Conseil constitutionnel list. */
     DECLARE,

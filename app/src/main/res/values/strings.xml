@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
-    <!-- TODO(verify): product name to be confirmed by the publisher. -->
     <string name="app_name">Citoyen de 2027</string>
     <string name="nav_candidates">Candidats</string>
     <string name="nav_compare">Comparer</string>

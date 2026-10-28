@@ -45,9 +45,6 @@ class AboutAccessibilityTest {
     fun textPages() = page {
         MethodologyPage()
         SourcesPage()
-        InclusionPage(state)
-        PrivacyPage()
-        LegalPage()
     }
 
     private fun page(content: @androidx.compose.runtime.Composable () -> Unit) =

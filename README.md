@@ -16,8 +16,7 @@ l’application ou un prompt contient un terme de `config/neutrality/evaluative-
 
 ## Installer et publier
 
-- Installer l’application (APK direct) : [`docs/installation.md`](docs/installation.md).
-- Publier une version ou des packs de données : [`docs/release.md`](docs/release.md).
+- Tester l’application et publier des packs de données : [`docs/release.md`](docs/release.md).
 - Mesurer les performances sur téléphone : [`docs/benchmarks.md`](docs/benchmarks.md).
 
 ## Modules

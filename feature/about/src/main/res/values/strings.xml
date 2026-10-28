@@ -15,12 +15,6 @@
     <string name="feature_about_page_methodology_summary">Principes, traitement des données, recherche et assistant</string>
     <string name="feature_about_page_sources">Sources et licences</string>
     <string name="feature_about_page_sources_summary">Origine des données et logiciels utilisés</string>
-    <string name="feature_about_page_inclusion">Règle d’inclusion des candidats</string>
-    <string name="feature_about_page_inclusion_summary">Quelles candidatures figurent dans l’application</string>
-    <string name="feature_about_page_privacy">Vie privée</string>
-    <string name="feature_about_page_privacy_summary">Ce qui reste sur l’appareil, usage du réseau</string>
-    <string name="feature_about_page_legal">Mentions légales</string>
-    <string name="feature_about_page_legal_summary">Éditeur, contact, hébergement</string>
     <string name="feature_about_report">Signaler une erreur</string>
     <string name="feature_about_report_summary">Ouvre la page de signalement dans le navigateur ; aucune donnée n’est envoyée automatiquement.</string>
 
@@ -93,30 +87,6 @@
     <string name="feature_about_s_each">Chaque information affichée renvoie à sa source exacte (adresse, date de récupération, licence) par son bouton « Source ».</string>
     <string name="feature_about_s_software">Logiciels</string>
     <string name="feature_about_s_software_text">Application écrite en Kotlin avec Jetpack Compose et les bibliothèques AndroidX (Apache-2.0). Assistant IA : llama.cpp et ggml (MIT), modèle Ministral 3 3B Instruct (Apache-2.0), téléchargé à la demande. Vérification des signatures : Tink (Apache-2.0). La liste complète figure dans le fichier THIRD_PARTY.md du code source.</string>
-
-    <!-- Inclusion rule -->
-    <string name="feature_about_i_before">Avant la liste officielle, une personne figure dans l’application avec le statut « déclaré » si sa candidature est annoncée publiquement par elle-même ou son parti sur un canal daté, et rapportée par au moins deux médias nationaux indépendants. Une candidature retirée reste visible avec le statut « retiré » et sa date.</string>
-    <string name="feature_about_i_after">Dès la publication de la liste par le Conseil constitutionnel, seuls les candidats retenus figurent avec le statut « officiel ».</string>
-    <string name="feature_about_i_count">Le nombre de candidats « déclarés » varie selon les médias : il dépend de la règle appliquée, rappelée ici.</string>
-    <!-- %1$s: date JJ/MM/AAAA -->
-    <string name="feature_about_i_date">Version de la règle appliquée aux données installées : %1$s.</string>
-    <string name="feature_about_i_no_date">Version de la règle : non disponible dans les données installées.</string>
-
-    <!-- Privacy -->
-    <string name="feature_about_p_device">Tout reste sur l’appareil</string>
-    <string name="feature_about_p_device_text">Vos questions, vos recherches et vos réglages ne quittent jamais l’appareil et ne sont pas enregistrés. L’application n’utilise ni compte, ni statistiques d’usage, ni publicité, ni outil de suivi.</string>
-    <string name="feature_about_p_network">Usage du réseau</string>
-    <string name="feature_about_p_network_text">Le réseau sert uniquement à télécharger les mises à jour des données et, si vous l’activez, le modèle de l’assistant IA. Ces téléchargements se font en HTTPS ; seule l’adresse du fichier demandé est transmise, comme pour toute page web. Les liens vers les sources officielles s’ouvrent dans votre navigateur.</string>
-    <string name="feature_about_p_delete">Suppression</string>
-    <string name="feature_about_p_delete_text">Le modèle de l’assistant se supprime depuis Paramètres. Désinstaller l’application efface toutes ses données. Les données de l’application ne sont pas incluses dans les sauvegardes de l’appareil.</string>
-
-    <!-- Legal notice -->
-    <string name="feature_about_l_publisher">Éditeur</string>
-    <string name="feature_about_l_director">Directeur ou directrice de la publication</string>
-    <string name="feature_about_l_contact">Contact</string>
-    <string name="feature_about_l_hosting">Hébergement des données téléchargées</string>
-    <string name="feature_about_l_missing">Non renseigné dans cette version.</string>
-    <string name="feature_about_l_ai">Les réponses de l’assistant IA sont générées sur l’appareil et signalées comme telles ; elles ne remplacent pas les documents sources.</string>
 
     <!-- Electoral reserve period -->
     <string name="feature_about_reserve">Période de réserve électorale : les contenus de campagne (programmes, prises de parole) sont masqués. Les mandats, les votes enregistrés et les textes juridiques restent consultables.</string>

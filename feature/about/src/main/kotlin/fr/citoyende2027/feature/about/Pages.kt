@@ -201,37 +201,3 @@ internal fun SourcesPage() {
     Text(stringResource(R.string.feature_about_s_each), style = MaterialTheme.typography.bodyMedium)
     Section(R.string.feature_about_s_software, R.string.feature_about_s_software_text)
 }
-
-@Composable
-internal fun InclusionPage(state: AboutUiState) {
-    Text(stringResource(R.string.feature_about_i_before), style = MaterialTheme.typography.bodyLarge)
-    Text(stringResource(R.string.feature_about_i_after), style = MaterialTheme.typography.bodyLarge)
-    Text(stringResource(R.string.feature_about_i_count), style = MaterialTheme.typography.bodyLarge)
-    Text(
-        state.core?.inclusionPolicyDate?.let { stringResource(R.string.feature_about_i_date, it.toFrenchDate()) }
-            ?: stringResource(R.string.feature_about_i_no_date),
-        style = MaterialTheme.typography.bodyMedium,
-    )
-}
-
-@Composable
-internal fun PrivacyPage() {
-    Section(R.string.feature_about_p_device, R.string.feature_about_p_device_text)
-    Section(R.string.feature_about_p_network, R.string.feature_about_p_network_text)
-    Section(R.string.feature_about_p_delete, R.string.feature_about_p_delete_text)
-}
-
-@Composable
-internal fun LegalPage() {
-    val missing = stringResource(R.string.feature_about_l_missing)
-    listOf(
-        R.string.feature_about_l_publisher to BuildConfig.LEGAL_PUBLISHER,
-        R.string.feature_about_l_director to BuildConfig.LEGAL_DIRECTOR,
-        R.string.feature_about_l_contact to BuildConfig.LEGAL_CONTACT,
-        R.string.feature_about_l_hosting to BuildConfig.LEGAL_HOSTING,
-    ).forEach { (label, value) ->
-        Heading(stringResource(label))
-        Text(value.ifBlank { missing }, style = MaterialTheme.typography.bodyLarge)
-    }
-    Text(stringResource(R.string.feature_about_l_ai), style = MaterialTheme.typography.bodyMedium)
-}

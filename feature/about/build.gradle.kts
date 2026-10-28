@@ -4,11 +4,7 @@ plugins {
     alias(libs.plugins.citoyen.android.feature)
 }
 
-// Legal notice and error reporting (AGENTS.md §10, §11). To be filled by the publisher before any
-// release (docs/publication-checklist.md); empty values are shown as "Non renseigné".
-val legal = listOf("publisher", "director", "contact", "hosting").associateWith { key ->
-    providers.gradleProperty("citoyen.legal.$key").orElse("")
-}
+// Error reporting (AGENTS.md §10): opens the repository issues.
 val reportUrl = providers.gradleProperty("citoyen.reportUrl")
     .orElse("https://github.com/thibaultambert-jpg/Citoyen-de-2027/issues")
 
@@ -18,9 +14,6 @@ android {
         buildConfig = true
     }
     defaultConfig {
-        legal.forEach { (key, value) ->
-            buildConfigField("String", "LEGAL_${key.uppercase()}", "\"${value.get().replace("\"", "\\\"")}\"")
-        }
         buildConfigField("String", "REPORT_URL", "\"${reportUrl.get()}\"")
     }
 }

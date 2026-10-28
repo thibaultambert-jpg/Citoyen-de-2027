@@ -56,25 +56,14 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug
 
-      - name: Throwaway keystore (exercises the release signing path; worthless, never published)
-        run: |
-          keytool -genkeypair -keystore "$RUNNER_TEMP/throwaway.jks" -alias ci -keyalg RSA -keysize 2048 \
-            -validity 1 -storepass throwaway -keypass throwaway -dname "CN=CI throwaway" > /dev/null 2>&1
-
       - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
-        run: |
-          ./gradlew :app:assembleRelease -Pcitoyen.signing.storeFile="$RUNNER_TEMP/throwaway.jks" \
-            -Pcitoyen.signing.storePassword=throwaway -Pcitoyen.signing.keyAlias=ci \
-            -Pcitoyen.signing.keyPassword=throwaway
+        run: ./gradlew :app:assembleRelease
 
       - name: Compile the device benchmarks (run on a phone by hand, docs/benchmarks.md)
         run: ./gradlew :benchmarks:assembleBenchmark
 
-      - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages, signature)
-        run: |
-          apk=app/build/outputs/apk/release/app-release.apk
-          python3 tools/release-checks/check_apk.py "$apk"
-          "$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner" verify --print-certs "$apk"
+      - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages)
+        run: python3 tools/release-checks/check_apk.py app/build/outputs/apk/release/*.apk
 
       - name: Report APK size and content
         run: |
@@ -86,6 +75,13 @@ jobs:
           # Size budget (AGENTS.md §4): release APK without the model < 60 MB.
           ls -l app/build/outputs/apk/release/
           unzip -v app/build/outputs/apk/release/*.apk | sort -k3 -n -r | head -15
+
+      - name: Test APK to install (fictional data, debug key of this CI run)
+        uses: actions/upload-artifact@v7
+        with:
+          name: citoyen-2027-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
 
       - name: Upload reports
         if: always()

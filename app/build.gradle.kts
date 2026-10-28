@@ -5,24 +5,26 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-// Direct APK distribution (no store): the release key belongs to the publisher and is never in the
-// repository. Its keystore path and passwords come from Gradle properties (CI secrets); without them
-// the release APK is built unsigned, as for the CI checks.
-val signing = listOf("storeFile", "storePassword", "keyAlias", "keyPassword").associateWith { key ->
-    providers.gradleProperty("citoyen.signing.$key").orNull
-}
-val releaseSigning = signing.values.all { !it.isNullOrBlank() }
-
 android {
     namespace = "fr.citoyende2027"
     // Same NDK as :llm: the app strips the debug symbols of every native library it packages.
     ndkVersion = "29.0.13113456"
 
     defaultConfig {
-        // TODO(verify): final applicationId to be chosen by the publisher before any release.
         applicationId = "fr.citoyende2027"
         versionCode = 1
         versionName = "0.0.1"
+    }
+
+    // Personal use (28/10/2026): the test APK is the one installed. A fixed, non-secret debug key
+    // (standard Android debug password) lets each CI build install over the previous one.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     packaging {
@@ -33,20 +35,8 @@ android {
         }
     }
 
-    if (releaseSigning) {
-        signingConfigs {
-            create("release") {
-                storeFile = file(signing.getValue("storeFile")!!)
-                storePassword = signing.getValue("storePassword")
-                keyAlias = signing.getValue("keyAlias")
-                keyPassword = signing.getValue("keyPassword")
-            }
-        }
-    }
-
     buildTypes {
         release {
-            if (releaseSigning) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
