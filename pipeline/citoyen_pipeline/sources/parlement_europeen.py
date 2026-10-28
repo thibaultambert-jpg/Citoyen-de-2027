@@ -46,7 +46,10 @@ def decisions_url(meeting: str, offset: int = 0) -> str:
 
 
 def _load(cache: Cache, key: str) -> dict:
-    return json.loads(cache.path(key).read_text(encoding="utf-8"))
+    body = cache.path(key).read_text(encoding="utf-8")
+    # The API answers an empty body (no JSON) when a query has no result, e.g. a member without
+    # plenary speeches (seen in CI on 2026-10-28): treated as an empty page.
+    return json.loads(body) if body.strip() else {}
 
 
 def _mandates(mep: dict) -> list[dict]:

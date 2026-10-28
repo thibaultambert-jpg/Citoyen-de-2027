@@ -402,3 +402,20 @@ def test_parlement_europeen_plenary_speeches(tmp_path):
             "https://data.europarl.europa.eu/eli/dl/event/MTG-PL-2025-01-20-OTH-1",
         )
     ]
+
+
+def test_parlement_europeen_empty_answer_is_an_empty_page(tmp_path):
+    """The API answers an empty body when a member has no speech (CI, 2026-10-28)."""
+    from citoyen_pipeline.sources import parlement_europeen as pe
+
+    cache = Cache(tmp_path / "pe")
+    identity = Identity("fictif-a", "Exemple", "Alpha", date(1970, 1, 1), pe_id="1")
+    cache.put(
+        "pe/mep-1.json",
+        pe.mep_url("1"),
+        json.dumps({"data": [{"familyName": "Exemple", "bday": "1970-01-01", "hasMembership": []}]}).encode(),
+        "2026-10-01",
+    )
+    cache.put("pe/speeches-1-0.json", pe.speeches_url("1"), b"", "2026-10-01")
+
+    assert pe.extract(cache, [identity]).speeches == []

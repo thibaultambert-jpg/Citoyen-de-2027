@@ -9,11 +9,15 @@ name: Test APK with real data
 # The APK therefore cannot sync later packs: run this workflow again for fresher data.
 on:
   workflow_dispatch:
-  # Also runs when this workflow or the importer changes (manual runs need the file on main).
+  # Also runs when this workflow or the pipeline code changes (manual runs need the file on main).
   push:
     paths:
       - '.github/workflows/test-apk-real-data.yml'
-      - 'pipeline/citoyen_pipeline/import_2027etmoi.py'
+      - 'pipeline/citoyen_pipeline/**'
+
+concurrency:
+  group: test-apk-real-data
+  cancel-in-progress: true
 
 permissions:
   contents: read
