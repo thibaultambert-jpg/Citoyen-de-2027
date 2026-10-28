@@ -54,9 +54,9 @@ jobs:
           key: legi-v1-${{ github.run_id }}
           restore-keys: legi-v1-
 
-      - name: Fetch official sources
+      - name: Fetch official sources (a failing source is reported and left out)
         working-directory: pipeline
-        run: python -m citoyen_pipeline fetch --inputs inputs --cache cache
+        run: python -m citoyen_pipeline fetch --inputs inputs --cache cache --keep-going
 
       - name: Build and sign with a throwaway key
         working-directory: pipeline

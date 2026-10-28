@@ -419,3 +419,20 @@ def test_parlement_europeen_empty_answer_is_an_empty_page(tmp_path):
     cache.put("pe/speeches-1-0.json", pe.speeches_url("1"), b"", "2026-10-01")
 
     assert pe.extract(cache, [identity]).speeches == []
+
+
+def test_lenient_build_leaves_out_a_failing_source(cache, fixtures, monkeypatch):
+    """Personal-use builds keep the other sources when one cannot be read."""
+    from citoyen_pipeline import assemble as assembly
+
+    def broken(*_):
+        raise RuntimeError("source unavailable")
+
+    adapters = tuple(replace(a, extract=broken) if a.name == "assemblee" else a for a in assembly.ADAPTERS)
+    monkeypatch.setattr(assembly, "ADAPTERS", adapters)
+    with pytest.raises(RuntimeError):
+        assembly.assemble_packs(fixtures, cache, date(2026, 10, 1))
+    core, _, review = assembly.assemble_packs(fixtures, cache, date(2026, 10, 1), lenient_identities=True)
+    assert review["sources left out"] == ["assemblee: RuntimeError: source unavailable"]
+    assert "AN" not in {m.body.value for m in core.mandates}
+    assert core.votes == []

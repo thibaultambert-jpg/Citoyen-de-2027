@@ -99,9 +99,16 @@ def fetch(cache: Cache, identities: list[Identity]) -> None:
         for meeting in _pages(cache, f"pe/meetings-{year}", lambda offset, y=year: meetings_url(y, offset)):
             meeting_id = text(meeting.get("activity_id")) or ""
             if meeting_id.startswith("MTG-PL-"):
-                _pages(
-                    cache, f"pe/decisions/{meeting_id}", lambda offset, m=meeting_id: decisions_url(m, offset)
-                )
+                try:
+                    _pages(
+                        cache,
+                        f"pe/decisions/{meeting_id}",
+                        lambda offset, m=meeting_id: decisions_url(m, offset),
+                    )
+                except RuntimeError as error:
+                    # Some older sittings are refused by the API (seen for 2014 in CI, 2026-10-28):
+                    # their votes are left out and listed in report.json, the rest is kept.
+                    print(f"European Parliament: {error}")
 
 
 def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
@@ -157,6 +164,11 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
         for meeting in _cached_pages(cache, f"pe/meetings-{year}"):
             meeting_id = text(meeting.get("activity_id")) or ""
             if not meeting_id.startswith("MTG-PL-"):
+                continue
+            if not cache.has(f"pe/decisions/{meeting_id}-0.json"):
+                result.review.setdefault(
+                    "European Parliament sittings without downloadable votes", []
+                ).append(meeting_id)
                 continue
             first = cache.entry(f"pe/decisions/{meeting_id}-0.json")
             source = Source(

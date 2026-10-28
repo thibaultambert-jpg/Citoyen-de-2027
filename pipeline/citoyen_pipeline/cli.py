@@ -24,7 +24,7 @@ def _generated_on() -> date:
 
 
 def cmd_fetch(args) -> int:
-    used = fetch_all(Path(args.inputs), Cache(Path(args.cache), delay_seconds=args.delay))
+    used = fetch_all(Path(args.inputs), Cache(Path(args.cache), delay_seconds=args.delay), args.keep_going)
     print("Fetched sources:", ", ".join(used) if used else "none (no identity link in inputs)")
     return 0
 
@@ -207,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
     fetch.add_argument("--inputs", default="inputs")
     fetch.add_argument("--cache", default="cache")
     fetch.add_argument("--delay", type=float, default=0.7, help="seconds between requests (API quotas)")
+    fetch.add_argument("--keep-going", action="store_true", help="report a source that fails and go on")
     fetch.set_defaults(func=cmd_fetch)
     pack = sub.add_parser("pack", help="build, report and sign the core and programs packs")
     pack.add_argument("--inputs", default="inputs")

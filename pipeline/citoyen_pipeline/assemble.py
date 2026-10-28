@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
 
@@ -63,11 +63,26 @@ def load_inputs(inputs: Path):
     return policy_date, candidates, status_sources, identities
 
 
-def fetch_all(inputs: Path, cache: Cache) -> list[str]:
+# Identity field linking each adapter to a person (the RNE matches on name and birth date only).
+ADAPTER_ID_FIELDS = {
+    "assemblee": "an_id",
+    "senat": "senat_id",
+    "parlement_europeen": "pe_id",
+    "discours": "vie_publique_name",
+}
+
+
+def fetch_all(inputs: Path, cache: Cache, keep_going: bool = False) -> list[str]:
+    """With [keep_going] (personal use), a source that cannot be downloaded is reported and left out."""
     _, candidates, _, identities = load_inputs(inputs)
     used = [a for a in ADAPTERS if a.needed(identities)]
     for adapter in used:
-        adapter.fetch(cache, identities)
+        try:
+            adapter.fetch(cache, identities)
+        except Exception as error:  # noqa: BLE001 - reported, the other sources go on
+            if not keep_going:
+                raise
+            print(f"SOURCE LEFT OUT: {adapter.name}: {type(error).__name__}: {error}")
     entries = programs.load_manifest(inputs / PROGRAMS_MANIFEST, {c.id for c in candidates})
     programs.fetch(cache, entries)
     legal_inputs = legal.load_inputs(inputs / LEGAL_TEXTS)
@@ -110,7 +125,20 @@ def assemble_packs(
     combined = SourceExtract(sources=list(status_sources))
     for adapter in ADAPTERS:
         if adapter.needed(identities):
-            part = adapter.extract(cache, identities)
+            try:
+                part = adapter.extract(cache, identities)
+            except Exception as error:  # noqa: BLE001 - lenient builds only, see below
+                if not lenient_identities:
+                    raise
+                # Source missing or unreadable: none of its facts, and its identifiers are not
+                # checked against it (the candidates keep the facts of the other sources).
+                combined.review.setdefault("sources left out", []).append(
+                    f"{adapter.name}: {type(error).__name__}: {error}"
+                )
+                field = ADAPTER_ID_FIELDS.get(adapter.name)
+                if field:
+                    identities = [replace(i, **{field: None}) for i in identities]
+                continue
             combined.sources += part.sources
             combined.people += part.people
             combined.mandates += part.mandates
