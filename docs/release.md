@@ -15,7 +15,23 @@ L’APK est signé avec la clé de débogage fixe du dépôt (`app/debug.keystor
 nouvel APK s’installe par-dessus le précédent en gardant les données. Sans pack réel installé,
 l’APK de test affiche les données fictives (Candidat A, B, C).
 
-## Publier les packs de données réelles
+## APK de test avec les données réelles (le plus rapide)
+
+Workflow **Test APK with real data** (onglet Actions ; il se lance aussi tout seul quand il est modifié) :
+
+1. prépare la liste des candidats, leurs identités (identifiants Assemblée nationale, Parlement
+   européen, Sénat, date de naissance) et leurs programmes à partir des données ouvertes de
+   « 2027 et moi » (Licence Ouverte 2.0) ;
+2. construit les packs depuis les **sources officielles** ; une identité que la source officielle ne
+   confirme pas (nom, date de naissance) est écartée avec ses données et signalée dans `report.json` ;
+3. signe les packs avec une clé créée puis détruite dans le job, les intègre à l’APK de test.
+
+Résultat : artefact `citoyen-2027-real-data-apk` (l’APK) et `data-report` (rapport, fichiers
+générés, points à vérifier). Cet APK ne reçoit pas de mises à jour de données : relancer le
+workflow pour des données plus récentes. Durée : de l’ordre d’une à deux heures (téléchargement des
+sources officielles).
+
+## Publier les packs de données réelles (mises à jour dans l’app)
 
 ### Clé des packs (une fois, sur ta machine)
 

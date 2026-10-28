@@ -4,6 +4,16 @@ Le pipeline (`/pipeline`, Python 3.12) ne publie que ce qu’un humain a renseig
 fichiers d’entrée. Aucun nom ni identifiant n’y est jamais ajouté de mémoire ou par génération automatique
 (AGENTS.md §2.6, §7.2).
 
+## Import depuis « 2027 et moi » (usage personnel)
+
+`python -m citoyen_pipeline import-2027etmoi --source <clone de 2027etmoi/2027etmoi> --network`
+réécrit `candidates.yaml`, `identities.yaml` et `programs/manifest.yaml` à partir du dossier `data/`
+de ce projet (Licence Ouverte 2.0) et liste les points à vérifier dans `inputs/import-review.json`.
+Seuls la liste et le statut des candidatures, les identifiants parlementaires, la date de naissance
+et l’adresse des programmes sont repris ; ni parti, ni bloc, ni sondage, ni évaluation, ni
+biographie, ni affaire, ni photo. Les faits affichés viennent toujours des sources officielles.
+`pack --lenient-identities` écarte les identités qu’elles ne confirment pas au lieu d’échouer.
+
 ## `pipeline/inputs/candidates.yaml`
 
 Usage personnel (28/10/2026) : pas de règle d’inclusion formelle ; la liste est celle que tu choisis.

@@ -11,7 +11,7 @@ from pathlib import Path
 from citoyen_pipeline import legal, programs
 from citoyen_pipeline.coverage import compute_coverage
 from citoyen_pipeline.fetch import Cache
-from citoyen_pipeline.identity import check_identities
+from citoyen_pipeline.identity import IdentityMismatch, identity_problems
 from citoyen_pipeline.inputs import (
     load_candidates,
     load_identities,
@@ -95,8 +95,11 @@ def assemble_with_review(
 
 
 def assemble_packs(
-    inputs: Path, cache: Cache, generated_on: date
+    inputs: Path, cache: Cache, generated_on: date, lenient_identities: bool = False
 ) -> tuple[CorePack, ProgramsPack, dict[str, list[str]]]:
+    """With [lenient_identities] (imported inputs, personal use), a candidate whose identity link is
+    not confirmed by the official sources loses that link and every fact attached through it,
+    instead of stopping the build; the reasons go to report.json."""
     policy_date, candidates, status_sources, identities = load_inputs(inputs)
     taxonomy = load_taxonomy(inputs / "themes.yaml")
     overrides = load_overrides(inputs / "theme_overrides.yaml", taxonomy)
@@ -115,7 +118,17 @@ def assemble_packs(
             combined.speeches += part.speeches
             combined.review.update(part.review)
     # Every identifier written by hand must agree with its official source (AGENTS.md §7.2).
-    check_identities(identities, combined.people)
+    if rejected := identity_problems(identities, combined.people):
+        if not lenient_identities:
+            lines = [p for found in rejected.values() for p in found]
+            raise IdentityMismatch("Identity links rejected:\n" + "\n".join(f"- {p}" for p in lines))
+        combined.review["identities rejected (facts not attached)"] = [
+            p for found in rejected.values() for p in found
+        ]
+        identities = [i for i in identities if i.candidate_id not in rejected]
+        combined.mandates = [m for m in combined.mandates if m.candidate_id not in rejected]
+        combined.votes = [v for v in combined.votes if v.candidate_id not in rejected]
+        combined.speeches = [s for s in combined.speeches if s.candidate_id not in rejected]
     if unknown := set(overrides.ballots) - {v.ballot_id for v in combined.votes}:
         raise ValueError(f"theme_overrides.yaml: unknown ballot ids {sorted(unknown)}")
     _, sponsorship_names = load_sponsorship_names(inputs / SPONSORSHIPS, {c.id for c in candidates})

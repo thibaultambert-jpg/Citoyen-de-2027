@@ -20,6 +20,14 @@ def normalize_name(name: str) -> str:
 
 def check_identities(identities: list[Identity], people: list[PersonFacts]) -> None:
     """Raises if a linked identifier is missing from the source or does not match name and birth date."""
+    problems = identity_problems(identities, people)
+    if problems:
+        lines = [p for found in problems.values() for p in found]
+        raise IdentityMismatch("Identity links rejected:\n" + "\n".join(f"- {p}" for p in lines))
+
+
+def identity_problems(identities: list[Identity], people: list[PersonFacts]) -> dict[str, list[str]]:
+    """Candidate id -> reasons its identity link is rejected; empty when every link matches."""
     index = {(p.body, p.source_person_id): p for p in people}
     problems = []
     for identity in identities:
@@ -38,5 +46,7 @@ def check_identities(identities: list[Identity], people: list[PersonFacts]) -> N
                     f"{identity.candidate_id}: {body} birth date differs or is missing "
                     f"({facts.birth_date} vs {identity.birth_date})"
                 )
-    if problems:
-        raise IdentityMismatch("Identity links rejected:\n" + "\n".join(f"- {p}" for p in problems))
+    by_candidate: dict[str, list[str]] = {}
+    for problem in problems:
+        by_candidate.setdefault(problem.split(":", 1)[0], []).append(problem)
+    return by_candidate
