@@ -1,61 +1,54 @@
-# Tester l’application et publier les données (usage personnel)
+# Tester l’application et ses données (usage personnel)
 
 Décisions du 28/10/2026 : usage personnel, pas de publication. L’APK de test de la CI est la version
 installée.
 
-## Installer l’APK de test
+## Installer l’APK
 
-1. GitHub → onglet **Actions** → workflow **Build** → dernière exécution verte de la branche.
-2. En bas de la page, section *Artifacts* : télécharger `citoyen-2027-debug-apk` (archive zip
-   contenant `app-debug.apk`).
-3. Copier `app-debug.apk` sur le téléphone (Android 10 ou plus récent, 64 bits) et l’ouvrir ; autoriser
-   l’installation d’applications depuis cette source quand Android le demande.
+GitHub → onglet **Actions** → choisir une exécution verte, en bas de page section *Artifacts* :
 
-L’APK est signé avec la clé de débogage fixe du dépôt (`app/debug.keystore`, non secrète) : chaque
-nouvel APK s’installe par-dessus le précédent en gardant les données. Sans pack réel installé,
-l’APK de test affiche les données fictives (Candidat A, B, C).
+- workflow **Real data** → `citoyen-2027-real-data-apk` : APK contenant déjà les données réelles
+  (recommandé pour la première installation) ;
+- workflow **Build** → `citoyen-2027-debug-apk` : APK du dernier code, données fictives tant
+  qu’aucun pack réel n’est installé.
 
-## APK de test avec les données réelles (le plus rapide)
+Dézipper, copier `app-debug.apk` sur le téléphone (Android 10 ou plus récent, 64 bits) et l’ouvrir ;
+autoriser l’installation depuis cette source quand Android le demande. Les APK sont signés avec la
+clé de débogage fixe du dépôt (`app/debug.keystore`, non secrète) : chaque nouvel APK s’installe
+par-dessus le précédent en gardant les données.
 
-Workflow **Test APK with real data** (onglet Actions ; il se lance aussi tout seul quand il est modifié) :
+## Données réelles et mises à jour
 
-1. prépare la liste des candidats, leurs identités (identifiants Assemblée nationale, Parlement
-   européen, Sénat, date de naissance) et leurs programmes à partir des données ouvertes de
-   « 2027 et moi » (Licence Ouverte 2.0) ;
-2. construit les packs depuis les **sources officielles** ; une identité que la source officielle ne
-   confirme pas (nom, date de naissance) est écartée avec ses données et signalée dans `report.json` ;
-3. signe les packs avec une clé créée puis détruite dans le job, les intègre à l’APK de test.
+Le workflow **Real data** tourne chaque nuit (et à chaque modification du pipeline) :
 
-Résultat : artefact `citoyen-2027-real-data-apk` (l’APK) et `data-report` (rapport, fichiers
-générés, points à vérifier). Cet APK ne reçoit pas de mises à jour de données : relancer le
-workflow pour des données plus récentes. Durée : de l’ordre d’une à deux heures (téléchargement des
-sources officielles).
+1. prépare la liste des candidats, leurs identités et leurs programmes à partir des données
+   ouvertes de « 2027 et moi » (Licence Ouverte 2.0) ;
+2. construit les packs depuis les **sources officielles** ; une identité qu’elles ne confirment pas
+   (nom, date de naissance) est écartée avec ses données, une source en panne est laissée de côté ;
+   tout est listé dans `report.json` (artefact `data-report`) ;
+3. signe les packs avec ta clé (secret `PACK_SIGNING_KEY`), les vérifie avec la clé publique
+   (variable `CITOYEN_PACKS_PUBLIC_KEY`) et les publie sur la release `packs-current` ;
+4. produit l’APK de test qui les contient.
 
-## Publier les packs de données réelles (mises à jour dans l’app)
+L’application installe les nouveaux packs d’elle-même : au lancement et une fois par jour en Wi-Fi,
+ou à la demande (Infos → Données et mises à jour → Rechercher une mise à jour).
 
-### Clé des packs (une fois, sur ta machine)
+La planification de nuit ne s’exécute que depuis la branche par défaut (`main`) du dépôt : elle
+démarre une fois la pull request fusionnée.
+
+## Clé des packs
+
+Générée une fois sur ta machine (le 28/10/2026). Commandes, sans `|`, dans Git Bash :
 
 ```sh
-cd pipeline && make venv && .venv/bin/python tools/generate_signing_key.py
+openssl genpkey -algorithm ed25519 -out citoyen-packs.pem
+openssl pkey -in citoyen-packs.pem -outform DER -out secret.der
+openssl pkey -in citoyen-packs.pem -pubout -outform DER -out public.der
+tail -c 32 secret.der > secret.bin
+tail -c 32 public.der > public.bin
+base64 secret.bin    # -> secret PACK_SIGNING_KEY
+base64 public.bin    # -> variable CITOYEN_PACKS_PUBLIC_KEY
 ```
 
-Dépôt GitHub → Settings → Secrets and variables → Actions :
-
-- secret `PACK_SIGNING_KEY` : la valeur secrète affichée ;
-- variable `CITOYEN_PACKS_PUBLIC_KEY` : la clé publique affichée.
-
-L’APK de test doit être construit avec cette clé publique pour accepter les packs : ajouter aussi la
-ligne `citoyen.packs.publicKey=<clé publique>` dans `gradle.properties` (valeur publique, peut être
-commitée).
-
-### Construire et publier
-
-1. Actions → `Release data packs` → Run workflow, **sans** cocher « publier » : essai à blanc ;
-   télécharger l’artefact `packs` et relire `report.json`.
-2. Relancer en cochant « publier » : le workflow vérifie la signature, les tailles et empreintes et
-   l’évaluation de la recherche, crée une archive `packs-<date>-r<n>` et met à jour la release
-   `packs-current` (packs d’abord, manifeste en dernier).
-3. Dans l’app : Infos → Données et mises à jour → Rechercher une mise à jour.
-
-Retour arrière : réenvoyer sur `packs-current` les fichiers d’une archive précédente, dans le même
-ordre ; l’app installe tout manifeste signé dont la version diffère de la sienne.
+Le workflow vérifie à chaque exécution que les deux correspondent, sans jamais afficher la clé. En
+cas de changement de clé : mettre à jour les deux réglages GitHub, puis réinstaller l’APK une fois.

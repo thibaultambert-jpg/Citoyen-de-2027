@@ -46,7 +46,9 @@ class CitoyenApplication :
         // Never blocks startup; screens observe the database and update when data lands.
         applicationScope.launch {
             startupDataSeeder.seedIfNeeded()
-            PackSyncWorker.schedule(WorkManager.getInstance(this@CitoyenApplication))
+            val workManager = WorkManager.getInstance(this@CitoyenApplication)
+            PackSyncWorker.schedule(workManager)
+            PackSyncWorker.syncAtLaunch(workManager)
         }
         // "Historique des mises à jour": every pack version activated on this device.
         applicationScope.launch {

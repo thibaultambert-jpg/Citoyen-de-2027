@@ -53,8 +53,10 @@ jobs:
       - name: Android Lint
         run: ./gradlew lint
 
-      - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug
+      - name: Assemble debug APK (with the public key of the packs, so it syncs real data)
+        env:
+          PACK_PUBLIC_KEY: ${{ vars.CITOYEN_PACKS_PUBLIC_KEY }}
+        run: ./gradlew :app:assembleDebug -Pcitoyen.packs.publicKey="$PACK_PUBLIC_KEY"
 
       - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
         run: ./gradlew :app:assembleRelease

@@ -35,6 +35,7 @@ class PackSyncWorker @AssistedInject constructor(
     companion object {
         private const val UNIQUE_NAME = "pack-sync"
         private const val UNIQUE_NAME_NOW = "pack-sync-now"
+        private const val UNIQUE_NAME_LAUNCH = "pack-sync-launch"
 
         fun schedule(workManager: WorkManager) {
             val request = PeriodicWorkRequestBuilder<PackSyncWorker>(1, TimeUnit.DAYS)
@@ -47,6 +48,14 @@ class PackSyncWorker @AssistedInject constructor(
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
                 .build()
             workManager.enqueueUniquePeriodicWork(UNIQUE_NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+        }
+
+        /** One sync when the app starts, on Wi-Fi (AGENTS.md §5): data refreshed without waiting a day. */
+        fun syncAtLaunch(workManager: WorkManager) {
+            val request = OneTimeWorkRequestBuilder<PackSyncWorker>()
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build())
+                .build()
+            workManager.enqueueUniqueWork(UNIQUE_NAME_LAUNCH, ExistingWorkPolicy.KEEP, request)
         }
 
         /** One sync at the user's request ("Rechercher une mise à jour"), on any network. */
