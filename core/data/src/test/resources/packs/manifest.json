@@ -1,0 +1,40 @@
+{
+  "embedding_model_id": null,
+  "generated_on": "2026-01-15",
+  "packs": [
+    {
+      "file": "core.sqlite",
+      "id": "core",
+      "licenses": [
+        "Licence fictive"
+      ],
+      "sha256": "552ddd45a2a5b5f61b851344c387bc4945c26020828cf2b58ff5d6d9e79d378f",
+      "size": 94208,
+      "sources": [],
+      "version": "2026-01-15+fixture"
+    },
+    {
+      "file": "legal.sqlite",
+      "id": "legal",
+      "licenses": [
+        "Licence fictive"
+      ],
+      "sha256": "b67602f2afdf6d1bdfa18844dd08a5daf0ef69f19b2e72cbf71337882bef668c",
+      "size": 28672,
+      "sources": [],
+      "version": "2026-01-15+legal-fixture"
+    },
+    {
+      "file": "programs.sqlite",
+      "id": "programs",
+      "licenses": [
+        "Conditions fictives"
+      ],
+      "sha256": "c8866aace998ad1dbc9b2cc532b53438090a021d257f5e192913980e823fb97e",
+      "size": 45056,
+      "sources": [],
+      "version": "2026-01-15+programs-fixture"
+    }
+  ],
+  "schema_version": 3
+}

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="feature_ask_title">Rechercher dans les sources</string>
+    <string name="feature_ask_no_ai_mode">Mode sans IA : l’application affiche les extraits des documents sources et les données officielles, sans réponse rédigée.</string>
+    <string name="feature_ask_scope">Rechercher dans</string>
+    <string name="feature_ask_scope_legal">Constitution et textes</string>
+    <string name="feature_ask_scope_candidate">Un candidat</string>
+    <string name="feature_ask_scope_programs">Programmes en parallèle</string>
+    <string name="feature_ask_candidate">Candidat</string>
+    <string name="feature_ask_question">Votre question</string>
+    <string name="feature_ask_submit">Rechercher</string>
+    <string name="feature_ask_suggestions">Exemples de questions</string>
+    <string name="feature_ask_suggestion_legal_1">Quelle est la durée du mandat du Président de la République ?</string>
+    <string name="feature_ask_suggestion_legal_2">Comment le Président de la République est-il élu ?</string>
+    <string name="feature_ask_suggestion_legal_3">Que se passe-t-il en cas de vacance de la présidence ?</string>
+    <string name="feature_ask_suggestion_programs_1">Que disent les programmes sur la santé ?</string>
+    <string name="feature_ask_suggestion_programs_2">Que disent les programmes sur l’école ?</string>
+    <string name="feature_ask_suggestion_programs_3">Que disent les programmes sur le logement ?</string>
+    <string name="feature_ask_privacy">Votre question reste sur cet appareil : elle n’est ni envoyée ni enregistrée.</string>
+
+    <string name="feature_ask_refused">Cette application ne donne ni avis, ni conseil de vote, ni pronostic, et ne classe pas les candidats. Elle présente les textes publiés et les données officielles : consultez les fiches des candidats, la mise en regard par thème ou le comparateur.</string>
+    <string name="feature_ask_refused_instruction">Cette demande contient une consigne adressée à l’assistant : elle n’est pas suivie. Posez une question sur les textes ou les données de l’application.</string>
+    <!-- %1$s: date JJ/MM/AAAA -->
+    <string name="feature_ask_abstained">Je n’ai pas trouvé cette information dans les documents de l’application (données du %1$s).</string>
+    <string name="feature_ask_abstained_no_date">Je n’ai pas trouvé cette information dans les documents de l’application.</string>
+    <string name="feature_ask_unavailable">La recherche n’est pas disponible avec les données installées.</string>
+    <string name="feature_ask_passages_notice">Extraits des documents, tels que publiés. Vérifiez le contexte dans le document source.</string>
+    <string name="feature_ask_group_empty">Aucun extrait pertinent trouvé pour ce candidat dans les documents de l’application.</string>
+    <!-- %1$s: candidate name -->
+    <string name="feature_ask_mandates">Mandats de %1$s selon les sources officielles</string>
+    <!-- %1$s: candidate name -->
+    <string name="feature_ask_votes">Votes enregistrés de %1$s (scrutins publics)</string>
+    <string name="feature_ask_none_recorded">Aucune donnée dans les sources utilisées.</string>
+    <string name="feature_ask_open_sheet">Ouvrir la fiche</string>
+    <!-- %1$s: article number -->
+    <string name="feature_ask_article">Article %1$s</string>
+    <string name="feature_ask_official">Voir le texte officiel</string>
+
+    <!-- Local assistant (AGENTS.md §5, §8, §9) -->
+    <string name="feature_ask_ai_not_configured">L’assistant IA n’est pas disponible dans cette version de l’application.</string>
+    <string name="feature_ask_ai_unsupported_memory">Cet appareil n’a pas assez de mémoire vive pour l’assistant IA (6 Go nécessaires).</string>
+    <string name="feature_ask_ai_unsupported_storage">L’espace libre est insuffisant pour installer l’assistant IA (4 Go nécessaires).</string>
+    <!-- %1$s: size, e.g. "≈ 2,1 Go" -->
+    <string name="feature_ask_ai_activate">Activer l’assistant IA (%1$s, Wi-Fi)</string>
+    <string name="feature_ask_ai_activate_explain">Le modèle est téléchargé une seule fois, en Wi-Fi, puis tout fonctionne sur l’appareil, sans connexion. Vos questions ne quittent jamais l’appareil.</string>
+    <string name="feature_ask_ai_import">Importer le fichier du modèle</string>
+    <!-- %1$d: percent, %2$s: downloaded size, %3$s: total size -->
+    <string name="feature_ask_ai_downloading">Téléchargement du modèle : %1$d %% (%2$s sur %3$s)</string>
+    <string name="feature_ask_ai_waiting_wifi">Téléchargement du modèle en attente d’une connexion Wi-Fi.</string>
+    <string name="feature_ask_ai_cancel">Annuler</string>
+    <string name="feature_ask_ai_verifying">Vérification du fichier du modèle…</string>
+    <string name="feature_ask_ai_failed">Le fichier du modèle n’a pas pu être téléchargé ou ne correspond pas au fichier attendu (empreinte SHA-256).</string>
+    <string name="feature_ask_ai_retry">Réessayer</string>
+    <string name="feature_ask_ai_import_refused">Ce fichier n’est pas le modèle attendu : il n’a pas été installé.</string>
+    <string name="feature_ask_ai_ready">Assistant IA installé : il rédige une réponse à partir des extraits trouvés, sur l’appareil.</string>
+    <string name="feature_ask_ai_use">Utiliser l’assistant IA</string>
+    <string name="feature_ask_ai_remove">Supprimer le modèle</string>
+    <string name="feature_ask_ai_generating">Rédaction d’une réponse à partir des extraits…</string>
+    <string name="feature_ask_ai_stop">Arrêter</string>
+    <string name="feature_ask_ai_extracts_only">Voir uniquement les extraits</string>
+    <string name="feature_ask_ai_label">Contenu généré par IA</string>
+    <string name="feature_ask_ai_banner">Réponse générée localement par une IA. Elle peut contenir des erreurs : vérifie dans les sources.</string>
+    <!-- %1$s: source label, e.g. "S1" -->
+    <string name="feature_ask_ai_source">Source %1$s</string>
+    <string name="feature_ask_ai_source_cut">Extrait raccourci pour l’assistant ; le texte complet est affiché plus bas.</string>
+    <string name="feature_ask_ai_close">Fermer</string>
+    <string name="feature_ask_ai_abstained">Je n’ai pas trouvé cette information dans les documents de l’application. Les extraits trouvés sont affichés ci-dessous.</string>
+    <string name="feature_ask_ai_stopped">Rédaction arrêtée. Les extraits restent affichés ci-dessous.</string>
+    <string name="feature_ask_ai_thermal">L’appareil est trop chaud : la rédaction n’a pas été faite. Les extraits restent affichés ci-dessous.</string>
+    <string name="feature_ask_ai_error">L’assistant n’a pas pu rédiger de réponse. Les extraits restent affichés ci-dessous.</string>
+    <string name="feature_ask_ai_side_by_side">Pour les programmes en parallèle, l’application affiche les extraits sans réponse rédigée, afin de traiter chaque candidat de la même façon.</string>
+    <string name="feature_ask_ai_sources">Sources de la réponse</string>
+    <!-- %1$s: size in GB with one decimal -->
+    <string name="feature_ask_ai_size">≈ %1$s Go</string>
+
+    <!-- Debug builds only -->
+    <string name="feature_ask_bench_title">Banc d’essai (débogage)</string>
+    <string name="feature_ask_bench_run">Lancer sur le modèle installé</string>
+    <string name="feature_ask_bench_import">Importer un autre fichier GGUF à comparer</string>
+    <!-- %1$s: file name -->
+    <string name="feature_ask_bench_run_file">Lancer sur %1$s</string>
+    <string name="feature_ask_bench_running">Mesure en cours…</string>
+</resources>

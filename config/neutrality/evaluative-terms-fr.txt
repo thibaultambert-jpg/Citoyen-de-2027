@@ -1,0 +1,78 @@
+# Evaluative terms forbidden in user-facing texts and LLM prompts (AGENTS.md §2.1, §10).
+# One term or phrase per line; matching is case- and accent-insensitive on whole words.
+# Inflections are listed explicitly (no stemming). Changes must be reviewed by a human.
+
+# Superlatives and rankings
+meilleur
+meilleure
+meilleurs
+meilleures
+pire
+pires
+classement
+score
+scores
+jauge
+favori
+favorite
+gagnant
+gagnante
+perdant
+perdante
+
+# Value judgements on candidates or programmes
+excellent
+excellente
+remarquable
+brillant
+brillante
+courageux
+courageuse
+dangereux
+dangereuse
+extrémiste
+extrémistes
+radical
+radicale
+radicaux
+populiste
+populistes
+démagogue
+démagogique
+irresponsable
+incompétent
+incompétente
+compétent
+compétente
+crédible
+crédibles
+fiable
+cohérent
+cohérente
+incohérent
+incohérente
+incohérence
+mensonge
+mensonges
+menteur
+menteuse
+hypocrite
+scandaleux
+scandaleuse
+honteux
+honteuse
+inquiétant
+inquiétante
+rassurant
+rassurante
+réaliste
+irréaliste
+utopique
+
+# Voting advice
+voter pour
+votez
+votez pour
+nous recommandons
+nous conseillons
+à éviter

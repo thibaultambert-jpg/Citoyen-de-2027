@@ -1,0 +1,19 @@
+# Legal corpus (AGENTS.md §8 LEGAL), from the DILA LEGI base. Order = display order in the app.
+# Identifiers checked in the LEGI archive by the CI probe (pipeline/tools/probe_sources.py, j5legi
+# and j5legi2, 21/10/2026). Only the articles in force on the build date are kept, verbatim.
+# `sections` (optional) keeps only these sections (LEGISCTA `cid`, stable across versions) and
+# everything below them: needed for the Code électoral, where the articles applicable to the
+# presidential election must be chosen by a human (see docs/pipeline-inputs.md).
+version: 1
+texts:
+  - id: constitution-1958            # Constitution du 4 octobre 1958
+    legi_id: LEGITEXT000006071194
+  - id: ddhc-1789                    # Déclaration du 26 août 1789 des droits de l'homme et du citoyen
+    legi_id: LEGITEXT000006071192
+  - id: constitution-1946            # Constitution du 27 octobre 1946 (its Préambule is still in force)
+    legi_id: LEGITEXT000006071193
+  - id: charte-environnement         # Loi constitutionnelle n° 2005-205 relative à la Charte de l'environnement
+    legi_id: LEGITEXT000006051372
+  - id: loi-62-1292                  # Loi n° 62-1292 du 6 novembre 1962 (élection du Président de la République)
+    legi_id: LEGITEXT000006068219
+  # TODO(verify): Code électoral (LEGITEXT000006070239) — sections to select by hand.

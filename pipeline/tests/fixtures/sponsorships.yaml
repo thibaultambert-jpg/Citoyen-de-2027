@@ -1,0 +1,5 @@
+version: 1
+dataset: "parrainages-fictifs"
+names:
+  fictif-a: "FICTIF Candidat A"
+  fictif-b: "FICTIF Candidat B"

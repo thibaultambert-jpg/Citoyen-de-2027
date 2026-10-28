@@ -1,0 +1,142 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'ccr-*'
+  pull_request:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Lint, tests and debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Install the NDK and CMake of :llm
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Check build-logic
+        run: ./gradlew :build-logic:convention:check
+
+      - name: Check formatting (ktlint)
+        run: ./gradlew spotlessCheck
+
+      - name: Unit tests (incl. neutrality scan)
+        run: ./gradlew test --continue
+
+      - name: Android Lint
+        run: ./gradlew lint
+
+      - name: Assemble debug APK (with the public key of the packs, so it syncs real data)
+        env:
+          PACK_PUBLIC_KEY: ${{ vars.CITOYEN_PACKS_PUBLIC_KEY }}
+        run: ./gradlew :app:assembleDebug -Pcitoyen.packs.publicKey="$PACK_PUBLIC_KEY"
+
+      - name: Assemble release APK (no fixtures in release, minified, stripped native libraries)
+        run: ./gradlew :app:assembleRelease
+
+      - name: Compile the device benchmarks (run on a phone by hand, docs/benchmarks.md)
+        run: ./gradlew :benchmarks:assembleBenchmark
+
+      - name: Release gates (APK < 60 MB, native libraries aligned on 16 KB pages)
+        run: python3 tools/release-checks/check_apk.py app/build/outputs/apk/release/*.apk
+
+      - name: Report APK size and content
+        run: |
+          ls -l app/build/outputs/apk/debug/
+          du -h app/build/outputs/apk/debug/*.apk
+          # Native libraries (llama.cpp CPU variants) and the largest entries, compressed size.
+          unzip -v app/build/outputs/apk/debug/app-debug.apk | grep '\.so$'
+          unzip -v app/build/outputs/apk/debug/app-debug.apk | sort -k3 -n -r | head -12
+          # Size budget (AGENTS.md §4): release APK without the model < 60 MB.
+          ls -l app/build/outputs/apk/release/
+          unzip -v app/build/outputs/apk/release/*.apk | sort -k3 -n -r | head -15
+
+      - name: Test APK to install (fictional data, debug key of this CI run)
+        uses: actions/upload-artifact@v7
+        with:
+          name: citoyen-2027-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+            core/database/schemas/
+          retention-days: 7
+
+  native-bridge:
+    # Runs the real JNI bridge (llm/src/main/cpp) on the JVM with the tiny test model of the pinned
+    # llama.cpp release: grammar, stop, prompt-prefix reuse, errors (AGENTS.md §9).
+    name: Native bridge (host build, test model)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Install the NDK and CMake of :llm
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.13113456" "cmake;3.31.6" > /dev/null
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build the bridge for Linux
+        run: |
+          cmake -S llm/src/main/cpp -B build-host -DCMAKE_BUILD_TYPE=Release -DGGML_NATIVE=OFF \
+            -DLLAMA_OPENSSL=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+          cmake --build build-host --target citoyen_llm -j 4
+
+      # Model name and SHA-256 from tests/CMakeLists.txt of llama.cpp b11400 (test fixture, not app data).
+      - name: Download the llama.cpp test model
+        run: |
+          curl -fsSL -o stories15M-q4_0.gguf \
+            "https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories15M-q4_0.gguf?download=true"
+          echo "66967fbece6dbe97886593fdbb73589584927e29119ec31f08090732d1861739  stories15M-q4_0.gguf" | sha256sum -c -
+
+      - name: Bridge tests
+        run: >-
+          ./gradlew :llm:testDebugUnitTest --tests '*LlamaBridgeHostTest'
+          -Pllm.hostLib="$PWD/build-host/libcitoyen_llm.so" -Pllm.testModel="$PWD/stories15M-q4_0.gguf"

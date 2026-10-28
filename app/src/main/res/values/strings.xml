@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="app_name">Citoyen de 2027</string>
+    <string name="nav_candidates">Candidats</string>
+    <string name="nav_compare">Comparer</string>
+    <string name="nav_ask">Question</string>
+    <string name="nav_institutions">Institutions</string>
+    <string name="nav_about">Infos</string>
+</resources>

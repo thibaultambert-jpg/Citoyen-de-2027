@@ -1,0 +1,8 @@
+{
+  "top_k": 5,
+  "pool_size": 30,
+  "rrf_k": 60,
+  "min_matched_terms": 2,
+  "min_coverage": 0.5,
+  "min_similarity": 2.0
+}

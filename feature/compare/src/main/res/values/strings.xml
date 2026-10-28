@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="feature_compare_title">Comparer</string>
+    <string name="feature_compare_notice">Mêmes rubriques pour chaque candidat, dans l’ordre alphabétique : textes publiés et votes enregistrés sur le thème choisi, sans appréciation ni conclusion.</string>
+    <!-- %1$d: minimum, %2$d: maximum -->
+    <string name="feature_compare_candidates">Candidats (de %1$d à %2$d)</string>
+    <string name="feature_compare_theme">Thème</string>
+    <string name="feature_compare_choose_theme">Choisir</string>
+    <string name="feature_compare_hint">Choisissez de 2 à 3 candidats et un thème.</string>
+    <string name="feature_compare_program">Programme (texte publié)</string>
+    <string name="feature_compare_votes">Votes enregistrés</string>
+    <string name="feature_compare_no_excerpt">Aucun extrait classé sous ce thème dans les sources utilisées.</string>
+    <string name="feature_compare_no_vote">Aucun vote classé sous ce thème dans les sources utilisées.</string>
+    <string name="feature_compare_no_data">Aucune donnée installée pour le moment.</string>
+</resources>

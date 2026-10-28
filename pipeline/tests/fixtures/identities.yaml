@@ -1,0 +1,10 @@
+# Fictional fixtures only (AGENTS.md §2.6).
+version: 1
+identities:
+  - candidate_id: fictif-a
+    family_name: Exemple
+    given_name: Alpha
+    birth_date: 1970-01-01
+    validated_by: fixture
+    validated_on: 2026-01-01
+    an_id: PA000001

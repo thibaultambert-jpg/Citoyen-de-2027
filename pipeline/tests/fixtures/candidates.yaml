@@ -1,0 +1,22 @@
+# Fictional fixtures only (AGENTS.md §2.6).
+version: 1
+inclusion_policy_date: 2026-01-01
+candidates:
+  - id: fictif-a
+    display_name: Candidat A
+    sort_name: A
+    status: DECLARE
+    status_date: 2026-01-10
+    status_source: {name: Source fictive, url: "https://example.invalid/a", retrieved_on: 2026-01-11, license: Licence fictive}
+  - id: fictif-b
+    display_name: Candidat B
+    sort_name: B
+    status: DECLARE
+    status_date: 2026-02-20
+    status_source: {name: Source fictive, url: "https://example.invalid/b", retrieved_on: 2026-02-21, license: Licence fictive}
+  - id: fictif-c
+    display_name: Candidat C
+    sort_name: C
+    status: RETIRE
+    status_date: 2026-03-30
+    status_source: {name: Source fictive, url: "https://example.invalid/c", retrieved_on: 2026-03-31, license: Licence fictive}

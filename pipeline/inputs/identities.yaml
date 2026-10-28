@@ -1,0 +1,4 @@
+# Hand-validated identity links (AGENTS.md §7.2). Each link is checked by the pipeline against the
+# official source: family name AND birth date must match, otherwise the build fails.
+version: 1
+identities: []
