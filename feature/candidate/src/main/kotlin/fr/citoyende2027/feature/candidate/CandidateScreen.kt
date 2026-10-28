@@ -25,21 +25,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.citoyende2027.core.designsystem.R as DesignR
 import fr.citoyende2027.core.designsystem.component.InitialsAvatar
 import fr.citoyende2027.core.designsystem.icon.CitoyenIcons
 import fr.citoyende2027.core.model.Candidate
+import fr.citoyende2027.core.model.Sponsorships
 import fr.citoyende2027.core.model.VoteFilter
 import fr.citoyende2027.core.ui.CandidateStatusText
 import fr.citoyende2027.core.ui.CoverageBadge
 import fr.citoyende2027.core.ui.DataDateBanner
 import fr.citoyende2027.core.ui.ReserveNotice
 import fr.citoyende2027.core.ui.SourceButton
+import fr.citoyende2027.core.ui.toFrenchDate
 import fr.citoyende2027.feature.candidate.tab.MandatesTab
 import fr.citoyende2027.feature.candidate.tab.ProgramAndVotesTab
 import fr.citoyende2027.feature.candidate.tab.ProgramTab
@@ -113,7 +117,7 @@ private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (V
         return
     }
     when (tab) {
-        CandidateSheetTab.OVERVIEW -> ScrollableTab { OverviewTab(state.candidate) }
+        CandidateSheetTab.OVERVIEW -> ScrollableTab { OverviewTab(state.candidate, state.sponsorships) }
         CandidateSheetTab.MANDATES -> MandatesTab(state.mandates)
         CandidateSheetTab.PROGRAM -> ProgramTab(state.program, state.themes)
         CandidateSheetTab.VOTES -> VotesTab(state.votes, state.themes, onVoteFilterChange)
@@ -142,7 +146,7 @@ private fun ScrollableTab(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun OverviewTab(candidate: Candidate) {
+private fun OverviewTab(candidate: Candidate, sponsorships: Sponsorships?) {
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
         InitialsAvatar(candidate.initials, size = 64.dp)
         Text(candidate.displayName, style = MaterialTheme.typography.headlineSmall)
@@ -158,6 +162,49 @@ private fun OverviewTab(candidate: Candidate) {
         style = MaterialTheme.typography.bodyMedium,
     )
     CoverageBadge(candidate.coverage)
+    // Same section for every candidate (template parity, AGENTS.md §10), filled or not.
+    SectionTitle(stringResource(R.string.feature_candidate_section_sponsorships))
+    SponsorshipsSection(sponsorships)
+}
+
+@Composable
+private fun SponsorshipsSection(sponsorships: Sponsorships?) {
+    if (sponsorships == null) {
+        Text(
+            stringResource(DesignR.string.core_designsystem_not_available),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        return
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = pluralStringResource(
+                R.plurals.feature_candidate_sponsorships_total,
+                sponsorships.total,
+                sponsorships.total,
+                sponsorships.publishedOn.toFrenchDate(),
+            ),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        SourceButton(sponsorships.source)
+    }
+    if (sponsorships.total > 0) {
+        Text(
+            text = pluralStringResource(
+                R.plurals.feature_candidate_sponsorships_departments,
+                sponsorships.departments,
+                sponsorships.departments,
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        sponsorships.byMandate.forEach { item ->
+            Text(
+                text = stringResource(R.string.feature_candidate_sponsorships_mandate, item.mandate, item.count),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
 }
 
 @Composable

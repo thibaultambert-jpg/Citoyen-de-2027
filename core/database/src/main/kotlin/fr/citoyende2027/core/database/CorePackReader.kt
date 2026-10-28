@@ -26,6 +26,7 @@ import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
+import fr.citoyende2027.core.model.Sponsorships
 import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.ThemeId
 import fr.citoyende2027.core.model.ThemeTag
@@ -125,6 +126,31 @@ class CorePackReader @Inject constructor() {
                     )
                 }
             }.filterNotNull()
+            // Packs built before the sponsorships adapter have no such table.
+            val hasSponsorships = db.query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sponsorships'",
+            ) { it.getString(0) }.isNotEmpty()
+            val byMandate = if (!hasSponsorships) {
+                emptyMap()
+            } else {
+                db.query("SELECT candidate_id, mandate, count FROM sponsorship_mandates ORDER BY mandate") {
+                    it.getString(0) to Sponsorships.MandateCount(it.getString(1), it.getInt(2))
+                }.groupBy({ it.first }, { it.second })
+            }
+            val sponsorships = if (!hasSponsorships) {
+                emptyList()
+            } else {
+                db.query("SELECT candidate_id, total, departments, published_on, source_id FROM sponsorships") {
+                    Sponsorships(
+                        candidateId = CandidateId(it.getString(0)),
+                        total = it.getInt(1),
+                        departments = it.getInt(2),
+                        byMandate = byMandate[it.getString(0)].orEmpty(),
+                        publishedOn = LocalDate.parse(it.getString(3)),
+                        source = sources.getValue(it.getString(4)),
+                    )
+                }
+            }
             val info = DataPackInfo(
                 id = DataPackInfo.CORE,
                 version = version,
@@ -138,6 +164,7 @@ class CorePackReader @Inject constructor() {
                 votes = votes,
                 speeches = speeches,
                 themes = themes,
+                sponsorships = sponsorships,
                 ragConfig = meta["rag_config"],
                 reserve = ReservePeriod.parse(meta["reserve"]),
                 inclusionPolicyDate = meta["inclusion_policy_date"]?.let(LocalDate::parse),

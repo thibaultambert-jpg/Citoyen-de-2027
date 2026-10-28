@@ -18,6 +18,7 @@ import fr.citoyende2027.core.model.ProgramsPackContent
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
+import fr.citoyende2027.core.model.Sponsorships
 import fr.citoyende2027.core.model.TagConfidence
 import fr.citoyende2027.core.model.TagMethod
 import fr.citoyende2027.core.model.Theme
@@ -137,11 +138,27 @@ object FictionalCandidates {
         ),
     )
 
+    /** Same counts as the test pack of the pipeline (pipeline/citoyen_pipeline/testpack.py). */
+    val sponsorships = listOf(
+        Sponsorships(
+            candidateId = candidateA.id,
+            total = 3,
+            departments = 2,
+            byMandate = listOf(
+                Sponsorships.MandateCount("Mandat fictif 1", 2),
+                Sponsorships.MandateCount("Mandat fictif 2", 1),
+            ),
+            publishedOn = LocalDate.of(2026, 1, 10),
+            source = source,
+        ),
+    )
+
     /** Same thresholds as pipeline/tests/fixtures/rag_config.json. */
     const val RAG_CONFIG =
         """{"min_coverage":0.5,"min_matched_terms":2,"min_similarity":2.0,"pool_size":30,"rrf_k":60,"top_k":5}"""
 
-    val corePack = CorePackContent(packInfo, all, mandates, votes, speeches, themes, RAG_CONFIG)
+    val corePack =
+        CorePackContent(packInfo, all, mandates, votes, speeches, themes, RAG_CONFIG, sponsorships = sponsorships)
 
     val programsInfo = packInfo.copy(id = DataPackInfo.PROGRAMS)
 

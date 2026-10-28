@@ -16,6 +16,7 @@ import fr.citoyende2027.core.database.model.ProgramChunkEntity
 import fr.citoyende2027.core.database.model.ProgramDocumentEntity
 import fr.citoyende2027.core.database.model.ProgramStatusEntity
 import fr.citoyende2027.core.database.model.SpeechEntity
+import fr.citoyende2027.core.database.model.SponsorshipEntity
 import fr.citoyende2027.core.database.model.ThemeEntity
 import fr.citoyende2027.core.database.model.VoteEntity
 import fr.citoyende2027.core.database.model.VoteThemeEntity
@@ -46,6 +47,7 @@ internal class FakeCorePackDao : CorePackDao {
     override suspend fun countPacks(id: String): Int = if (packs.value.containsKey(id)) 1 else 0
 
     override suspend fun deleteCandidates() {
+        sponsorships.value = emptyList()
         voteThemes.value = emptyList()
         programStatuses.value = emptyList()
         programDocuments.value = emptyList()
@@ -73,6 +75,15 @@ internal class FakeCorePackDao : CorePackDao {
     override suspend fun insertSpeeches(speeches: List<SpeechEntity>) {
         this.speeches.value += speeches
     }
+
+    private val sponsorships = MutableStateFlow<List<SponsorshipEntity>>(emptyList())
+
+    override suspend fun insertSponsorships(sponsorships: List<SponsorshipEntity>) {
+        this.sponsorships.value += sponsorships
+    }
+
+    override fun observeSponsorships(candidateId: String): Flow<SponsorshipEntity?> =
+        sponsorships.map { list -> list.firstOrNull { it.candidateId == candidateId } }
 
     override fun observeSpeeches(candidateId: String): Flow<List<SpeechEntity>> =
         speeches.map { list -> list.filter { it.candidateId == candidateId } }

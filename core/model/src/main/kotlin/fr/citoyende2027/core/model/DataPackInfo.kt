@@ -31,6 +31,7 @@ data class CorePackContent(
     val reserve: ReservePeriod = ReservePeriod.NONE,
     /** Version date of the candidate inclusion rule used for this pack (AGENTS.md §10). */
     val inclusionPolicyDate: LocalDate? = null,
+    val sponsorships: List<Sponsorships> = emptyList(),
 ) {
     init {
         require(info.id == DataPackInfo.CORE) { "Not a core pack: ${info.id}" }
@@ -39,6 +40,7 @@ data class CorePackContent(
         require(mandates.all { it.candidateId in ids }) { "Mandate of an unknown candidate" }
         require(votes.all { it.candidateId in ids }) { "Vote of an unknown candidate" }
         require(speeches.all { it.candidateId in ids }) { "Speech of an unknown candidate" }
+        require(sponsorships.all { it.candidateId in ids }) { "Sponsorships of an unknown candidate" }
         val themeIds = themes.map { it.id }.toSet()
         require(votes.all { vote -> vote.themes.all { it.themeId in themeIds } }) { "Vote with an unknown theme" }
     }

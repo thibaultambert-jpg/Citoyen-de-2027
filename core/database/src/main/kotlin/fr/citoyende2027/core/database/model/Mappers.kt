@@ -19,6 +19,7 @@ import fr.citoyende2027.core.model.SearchText
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
+import fr.citoyende2027.core.model.Sponsorships
 import fr.citoyende2027.core.model.TagConfidence
 import fr.citoyende2027.core.model.TagMethod
 import fr.citoyende2027.core.model.Theme
@@ -271,4 +272,25 @@ fun LegalArticleEntity.asModel() = LegalArticle(
 fun LegalArticle.ftsEntity() = LegalFtsEntity(
     articleId = id,
     body = SearchText.normalize(listOf("article $number", headingPath.joinToString(" "), text).joinToString(" ")),
+)
+
+fun Sponsorships.asEntity() = SponsorshipEntity(
+    candidateId = candidateId.value,
+    total = total,
+    departments = departments,
+    byMandate = byMandate.joinToString("\n") { "${it.count}\t${it.mandate}" },
+    publishedOn = publishedOn,
+    source = source.asEmbedded(),
+)
+
+fun SponsorshipEntity.asModel() = Sponsorships(
+    candidateId = CandidateId(candidateId),
+    total = total,
+    departments = departments,
+    byMandate = byMandate.lines().filter { it.isNotBlank() }.map { line ->
+        val (count, mandate) = line.split('\t', limit = 2)
+        Sponsorships.MandateCount(mandate, count.toInt())
+    },
+    publishedOn = publishedOn,
+    source = source.asModel(),
 )

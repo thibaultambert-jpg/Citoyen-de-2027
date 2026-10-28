@@ -140,6 +140,27 @@ data class SpeechEntity(
     @Embedded(prefix = "source_") val source: SourceEmbedded,
 )
 
+/** Sponsorships of a candidate; [byMandate] holds one "count<TAB>mandate" line per published label. */
+@Entity(
+    tableName = "sponsorships",
+    foreignKeys = [
+        ForeignKey(
+            entity = CandidateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["candidate_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+)
+data class SponsorshipEntity(
+    @PrimaryKey @ColumnInfo(name = "candidate_id") val candidateId: String,
+    val total: Int,
+    val departments: Int,
+    @ColumnInfo(name = "by_mandate") val byMandate: String,
+    @ColumnInfo(name = "published_on") val publishedOn: LocalDate,
+    @Embedded(prefix = "source_") val source: SourceEmbedded,
+)
+
 @Entity(tableName = "themes")
 data class ThemeEntity(@PrimaryKey val id: String, val label: String)
 

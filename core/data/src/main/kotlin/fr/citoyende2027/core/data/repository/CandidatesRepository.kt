@@ -12,6 +12,7 @@ import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.Sponsorships
 import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.Vote
 import javax.inject.Inject
@@ -37,6 +38,9 @@ interface CandidatesRepository {
 
     /** Speeches (metadata and links), most recent first. */
     fun observeSpeeches(id: CandidateId): Flow<List<Speech>>
+
+    /** Published sponsorships; null when the installed data has none for this candidate. */
+    fun observeSponsorships(id: CandidateId): Flow<Sponsorships?> = flowOf(null)
 
     /** Theme taxonomy of the installed `core` pack, in storage order (see alphabetical()). */
     fun observeThemes(): Flow<List<Theme>>
@@ -84,4 +88,7 @@ internal class OfflineCandidatesRepository @Inject constructor(private val dao: 
 
     override fun observeSpeeches(id: CandidateId): Flow<List<Speech>> =
         dao.observeSpeeches(id.value).map { list -> list.mapNotNull { it.asModel() } }
+
+    override fun observeSponsorships(id: CandidateId): Flow<Sponsorships?> =
+        dao.observeSponsorships(id.value).map { it?.asModel() }
 }

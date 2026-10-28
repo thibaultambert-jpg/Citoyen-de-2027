@@ -41,6 +41,7 @@ class CorePackStore @Inject internal constructor(private val dao: CorePackDao) {
             mandates = core.mandates.map { it.asEntity() },
             votes = core.votes.map { it.asEntity() },
             speeches = core.speeches.map { it.asEntity() },
+            sponsorships = core.sponsorships.map { it.asEntity() },
             themes = core.themes.map { it.asEntity() },
             voteThemes = core.votes.flatMap { it.themeEntities() },
             programs = programs?.let { content ->

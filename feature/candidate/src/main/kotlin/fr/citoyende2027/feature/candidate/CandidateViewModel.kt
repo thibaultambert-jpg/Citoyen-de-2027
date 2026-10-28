@@ -9,6 +9,7 @@ import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.CandidateProgram
 import fr.citoyende2027.core.model.Mandate
 import fr.citoyende2027.core.model.Speech
+import fr.citoyende2027.core.model.Sponsorships
 import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.Vote
 import fr.citoyende2027.core.model.VoteFilter
@@ -34,11 +35,15 @@ class CandidateViewModel @Inject constructor(
     private val facts = combine(
         candidatesRepository.observeMandates(candidateId),
         candidatesRepository.observeVotes(candidateId),
-        candidatesRepository.observeSpeeches(candidateId),
+        combine(
+            candidatesRepository.observeSpeeches(candidateId),
+            candidatesRepository.observeSponsorships(candidateId),
+            ::Pair,
+        ),
         candidatesRepository.observeProgram(candidateId),
         candidatesRepository.observeThemes(),
-    ) { mandates, votes, speeches, program, themes ->
-        Facts(mandates, votes, speeches, program, themes.alphabetical())
+    ) { mandates, votes, (speeches, sponsorships), program, themes ->
+        Facts(mandates, votes, speeches, program, themes.alphabetical(), sponsorships)
     }
 
     val uiState: StateFlow<CandidateUiState> = combine(
@@ -68,6 +73,7 @@ class CandidateViewModel @Inject constructor(
                 themes = facts.themes,
                 allVotes = votes,
                 reserve = reserve,
+                sponsorships = facts.sponsorships,
             )
         }
     }.stateIn(
@@ -84,5 +90,6 @@ class CandidateViewModel @Inject constructor(
         val speeches: List<Speech>,
         val program: CandidateProgram,
         val themes: List<Theme>,
+        val sponsorships: Sponsorships?,
     )
 }

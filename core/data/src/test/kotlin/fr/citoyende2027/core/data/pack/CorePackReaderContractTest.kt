@@ -54,6 +54,16 @@ class CorePackReaderContractTest {
         assertEquals(listOf(listOf(ThemeId("fictif-01"))), content.votes.map { vote -> vote.themes.map { it.themeId } })
         assertEquals(ReservePeriod.NONE, content.reserve)
         assertEquals(LocalDate.of(2026, 1, 1), content.inclusionPolicyDate)
+        val sponsorships = content.sponsorships.single()
+        assertEquals(
+            listOf("fictif-a", "3", "2", "2026-01-10", "Mandat fictif 1=2", "Mandat fictif 2=1"),
+            listOf(
+                sponsorships.candidateId.value,
+                sponsorships.total.toString(),
+                sponsorships.departments.toString(),
+                sponsorships.publishedOn.toString(),
+            ) + sponsorships.byMandate.map { "${it.mandate}=${it.count}" },
+        )
     }
 
     @Test

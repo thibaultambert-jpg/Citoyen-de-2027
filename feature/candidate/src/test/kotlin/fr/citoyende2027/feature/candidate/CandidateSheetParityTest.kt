@@ -64,6 +64,7 @@ class CandidateSheetParityTest {
                 candidate.displayName,
                 context.getString(R.string.feature_candidate_section_status),
                 context.getString(R.string.feature_candidate_section_coverage),
+                context.getString(R.string.feature_candidate_section_sponsorships),
             ),
             composeRule.onAllNodes(isHeading()).fetchSemanticsNodes().map { node ->
                 node.config.getOrElse(SemanticsProperties.Text) { emptyList() }.joinToString()
@@ -91,6 +92,22 @@ class CandidateSheetParityTest {
         candidate = FictionalCandidates.candidateA
         composeRule.onNodeWithText(context.getString(CandidateSheetTab.PROGRAM.label)).performScrollTo().performClick()
         composeRule.onNodeWithText(context.getString(CoreUiR.string.core_ui_program_status_complete)).assertExists()
+    }
+
+    @Test
+    fun sponsorshipsAreShownWithTheirDateAndSource() {
+        val a = FictionalCandidates.candidateA
+        composeRule.setContent {
+            CitoyenTheme {
+                val state = readyState(a).copy(sponsorships = FictionalCandidates.sponsorships.single())
+                CandidateContent(uiState = state, onBack = {})
+            }
+        }
+        composeRule.onNodeWithText("3 parrainages validés", substring = true).assertExists()
+        composeRule.onNodeWithText("(publication du 10/01/2026)", substring = true).assertExists()
+        composeRule.onNodeWithText("Élus de 2 départements ou collectivités.").assertExists()
+        composeRule.onNodeWithText("Mandat fictif 1 : 2").assertExists()
+        composeRule.onAllNodesWithText(context.getString(DesignR.string.core_designsystem_source)).assertCountEquals(2)
     }
 
     private fun readyState(candidate: Candidate) = CandidateUiState.Ready(

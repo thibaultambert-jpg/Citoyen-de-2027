@@ -17,6 +17,7 @@ import fr.citoyende2027.core.database.model.ProgramChunkEntity
 import fr.citoyende2027.core.database.model.ProgramDocumentEntity
 import fr.citoyende2027.core.database.model.ProgramStatusEntity
 import fr.citoyende2027.core.database.model.SpeechEntity
+import fr.citoyende2027.core.database.model.SponsorshipEntity
 import fr.citoyende2027.core.database.model.ThemeEntity
 import fr.citoyende2027.core.database.model.VoteEntity
 import fr.citoyende2027.core.database.model.VoteThemeEntity
@@ -30,6 +31,7 @@ import java.time.LocalDate
         MandateEntity::class,
         VoteEntity::class,
         SpeechEntity::class,
+        SponsorshipEntity::class,
         ThemeEntity::class,
         VoteThemeEntity::class,
         ProgramStatusEntity::class,
@@ -40,7 +42,7 @@ import java.time.LocalDate
         LegalArticleEntity::class,
         LegalFtsEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class)

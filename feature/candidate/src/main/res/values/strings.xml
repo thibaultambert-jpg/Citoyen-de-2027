@@ -14,6 +14,21 @@
 
     <string name="feature_candidate_section_status">Statut</string>
     <string name="feature_candidate_section_coverage">Couverture des données</string>
+    <string name="feature_candidate_section_sponsorships">Parrainages</string>
+    <!-- %1$d: number, %2$s: date JJ/MM/AAAA of the latest publication included -->
+    <plurals name="feature_candidate_sponsorships_total">
+        <item quantity="one">%1$d parrainage validé publié par le Conseil constitutionnel (publication du %2$s).</item>
+        <item quantity="many">%1$d parrainages validés publiés par le Conseil constitutionnel (publication du %2$s).</item>
+        <item quantity="other">%1$d parrainages validés publiés par le Conseil constitutionnel (publication du %2$s).</item>
+    </plurals>
+    <!-- %1$d: number of distinct published departments or collectivities -->
+    <plurals name="feature_candidate_sponsorships_departments">
+        <item quantity="one">Élus de %1$d département ou collectivité.</item>
+        <item quantity="many">Élus de %1$d départements ou collectivités.</item>
+        <item quantity="other">Élus de %1$d départements ou collectivités.</item>
+    </plurals>
+    <!-- %1$s: mandate as published, %2$d: number -->
+    <string name="feature_candidate_sponsorships_mandate">%1$s : %2$d</string>
     <string name="feature_candidate_coverage_explanation">Indique quelles données les sources utilisées fournissent pour chaque rubrique. L’absence d’une donnée n’est pas l’absence d’une position.</string>
 
     <string name="feature_candidate_mandates_scope">Mandats figurant dans les sources utilisées : Assemblée nationale (dont fonctions gouvernementales), Sénat, Parlement européen et Répertoire national des élus (mandats locaux en cours).</string>

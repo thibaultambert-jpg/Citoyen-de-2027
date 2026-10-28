@@ -20,6 +20,7 @@ import fr.citoyende2027.core.database.model.ProgramChunkEntity
 import fr.citoyende2027.core.database.model.ProgramDocumentEntity
 import fr.citoyende2027.core.database.model.ProgramStatusEntity
 import fr.citoyende2027.core.database.model.SpeechEntity
+import fr.citoyende2027.core.database.model.SponsorshipEntity
 import fr.citoyende2027.core.database.model.ThemeEntity
 import fr.citoyende2027.core.database.model.VoteEntity
 import fr.citoyende2027.core.database.model.VoteThemeEntity
@@ -87,6 +88,12 @@ interface CorePackDao {
 
     @Query("SELECT * FROM speeches WHERE candidate_id = :candidateId ORDER BY speech_date DESC")
     fun observeSpeeches(candidateId: String): Flow<List<SpeechEntity>>
+
+    @Insert
+    suspend fun insertSponsorships(sponsorships: List<SponsorshipEntity>)
+
+    @Query("SELECT * FROM sponsorships WHERE candidate_id = :candidateId")
+    fun observeSponsorships(candidateId: String): Flow<SponsorshipEntity?>
 
     @Query("SELECT * FROM mandates WHERE candidate_id = :candidateId ORDER BY start_date DESC")
     fun observeMandates(candidateId: String): Flow<List<MandateEntity>>
@@ -198,6 +205,7 @@ interface CorePackDao {
         mandates: List<MandateEntity> = emptyList(),
         votes: List<VoteEntity> = emptyList(),
         speeches: List<SpeechEntity> = emptyList(),
+        sponsorships: List<SponsorshipEntity> = emptyList(),
         themes: List<ThemeEntity> = emptyList(),
         voteThemes: List<VoteThemeEntity> = emptyList(),
         programs: ProgramsRows? = null,
@@ -217,6 +225,7 @@ interface CorePackDao {
         insertMandates(mandates)
         insertVotes(votes)
         insertSpeeches(speeches)
+        insertSponsorships(sponsorships)
         insertThemes(themes)
         insertVoteThemes(voteThemes)
         upsertPack(pack)
