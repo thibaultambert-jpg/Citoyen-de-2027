@@ -1,6 +1,5 @@
 package fr.citoyende2027.feature.candidates
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,27 +9,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,12 +49,20 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.CandidateOrder
 import fr.citoyende2027.core.ui.CandidateStatusText
-import fr.citoyende2027.core.ui.CoverageBadge
+import fr.citoyende2027.core.ui.CoverageGlyphRow
 import fr.citoyende2027.core.ui.DataDateBanner
+import java.text.Normalizer
 
+/**
+ * List of candidates. [selectedId] marks the candidate shown in the detail pane on large screens;
+ * it never changes the order or the look of the other rows.
+ */
 @Composable
-internal fun CandidatesScreen(
+fun CandidatesPane(
     onCandidateClick: (CandidateId) -> Unit,
+    onInfoClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selectedId: CandidateId? = null,
     viewModel: CandidatesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -58,6 +72,9 @@ internal fun CandidatesScreen(
         onAlphabeticalOrderSelected = viewModel::onAlphabeticalOrderSelected,
         onRandomOrderSelected = viewModel::onRandomOrderSelected,
         onCandidateClick = onCandidateClick,
+        onInfoClick = onInfoClick,
+        selectedId = selectedId,
+        modifier = modifier,
     )
 }
 
@@ -70,12 +87,26 @@ internal fun CandidatesContent(
     onRandomOrderSelected: () -> Unit,
     onCandidateClick: (CandidateId) -> Unit,
     modifier: Modifier = Modifier,
+    onInfoClick: () -> Unit = {},
+    selectedId: CandidateId? = null,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
-        TopAppBar(
+    // The large title collapses as the list scrolls.
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Column(modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        LargeTopAppBar(
             title = {
                 Text(stringResource(R.string.feature_candidates_title), modifier = Modifier.semantics { heading() })
             },
+            actions = {
+                IconButton(onClick = onInfoClick) {
+                    Icon(painterResource(CitoyenIcons.About), stringResource(R.string.feature_candidates_info))
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            ),
+            scrollBehavior = scrollBehavior,
         )
         when (uiState) {
             CandidatesUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -83,26 +114,92 @@ internal fun CandidatesContent(
             }
 
             is CandidatesUiState.Ready -> {
-                DataDateBanner(uiState.dataInfo)
                 if (uiState.totalCount == 0) {
+                    DataDateBanner(uiState.dataInfo)
                     Text(
                         text = stringResource(R.string.feature_candidates_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(16.dp),
                     )
                 } else {
-                    CandidatesControls(
-                        query = uiState.query,
-                        order = uiState.order,
+                    CandidatesList(
+                        uiState = uiState,
+                        selectedId = selectedId,
                         onQueryChange = onQueryChange,
                         onAlphabeticalOrderSelected = onAlphabeticalOrderSelected,
                         onRandomOrderSelected = onRandomOrderSelected,
+                        onCandidateClick = onCandidateClick,
                     )
-                    CandidatesList(uiState.candidates, onCandidateClick)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CandidatesList(
+    uiState: CandidatesUiState.Ready,
+    selectedId: CandidateId?,
+    onQueryChange: (String) -> Unit,
+    onAlphabeticalOrderSelected: () -> Unit,
+    onRandomOrderSelected: () -> Unit,
+    onCandidateClick: (CandidateId) -> Unit,
+) {
+    // Letter headers only make sense in alphabetical order; a random order is shown as one list.
+    val groups = remember(uiState.candidates, uiState.order) {
+        if (uiState.order == CandidateOrder.Alphabetical) uiState.candidates.groupBy { it.initial() } else null
+    }
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item(key = "data-date") { DataDateBanner(uiState.dataInfo) }
+        item(key = "controls") {
+            CandidatesControls(
+                query = uiState.query,
+                order = uiState.order,
+                onQueryChange = onQueryChange,
+                onAlphabeticalOrderSelected = onAlphabeticalOrderSelected,
+                onRandomOrderSelected = onRandomOrderSelected,
+            )
+        }
+        when {
+            uiState.candidates.isEmpty() -> item(key = "no-match") {
+                Text(
+                    text = stringResource(R.string.feature_candidates_no_match),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+
+            groups != null -> groups.forEach { (letter, members) ->
+                item(key = "letter-$letter") { LetterHeader(letter) }
+                items(members, key = { it.id.value }) { candidate ->
+                    CandidateRow(candidate, candidate.id == selectedId) { onCandidateClick(candidate.id) }
+                }
+            }
+
+            else -> items(uiState.candidates, key = { it.id.value }) { candidate ->
+                CandidateRow(candidate, candidate.id == selectedId) { onCandidateClick(candidate.id) }
+            }
+        }
+    }
+}
+
+/** First letter of the sort name, without accent, as shown in the group header. */
+private fun Candidate.initial(): String = Normalizer.normalize(sortName.trim(), Normalizer.Form.NFD)
+    .firstOrNull { it.isLetter() }
+    ?.uppercaseChar()
+    ?.toString()
+    ?: "#"
+
+@Composable
+private fun LetterHeader(letter: String) {
+    Text(
+        text = letter,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .padding(start = 24.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+            .semantics { heading() },
+    )
 }
 
 @Composable
@@ -114,14 +211,14 @@ private fun CandidatesControls(
     onRandomOrderSelected: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        OutlinedTextField(
+        TextField(
             value = query,
             onValueChange = onQueryChange,
             singleLine = true,
-            label = { Text(stringResource(R.string.feature_candidates_search)) },
+            placeholder = { Text(stringResource(R.string.feature_candidates_search)) },
             leadingIcon = { Icon(painterResource(CitoyenIcons.Search), contentDescription = null) },
             trailingIcon = {
                 if (query.isNotEmpty()) {
@@ -133,6 +230,15 @@ private fun CandidatesControls(
                     }
                 }
             },
+            shape = RoundedCornerShape(50),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
+            ),
             modifier = Modifier.fillMaxWidth(),
         )
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -150,45 +256,39 @@ private fun CandidatesControls(
     }
 }
 
-@Composable
-private fun CandidatesList(candidates: List<Candidate>, onCandidateClick: (CandidateId) -> Unit) {
-    if (candidates.isEmpty()) {
-        Text(
-            text = stringResource(R.string.feature_candidates_no_match),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(16.dp),
-        )
-        return
-    }
-    LazyColumn {
-        items(candidates, key = { it.id.value }) { candidate ->
-            CandidateRow(candidate, onClick = { onCandidateClick(candidate.id) })
-            HorizontalDivider()
-        }
-    }
-}
-
 /** Identical template for every candidate: avatar, name, status, coverage (AGENTS.md §2.1). */
 @Composable
-private fun CandidateRow(candidate: Candidate, onClick: () -> Unit) {
-    Row(
+private fun CandidateRow(candidate: Candidate, selected: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val muted = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+    Surface(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        color = if (selected) colors.primaryContainer else colors.surfaceContainerLow,
+        contentColor = if (selected) colors.onPrimaryContainer else colors.onSurface,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 3.dp)
             // Found by the device benchmarks (benchmarks/, resource id "candidate_row").
             .testTag("candidate_row")
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .semantics { role = Role.Button },
     ) {
-        InitialsAvatar(candidate.initials)
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = candidate.displayName,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.semantics { heading() },
-            )
-            CandidateStatusText(candidate, style = MaterialTheme.typography.bodyMedium)
-            CoverageBadge(candidate.coverage)
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            InitialsAvatar(candidate.initials)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = candidate.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.semantics { heading() },
+                )
+                CandidateStatusText(candidate, style = MaterialTheme.typography.bodyMedium.copy(color = muted))
+                CoverageGlyphRow(candidate.coverage, color = muted)
+            }
+            Icon(painterResource(CitoyenIcons.ChevronRight), contentDescription = null, tint = muted)
         }
     }
 }

@@ -7,4 +7,5 @@
     <string name="feature_candidates_order_random">Ordre aléatoire</string>
     <string name="feature_candidates_empty">Aucune donnée sur les candidats n’est installée pour le moment.</string>
     <string name="feature_candidates_no_match">Aucun nom ne correspond à la recherche.</string>
+    <string name="feature_candidates_info">Infos et réglages</string>
 </resources>

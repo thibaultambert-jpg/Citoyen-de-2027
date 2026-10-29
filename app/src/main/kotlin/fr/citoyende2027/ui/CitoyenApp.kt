@@ -1,7 +1,9 @@
 package fr.citoyende2027.ui
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,15 +18,16 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import fr.citoyende2027.feature.about.navigation.AboutRoute
 import fr.citoyende2027.feature.about.navigation.aboutScreen
 import fr.citoyende2027.feature.about.navigation.navigateToInfoPage
 import fr.citoyende2027.feature.ask.navigation.askScreen
 import fr.citoyende2027.feature.candidate.navigation.candidateScreen
 import fr.citoyende2027.feature.candidate.navigation.navigateToCandidate
 import fr.citoyende2027.feature.candidates.navigation.CandidatesRoute
-import fr.citoyende2027.feature.candidates.navigation.candidatesScreen
 import fr.citoyende2027.feature.compare.navigation.compareScreen
 import fr.citoyende2027.feature.institutions.navigation.institutionsScreen
 import fr.citoyende2027.feature.institutions.navigation.navigateToLegalText
@@ -38,7 +41,12 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
     // navigationSuiteItems is not a composable scope: resolve labels beforehand.
     val labels = TopLevelDestination.entries.associateWith { stringResource(it.label) }
 
+    val barColor = MaterialTheme.colorScheme.surfaceContainerLow
     NavigationSuiteScaffold(
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationBarContainerColor = barColor,
+            navigationRailContainerColor = barColor,
+        ),
         // Test tags become resource ids, so the device benchmarks (benchmarks/) can find elements.
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         navigationSuiteItems = {
@@ -61,7 +69,12 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
         },
     ) {
         NavHost(navController = navController, startDestination = CandidatesRoute) {
-            candidatesScreen(onCandidateClick = navController::navigateToCandidate)
+            composable<CandidatesRoute> {
+                CandidatesHome(
+                    onCandidateClick = navController::navigateToCandidate,
+                    onInfoClick = { navController.navigate(AboutRoute) { launchSingleTop = true } },
+                )
+            }
             candidateScreen(onBack = { navController.popBackStack() })
             compareScreen()
             askScreen()

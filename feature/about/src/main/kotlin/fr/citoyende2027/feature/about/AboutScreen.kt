@@ -3,6 +3,7 @@ package fr.citoyende2027.feature.about
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -42,15 +44,21 @@ enum class InfoPage(val title: Int, val summary: Int) {
 @Composable
 internal fun AboutScreen(
     onOpenPage: (InfoPage) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AboutViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    AboutContent(state, onOpenPage, modifier)
+    AboutContent(state, onOpenPage, modifier, onBack)
 }
 
 @Composable
-internal fun AboutContent(state: AboutUiState, onOpenPage: (InfoPage) -> Unit, modifier: Modifier = Modifier) {
+internal fun AboutContent(
+    state: AboutUiState,
+    onOpenPage: (InfoPage) -> Unit,
+    modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
+) {
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
     val version = remember(context) {
@@ -61,13 +69,21 @@ internal fun AboutContent(state: AboutUiState, onOpenPage: (InfoPage) -> Unit, m
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        Text(
-            text = stringResource(R.string.feature_about_title),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier
-                .padding(16.dp)
-                .semantics { heading() },
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(painterResource(CitoyenIcons.Back), stringResource(R.string.feature_about_back))
+                }
+            }
+            Text(
+                text = stringResource(R.string.feature_about_title),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(horizontal = 12.dp).semantics { heading() },
+            )
+        }
         InfoPage.entries.forEach { page ->
             ListItem(
                 headlineContent = { Text(stringResource(page.title)) },

@@ -51,9 +51,18 @@ import fr.citoyende2027.feature.candidate.tab.SpeechesTab
 import fr.citoyende2027.feature.candidate.tab.VotesTab
 
 @Composable
-internal fun CandidateScreen(onBack: () -> Unit, viewModel: CandidateViewModel = hiltViewModel()) {
+internal fun CandidateScreen(
+    onBack: () -> Unit,
+    showBack: Boolean = true,
+    viewModel: CandidateViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    CandidateContent(uiState = uiState, onBack = onBack, onVoteFilterChange = viewModel::onVoteFilterChange)
+    CandidateContent(
+        uiState = uiState,
+        onBack = onBack,
+        showBack = showBack,
+        onVoteFilterChange = viewModel::onVoteFilterChange,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +71,7 @@ internal fun CandidateContent(
     uiState: CandidateUiState,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBack: Boolean = true,
     onVoteFilterChange: (VoteFilter) -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -74,8 +84,10 @@ internal fun CandidateContent(
                 )
             },
             navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(painterResource(CitoyenIcons.Back), stringResource(R.string.feature_candidate_back))
+                if (showBack) {
+                    IconButton(onClick = onBack) {
+                        Icon(painterResource(CitoyenIcons.Back), stringResource(R.string.feature_candidate_back))
+                    }
                 }
             },
         )
