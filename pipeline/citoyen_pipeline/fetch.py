@@ -52,12 +52,16 @@ class Cache:
     def has(self, key: str) -> bool:
         return key in self._log and self.path(key).exists()
 
-    def fetch(self, key: str, url: str, refresh: bool = False) -> Fetched:
+    def fetch(self, key: str, url: str, refresh: bool = False, stable: bool = False) -> Fetched:
+        """[stable]: content that no longer changes (e.g. votes of a past sitting); a sidecar record
+        lets a CI cache keep it between runs without the shared fetch log."""
         if not url.startswith("https://"):
             raise ValueError(f"Only HTTPS sources are fetched: {url}")
         if self.has(key) and not refresh:
             return self._log[key]
         target = self.path(key)
+        if stable and (restored := self._restore(target, url)):
+            return restored
         target.parent.mkdir(parents=True, exist_ok=True)
         body = _download(url)
         target.write_bytes(body)
@@ -70,8 +74,20 @@ class Cache:
             retrieved_on=datetime.now(UTC).date().isoformat(),
         )
         self.record(entry)
+        if stable:
+            _sidecar(target).write_text(json.dumps(asdict(entry)), encoding="utf-8")
         if self.delay_seconds:
             time.sleep(self.delay_seconds)
+        return entry
+
+    def _restore(self, target: Path, url: str) -> Fetched | None:
+        sidecar = _sidecar(target)
+        if not (target.exists() and sidecar.exists()):
+            return None
+        entry = Fetched(**json.loads(sidecar.read_text(encoding="utf-8")))
+        if entry.url != url or entry.size != target.stat().st_size:
+            return None
+        self.record(entry)
         return entry
 
     def fetch_large(self, key: str, url: str) -> Fetched:
@@ -82,12 +98,8 @@ class Cache:
             return self._log[key]
         target = self.path(key)
         # A sidecar record lets a CI cache restore large archives without the shared fetch log.
-        sidecar = target.with_name(target.name + ".fetched.json")
-        if target.exists() and sidecar.exists():
-            entry = Fetched(**json.loads(sidecar.read_text(encoding="utf-8")))
-            if entry.url == url and entry.size == target.stat().st_size:
-                self.record(entry)
-                return entry
+        if restored := self._restore(target, url):
+            return restored
         target.parent.mkdir(parents=True, exist_ok=True)
         partial = target.with_name(target.name + ".part")
         digest, size = hashlib.sha256(), 0
@@ -99,7 +111,7 @@ class Cache:
                 out.write(chunk)
         partial.replace(target)
         entry = Fetched(key, url, key, digest.hexdigest(), size, datetime.now(UTC).date().isoformat())
-        sidecar.write_text(json.dumps(asdict(entry)), encoding="utf-8")
+        _sidecar(target).write_text(json.dumps(asdict(entry)), encoding="utf-8")
         self.record(entry)
         return entry
 
@@ -118,6 +130,10 @@ class Cache:
         entry = Fetched(key, url, key, hashlib.sha256(body).hexdigest(), len(body), retrieved_on)
         self.record(entry)
         return entry
+
+
+def _sidecar(target: Path) -> Path:
+    return target.with_name(target.name + ".fetched.json")
 
 
 def _download(url: str, attempts: int = 3) -> bytes:

@@ -80,6 +80,15 @@ jobs:
           key: legi-v1-${{ github.run_id }}
           restore-keys: legi-v1-
 
+      - name: Cache settled European Parliament files (past years and sittings)
+        uses: actions/cache@v6
+        with:
+          path: |
+            pipeline/cache/pe/decisions
+            pipeline/cache/pe/meetings-*
+          key: pe-v1-${{ github.run_id }}
+          restore-keys: pe-v1-
+
       - name: Fetch official sources (a failing source is reported and left out)
         working-directory: pipeline
         run: python -m citoyen_pipeline fetch --inputs inputs --cache cache --keep-going
