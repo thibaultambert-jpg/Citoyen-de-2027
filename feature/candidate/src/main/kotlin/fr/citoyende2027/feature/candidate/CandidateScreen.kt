@@ -147,9 +147,13 @@ private fun CandidateSheet(state: CandidateUiState.Ready, onVoteFilterChange: (V
                 onOpenSideBySide = { openTab(CandidateSheetTab.PROGRAM_AND_VOTES) },
             )
         }
+
         CandidateSheetTab.PROGRAM -> ProgramTab(state.program, state.themes)
+
         CandidateSheetTab.JOURNEY -> JourneyTab(journeyView, { journeyView = it }, state, onVoteFilterChange)
+
         CandidateSheetTab.PROGRAM_AND_VOTES -> ProgramAndVotesTab(state.program, state.allVotes, state.themes)
+
         CandidateSheetTab.SOURCES -> SourcesTab(state)
     }
 }
