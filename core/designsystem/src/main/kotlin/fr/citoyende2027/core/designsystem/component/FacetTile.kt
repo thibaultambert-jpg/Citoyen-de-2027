@@ -38,6 +38,7 @@ fun FacetTile(
     detail: String? = null,
     description: String? = null,
 ) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
     Card(
         onClick = onClick,
         modifier = modifier.semantics {
@@ -59,12 +60,15 @@ fun FacetTile(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 LevelGlyph(glyph)
-                Text(stateLabel, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stateLabel, style = MaterialTheme.typography.bodySmall, color = muted)
             }
             if (detail != null) {
-                Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(detail, style = MaterialTheme.typography.bodySmall, color = muted)
             }
         }
     }

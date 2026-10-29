@@ -11,24 +11,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -80,7 +86,7 @@ internal fun AskScreen(modifier: Modifier = Modifier, viewModel: AskViewModel = 
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 internal fun AskContent(
     state: AskUiState,
@@ -92,18 +98,38 @@ internal fun AskContent(
     modifier: Modifier = Modifier,
     footer: @Composable () -> Unit = {},
 ) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Column(modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        LargeTopAppBar(
+            title = { Text(stringResource(R.string.feature_ask_title), modifier = Modifier.semantics { heading() }) },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            ),
+            scrollBehavior = scrollBehavior,
+        )
+        AskBody(state, onScopeChange, onCandidateChange, onQuestionChange, onSubmit, actions, footer)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AskBody(
+    state: AskUiState,
+    onScopeChange: (ScopeKind) -> Unit,
+    onCandidateChange: (Candidate) -> Unit,
+    onQuestionChange: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    actions: AssistantActions,
+    footer: @Composable () -> Unit,
+) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = stringResource(R.string.feature_ask_title),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.semantics { heading() },
-        )
         AssistantCard(state.assistant, state.importAccepted, actions)
         Text(stringResource(R.string.feature_ask_scope), style = MaterialTheme.typography.titleSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -129,6 +155,7 @@ internal fun AskContent(
             value = state.question,
             onValueChange = onQuestionChange,
             label = { Text(stringResource(R.string.feature_ask_question)) },
+            shape = RoundedCornerShape(28.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { if (state.canSubmit) onSubmit(state.question) }),
             // Found by the device benchmarks (benchmarks/, resource id "ask_question").
@@ -207,7 +234,9 @@ private fun Answer(answer: AskAnswer, sourceLabels: Map<String, String>) {
     when (answer) {
         AskAnswer.Unavailable -> Text(stringResource(R.string.feature_ask_unavailable))
 
-        is AskAnswer.Refused -> Card {
+        is AskAnswer.Refused -> Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        ) {
             Text(
                 text = stringResource(
                     if (answer.category == RefusalCategory.INSTRUCTION) {

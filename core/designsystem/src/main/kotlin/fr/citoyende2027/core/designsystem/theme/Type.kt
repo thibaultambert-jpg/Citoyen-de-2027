@@ -62,5 +62,9 @@ internal val CitoyenTypography = Typography(
     labelLarge = Defaults.labelLarge.body(),
     labelMedium = Defaults.labelMedium.body(),
     // Uppercase section labels are written in the text itself, not forced here.
-    labelSmall = Defaults.labelSmall.copy(fontFamily = BodyFamily, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp),
+    labelSmall = Defaults.labelSmall.copy(
+        fontFamily = BodyFamily,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 0.8.sp,
+    ),
 )

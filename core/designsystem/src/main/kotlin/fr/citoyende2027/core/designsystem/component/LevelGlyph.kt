@@ -32,6 +32,7 @@ fun LevelGlyph(
 ) {
     Canvas(modifier = modifier.size(size).clearAndSetSemantics {}) {
         val stroke = 1.6.dp.toPx()
+        val dash = stroke * 1.5f
         val inset = stroke / 2
         val diameter = Size(this.size.width - stroke, this.size.height - stroke)
         val topLeft = Offset(inset, inset)
@@ -39,7 +40,14 @@ fun LevelGlyph(
             GlyphShape.Full -> drawCircle(color)
             GlyphShape.Half -> {
                 drawCircle(color, radius = diameter.width / 2, style = Stroke(stroke))
-                drawArc(color, startAngle = 90f, sweepAngle = 180f, useCenter = true, topLeft = topLeft, size = diameter)
+                drawArc(
+                    color,
+                    startAngle = 90f,
+                    sweepAngle = 180f,
+                    useCenter = true,
+                    topLeft = topLeft,
+                    size = diameter,
+                )
             }
             GlyphShape.Slashed -> {
                 drawCircle(color, radius = diameter.width / 2, style = Stroke(stroke))
@@ -49,7 +57,7 @@ fun LevelGlyph(
             GlyphShape.Dashed -> drawCircle(
                 color,
                 radius = diameter.width / 2,
-                style = Stroke(stroke, pathEffect = PathEffect.dashPathEffect(floatArrayOf(stroke * 1.5f, stroke * 1.5f))),
+                style = Stroke(stroke, pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash))),
             )
         }
     }

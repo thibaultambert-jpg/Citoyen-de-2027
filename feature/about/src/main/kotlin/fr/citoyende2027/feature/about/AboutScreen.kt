@@ -13,14 +13,17 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -84,19 +87,33 @@ internal fun AboutContent(
                 modifier = Modifier.padding(horizontal = 12.dp).semantics { heading() },
             )
         }
-        InfoPage.entries.forEach { page ->
-            ListItem(
-                headlineContent = { Text(stringResource(page.title)) },
-                supportingContent = { Text(stringResource(page.summary)) },
-                modifier = Modifier.clickable(role = Role.Button) { onOpenPage(page) },
-            )
-            HorizontalDivider()
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        ) {
+            Column {
+                val transparent = ListItemDefaults.colors(containerColor = Color.Transparent)
+                InfoPage.entries.forEach { page ->
+                    ListItem(
+                        headlineContent = { Text(stringResource(page.title)) },
+                        supportingContent = { Text(stringResource(page.summary)) },
+                        trailingContent = {
+                            Icon(painterResource(CitoyenIcons.ChevronRight), contentDescription = null)
+                        },
+                        colors = transparent,
+                        modifier = Modifier.clickable(role = Role.Button) { onOpenPage(page) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.feature_about_report)) },
+                    supportingContent = { Text(stringResource(R.string.feature_about_report_summary)) },
+                    colors = transparent,
+                    modifier = Modifier.clickable(role = Role.Button) { uriHandler.openUri(BuildConfig.REPORT_URL) },
+                )
+            }
         }
-        ListItem(
-            headlineContent = { Text(stringResource(R.string.feature_about_report)) },
-            supportingContent = { Text(stringResource(R.string.feature_about_report_summary)) },
-            modifier = Modifier.clickable(role = Role.Button) { uriHandler.openUri(BuildConfig.REPORT_URL) },
-        )
         version?.let {
             Text(
                 text = stringResource(R.string.feature_about_version, it),
