@@ -52,12 +52,16 @@ class Cache:
     def has(self, key: str) -> bool:
         return key in self._log and self.path(key).exists()
 
-    def fetch(self, key: str, url: str, refresh: bool = False) -> Fetched:
+    def fetch(self, key: str, url: str, refresh: bool = False, stable: bool = False) -> Fetched:
+        """[stable]: content that no longer changes (e.g. votes of a past sitting); a sidecar record
+        lets a CI cache keep it between runs without the shared fetch log."""
         if not url.startswith("https://"):
             raise ValueError(f"Only HTTPS sources are fetched: {url}")
         if self.has(key) and not refresh:
             return self._log[key]
         target = self.path(key)
+        if stable and (restored := self._restore(target, url)):
+            return restored
         target.parent.mkdir(parents=True, exist_ok=True)
         body = _download(url)
         target.write_bytes(body)
@@ -70,8 +74,20 @@ class Cache:
             retrieved_on=datetime.now(UTC).date().isoformat(),
         )
         self.record(entry)
+        if stable:
+            _sidecar(target).write_text(json.dumps(asdict(entry)), encoding="utf-8")
         if self.delay_seconds:
             time.sleep(self.delay_seconds)
+        return entry
+
+    def _restore(self, target: Path, url: str) -> Fetched | None:
+        sidecar = _sidecar(target)
+        if not (target.exists() and sidecar.exists()):
+            return None
+        entry = Fetched(**json.loads(sidecar.read_text(encoding="utf-8")))
+        if entry.url != url or entry.size != target.stat().st_size:
+            return None
+        self.record(entry)
         return entry
 
     def fetch_large(self, key: str, url: str) -> Fetched:
@@ -82,12 +98,8 @@ class Cache:
             return self._log[key]
         target = self.path(key)
         # A sidecar record lets a CI cache restore large archives without the shared fetch log.
-        sidecar = target.with_name(target.name + ".fetched.json")
-        if target.exists() and sidecar.exists():
-            entry = Fetched(**json.loads(sidecar.read_text(encoding="utf-8")))
-            if entry.url == url and entry.size == target.stat().st_size:
-                self.record(entry)
-                return entry
+        if restored := self._restore(target, url):
+            return restored
         target.parent.mkdir(parents=True, exist_ok=True)
         partial = target.with_name(target.name + ".part")
         digest, size = hashlib.sha256(), 0
@@ -99,16 +111,19 @@ class Cache:
                 out.write(chunk)
         partial.replace(target)
         entry = Fetched(key, url, key, digest.hexdigest(), size, datetime.now(UTC).date().isoformat())
-        sidecar.write_text(json.dumps(asdict(entry)), encoding="utf-8")
+        _sidecar(target).write_text(json.dumps(asdict(entry)), encoding="utf-8")
         self.record(entry)
         return entry
 
     def record(self, entry: Fetched) -> None:
         self._log[entry.key] = entry
-        self._log_path.write_text(
+        # Written aside then renamed: a fetch stopped by a CI time limit never leaves a truncated log.
+        partial = self._log_path.with_name(self._log_path.name + ".part")
+        partial.write_text(
             json.dumps({k: asdict(v) for k, v in sorted(self._log.items())}, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        partial.replace(self._log_path)
 
     def put(self, key: str, url: str, body: bytes, retrieved_on: str) -> Fetched:
         """Stores content obtained elsewhere (tests, manual imports) with the same bookkeeping."""
@@ -120,14 +135,37 @@ class Cache:
         return entry
 
 
+def _sidecar(target: Path) -> Path:
+    return target.with_name(target.name + ".fetched.json")
+
+
+# A stalled read gives up after SOCKET_TIMEOUT; a response trickling in gives up after DEADLINE (one
+# European Parliament request kept a CI run waiting for 39 minutes on 2026-10-29).
+SOCKET_TIMEOUT = 60
+DEADLINE = 600
+
+
+class DownloadTooSlow(TimeoutError):
+    pass
+
+
 def _download(url: str, attempts: int = 3) -> bytes:
     last_error: Exception | None = None
     for attempt in range(attempts):
         try:
             request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(request, timeout=300) as response:
-                return response.read()
+            with urllib.request.urlopen(request, timeout=SOCKET_TIMEOUT) as response:
+                return _read_before_deadline(response, time.monotonic() + DEADLINE)
         except Exception as error:  # noqa: BLE001 - retried, then re-raised
             last_error = error
             time.sleep(2 * (attempt + 1))
     raise RuntimeError(f"Download failed after {attempts} attempts: {url}") from last_error
+
+
+def _read_before_deadline(response, deadline: float) -> bytes:
+    chunks = []
+    while chunk := response.read1(1 << 16):
+        chunks.append(chunk)
+        if time.monotonic() > deadline:
+            raise DownloadTooSlow(f"still downloading after {DEADLINE} s")
+    return b"".join(chunks)

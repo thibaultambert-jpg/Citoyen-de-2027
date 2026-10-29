@@ -20,7 +20,7 @@ fun NavController.navigateToInfoPage(page: InfoPage) = navigate(AboutPageRoute(p
 
 fun NavGraphBuilder.aboutScreen(onOpenPage: (InfoPage) -> Unit, onBack: () -> Unit) {
     composable<AboutRoute> {
-        AboutScreen(onOpenPage = onOpenPage)
+        AboutScreen(onOpenPage = onOpenPage, onBack = onBack)
     }
     composable<AboutPageRoute> { entry ->
         AboutPageScreen(page = InfoPage.valueOf(entry.toRoute<AboutPageRoute>().page), onBack = onBack)

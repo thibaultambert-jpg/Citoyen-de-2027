@@ -13,10 +13,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import fr.citoyende2027.core.designsystem.component.GeneratedCard
 import fr.citoyende2027.llm.assistant.AssistantStatus
 import fr.citoyende2027.llm.device.Limitation
 import fr.citoyende2027.rag.answer.AnswerSource
@@ -57,7 +58,10 @@ private fun size(bytes: Long): String =
 /** State of the assistant; without it the screen says it works in "Mode sans IA" (AGENTS.md §9). */
 @Composable
 internal fun AssistantCard(status: AssistantStatus?, importAccepted: Boolean?, actions: AssistantActions) {
-    Card {
+    Card(
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val ready = status is AssistantStatus.Ready && status.enabled
             if (!ready) {
@@ -181,9 +185,10 @@ internal fun AiAnswerSection(ai: AiAnswer, actions: AssistantActions) {
         }
 
         is AiAnswer.Done -> when (val answer = ai.answer) {
-            is GroundedAnswer.Answered -> OutlinedCard {
+            // Sand surface: this text was written by the local model, unlike the passage cards.
+            is GroundedAnswer.Answered -> GeneratedCard(modifier = Modifier.fillMaxWidth()) {
                 var opened by remember { mutableStateOf<AnswerSource?>(null) }
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.feature_ask_ai_label), style = MaterialTheme.typography.labelLarge)
                     Text(stringResource(R.string.feature_ask_ai_banner), style = MaterialTheme.typography.bodySmall)
                     answer.claims.forEach { claim ->

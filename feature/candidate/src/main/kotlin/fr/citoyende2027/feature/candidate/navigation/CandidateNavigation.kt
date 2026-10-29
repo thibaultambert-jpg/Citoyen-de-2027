@@ -20,8 +20,9 @@ data class CandidateRoute(val candidateId: String) {
 fun NavController.navigateToCandidate(candidateId: CandidateId, navOptions: NavOptions? = null) =
     navigate(CandidateRoute(candidateId.value), navOptions)
 
-fun NavGraphBuilder.candidateScreen(onBack: () -> Unit) {
+/** [showBack] is false when the sheet is the detail pane of a two-pane layout. */
+fun NavGraphBuilder.candidateScreen(onBack: () -> Unit, showBack: Boolean = true) {
     composable<CandidateRoute> {
-        CandidateScreen(onBack = onBack)
+        CandidateScreen(onBack = onBack, showBack = showBack)
     }
 }

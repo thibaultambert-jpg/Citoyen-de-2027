@@ -101,7 +101,14 @@ def fetch(cache: Cache, inputs: list[LegalInput]) -> None:
     legi_ids = {i.legi_id for i in inputs}
     directories = extract(cache.path(ARCHIVE_KEY), target, legi_ids)
     last = global_url
-    for url in increments_after(html, global_url):
+    increments = increments_after(html, global_url)
+    # Increments older than the current global archive are no longer needed: the CI cache would
+    # otherwise grow with every run (3 GB on 2026-10-29).
+    kept = {url.rsplit("/", 1)[-1] for url in increments}
+    for old in (cache.root / "legi" / "increments").glob("*"):
+        if old.name.split(".fetched.json")[0] not in kept:
+            old.unlink()
+    for url in increments:
         name = url.rsplit("/", 1)[-1]
         entry = cache.fetch_large(f"legi/increments/{name}", url)
         apply_increment(cache.path(entry.key), target, directories)

@@ -6,9 +6,11 @@
 
     <string name="feature_candidate_tab_overview">Aperçu</string>
     <string name="feature_candidate_tab_program">Programme</string>
-    <string name="feature_candidate_tab_mandates">Mandats</string>
-    <string name="feature_candidate_tab_votes">Votes</string>
-    <string name="feature_candidate_tab_speeches">Prises de parole</string>
+    <string name="feature_candidate_tab_journey">Parcours</string>
+    <string name="feature_candidate_journey_mandates">Mandats</string>
+    <string name="feature_candidate_journey_votes">Votes</string>
+    <string name="feature_candidate_journey_speeches">Paroles</string>
+    <string name="feature_candidate_side_by_side_tile">Programme et votes enregistrés, thème par thème</string>
     <string name="feature_candidate_tab_program_and_votes">Mise en regard</string>
     <string name="feature_candidate_tab_sources">Sources et méthode</string>
 

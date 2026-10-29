@@ -40,6 +40,13 @@ Rattache un candidat à ses identifiants officiels. Le pipeline vérifie chaque 
 officielle : **nom de famille et date de naissance doivent correspondre**, sinon la construction échoue.
 Les mandats locaux du Répertoire national des élus sont rattachés par nom, prénom et date de naissance.
 
+Deux cas sont acceptés sans exception écrite à la main :
+- nom officiel composé (« A-B ») dont le nom déclaré est une des parties (« A ») ; la date de naissance
+  doit toujours correspondre ;
+- date de naissance non publiée par le Parlement européen : le prénom doit aussi correspondre et le
+  fichier des représentants au Parlement européen du Répertoire national des élus doit lister la même
+  personne (nom, prénom, date de naissance). `report.json` liste ces confirmations.
+
 ```yaml
 version: 1
 identities:

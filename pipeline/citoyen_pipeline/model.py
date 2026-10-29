@@ -111,6 +111,18 @@ class PersonFacts:
     source_person_id: str
     family_name: str
     birth_date: date | None
+    given_name: str | None = None
+
+
+@dataclass(frozen=True)
+class BirthRecord:
+    """A birth date published by another official source for a member of [body], without its
+    identifier (RNE): it may stand in for a birth date that [body] does not publish."""
+
+    body: Body
+    family_name: str
+    given_name: str
+    birth_date: date
 
 
 @dataclass(frozen=True)
@@ -209,6 +221,7 @@ class SourceExtract:
 
     sources: list[Source] = field(default_factory=list)
     people: list[PersonFacts] = field(default_factory=list)
+    birth_records: list[BirthRecord] = field(default_factory=list)
     mandates: list[Mandate] = field(default_factory=list)
     votes: list[Vote] = field(default_factory=list)
     speeches: list[Speech] = field(default_factory=list)
@@ -245,8 +258,6 @@ class CorePack:
     vote_themes: dict[str, list[ThemeTag]] = field(default_factory=dict)
     # Retrieval thresholds calibrated on eval/golden.jsonl (compact JSON), read by the app (AGENTS.md §8).
     rag_config: str | None = None
-    # Electoral reserve period (AGENTS.md §10): campaign content hidden in the app when set (compact JSON).
-    reserve: str | None = None
     sponsorships: list[SponsorshipCount] = field(default_factory=list)
 
 

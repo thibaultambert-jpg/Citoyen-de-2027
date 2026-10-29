@@ -10,7 +10,6 @@ import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.CoverageFacet
 import fr.citoyende2027.core.model.CoverageLevel
 import fr.citoyende2027.core.model.ProgramStatus
-import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.SpeechKind
 import fr.citoyende2027.core.model.TagMethod
 import fr.citoyende2027.core.model.ThemeId
@@ -52,7 +51,6 @@ class CorePackReaderContractTest {
         assertEquals(CoverageLevel.PARTIAL, b.coverage[CoverageFacet.PROGRAM])
         assertEquals(16, content.themes.size)
         assertEquals(listOf(listOf(ThemeId("fictif-01"))), content.votes.map { vote -> vote.themes.map { it.themeId } })
-        assertEquals(ReservePeriod.NONE, content.reserve)
         assertEquals(LocalDate.of(2026, 1, 1), content.inclusionPolicyDate)
         val sponsorships = content.sponsorships.single()
         assertEquals(

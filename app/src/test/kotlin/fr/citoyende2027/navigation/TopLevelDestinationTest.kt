@@ -7,7 +7,7 @@ class TopLevelDestinationTest {
     @Test
     fun `top level destinations follow the screen order of the specification`() {
         assertEquals(
-            listOf("CANDIDATES", "COMPARE", "ASK", "INSTITUTIONS", "ABOUT"),
+            listOf("CANDIDATES", "COMPARE", "ASK", "INSTITUTIONS"),
             TopLevelDestination.entries.map { it.name },
         )
     }

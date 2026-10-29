@@ -25,6 +25,8 @@
     <string name="core_ui_source_license">Licence : %1$s</string>
     <string name="core_ui_source_pack_version">Version des données : %1$s</string>
     <string name="core_ui_close">Fermer</string>
+    <string name="core_ui_info_action">Infos et réglages</string>
+    <string name="core_ui_source_open">Ouvrir la source officielle</string>
 
     <string name="core_ui_body_an">Assemblée nationale</string>
     <string name="core_ui_body_senat">Sénat</string>
@@ -71,7 +73,4 @@
     <!-- %1$s: start date, %2$s: end date -->
     <string name="core_ui_period">Du %1$s au %2$s</string>
     <string name="core_ui_period_open">Depuis le %1$s (en cours selon la source)</string>
-    <string name="core_ui_reserve">Période de réserve électorale : les contenus de campagne (programmes, prises de parole) ne sont pas affichés. Les mandats, les votes enregistrés et les textes juridiques restent consultables.</string>
-    <!-- %1$s: date JJ/MM/AAAA -->
-    <string name="core_ui_reserve_since">Depuis le %1$s.</string>
 </resources>

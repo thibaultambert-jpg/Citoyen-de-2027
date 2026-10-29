@@ -9,7 +9,7 @@ import pytest
 
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import IdentityMismatch, check_identities
-from citoyen_pipeline.model import Body, Identity
+from citoyen_pipeline.model import BirthRecord, Body, Identity
 from citoyen_pipeline.sources import assemblee, rne, senat
 
 ALPHA = Identity("fictif-a", "Exemple", "Alpha", date(1970, 1, 1), an_id="PA000001", senat_id="00001X")
@@ -245,6 +245,23 @@ def test_rne_requires_name_and_birth_date(cache):
     assert mandate.body == Body.LOCAL
     assert mandate.label == "Mandat de conseiller municipal — Commune fictive (Maire)"
     assert [s.id for s in extract.sources] == ["rne-conseiller-municipal-cm"]
+
+
+def test_rne_mep_file_only_confirms_birth_dates_of_linked_meps(cache):
+    cache.put(
+        rne.MEP_KEY,
+        "https://example.invalid/elus-representants-parlement-europeen-rpe.csv",
+        (
+            "\ufeffNom de l'élu;Prénom de l'élu;Code sexe;Date de naissance;Date de début du mandat\n"
+            "EXEMPLE;Alpha;M;1970-01-01;2024-07-16\n"
+            "EXEMPLE;Alpha;M;1980-05-05;2024-07-16\n"
+        ).encode(),
+        "2026-10-01",
+    )
+    assert rne.extract(cache, [ALPHA]).birth_records == []  # no pe_id: nothing to confirm
+    extract = rne.extract(cache, [replace(ALPHA, pe_id="1")])
+    assert extract.birth_records == [BirthRecord(Body.PE, "Exemple", "Alpha", date(1970, 1, 1))]
+    assert len(extract.mandates) == 1  # the MEP file gives no mandate
 
 
 def test_parlement_europeen_mandates_and_roll_call_votes(tmp_path):

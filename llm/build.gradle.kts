@@ -3,12 +3,16 @@ plugins {
     alias(libs.plugins.citoyen.hilt)
 }
 
-// The model file is chosen by a human (AGENTS.md §9): URL, SHA-256 and size are build properties,
-// empty by default. Without them the assistant is shown as unavailable and the app stays fully
-// usable without AI. TODO(verify): values to be provided for Ministral-3-3B-Instruct-2512 Q4_K_M.
-val modelUrl = providers.gradleProperty("citoyen.llm.url").orElse("")
-val modelSha256 = providers.gradleProperty("citoyen.llm.sha256").orElse("")
-val modelSize = providers.gradleProperty("citoyen.llm.sizeBytes").orElse("0")
+// The model file is chosen by a human (AGENTS.md §9): Ministral-3-3B-Instruct-2512, Q4_K_M, from
+// Mistral AI's GGUF repository; URL, SHA-256 and size (Git LFS pointer) given by the user on
+// 2026-10-29. They can be overridden with the build properties below.
+val modelUrl = providers.gradleProperty("citoyen.llm.url").orElse(
+    "https://huggingface.co/mistralai/Ministral-3-3B-Instruct-2512-GGUF/resolve/main/" +
+        "Ministral-3-3B-Instruct-2512-Q4_K_M.gguf",
+)
+val modelSha256 = providers.gradleProperty("citoyen.llm.sha256")
+    .orElse("9ed150d4367e68df0ac8e1540f6ddc65b42d0ee26378329d1ecbca60f93fc5f8")
+val modelSize = providers.gradleProperty("citoyen.llm.sizeBytes").orElse("2147023008")
 
 android {
     namespace = "fr.citoyende2027.llm"
