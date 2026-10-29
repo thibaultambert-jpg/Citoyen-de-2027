@@ -21,6 +21,7 @@ correspondants des sections 3 à 13 ; les principes du §2 restent inchangés :
   débogage fixe du dépôt) est la version installée ;
 - aucune page ni contrainte juridique (mentions légales, politique de confidentialité, règle
   d’inclusion validée, droits de réutilisation, avis sur la période de réserve, règles des stores) ;
+- interface : thème sombre uniquement, navigation à 4 entrées (Candidats, Comparer, Question, Institutions), « Infos » en action de la barre du haut de l’écran Candidats ;
 - écrans abandonnés : calendrier officiel, « Comment voter », résultats 2017 et 2022 ;
 - parrainages affichés sur la fiche candidat ;
 - nom « Citoyen de 2027 » et identifiant `fr.citoyende2027` conservés ; pas d’avis de nouvelle
@@ -151,7 +152,7 @@ Tu es un assistant d’information neutre sur l’élection présidentielle fran
 ## 11. Écrans
 
 1. **Candidats** : liste uniforme, recherche, tri A→Z ou aléatoire, bandeau « Données du JJ/MM/AAAA ».
-2. **Fiche candidat** (onglets) : Aperçu (statut, étiquette *déclarée*, couverture) · Programme (par thème, documents sources datés) · Mandats (frise AN, Sénat, PE, gouvernement, local) · Votes (filtres assemblée, période, thème, type, position) · Prises de parole (interventions en séance ; discours officiels : liste + lien) · Mise en regard · Sources et méthode.
+2. **Fiche candidat** (5 onglets, décision du 29/10/2026) : Aperçu (statut, étiquette *déclarée*, une tuile de couverture par facette, parrainages) · Programme (par thème, documents sources datés) · Parcours (contrôle segmenté : Mandats, frise AN, Sénat, PE, gouvernement, local · Votes, filtres assemblée, période, thème, type, position · Paroles, interventions en séance, discours officiels : liste + lien) · Mise en regard · Sources et méthode.
 3. **Comparer** : 2 à 3 candidats sur un thème, même gabarit.
 4. **Poser une question** : portée (un candidat, Constitution et textes, programmes en parallèle), questions suggérées neutres, citations tapables, état « Mode sans IA ».
 5. **Institutions** : Constitution navigable et consultable hors ligne.
