@@ -13,8 +13,9 @@ Local assistant (AGENTS.md §8–9): llama.cpp through JNI, in a separate `:llm`
 - `prompts/answer_fr.txt`: system prompt (AGENTS.md §8), packaged as an asset, scanned by
   `:tools:neutrality-check`.
 
-The model file is set at build time: `-Pcitoyen.llm.url=… -Pcitoyen.llm.sha256=… -Pcitoyen.llm.sizeBytes=…`.
-Without them the app works in "Mode sans IA".
+The model file is Ministral-3-3B-Instruct-2512 Q4_K_M from Mistral AI's GGUF repository (URL, SHA-256
+and size in `build.gradle.kts`); it can be overridden at build time with
+`-Pcitoyen.llm.url=… -Pcitoyen.llm.sha256=… -Pcitoyen.llm.sizeBytes=…`. Empty values give "Mode sans IA".
 
 Bridge test on a Linux host (as in CI): build `src/main/cpp` with CMake, then
 `./gradlew :llm:testDebugUnitTest -Pllm.hostLib=<libcitoyen_llm.so> -Pllm.testModel=<stories15M-q4_0.gguf>`.
