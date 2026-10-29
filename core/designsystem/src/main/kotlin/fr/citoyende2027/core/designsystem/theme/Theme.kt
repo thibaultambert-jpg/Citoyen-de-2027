@@ -1,66 +1,69 @@
 package fr.citoyende2027.core.designsystem.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-
-internal val LightColors = lightColorScheme(
-    primary = Slate40,
-    onPrimary = Neutral98,
-    primaryContainer = Slate90,
-    onPrimaryContainer = Slate10,
-    // NeutralVariant50 reached only 4.3:1 against Neutral98 (WCAG AA needs 4.5:1 for text).
-    secondary = NeutralVariant40,
-    onSecondary = Neutral98,
-    secondaryContainer = NeutralVariant90,
-    onSecondaryContainer = Neutral10,
-    background = Neutral98,
-    onBackground = Neutral10,
-    surface = Neutral98,
-    onSurface = Neutral10,
-    surfaceVariant = NeutralVariant90,
-    onSurfaceVariant = NeutralVariant30,
-    outline = NeutralVariant50,
-    surfaceContainerLowest = NeutralLowest,
-    surfaceContainerLow = Neutral96,
-    surfaceContainer = Neutral94,
-    surfaceContainerHigh = Neutral92,
-    surfaceContainerHighest = Neutral90,
-)
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 
 internal val DarkColors = darkColorScheme(
-    primary = Slate80,
-    onPrimary = Slate20,
-    primaryContainer = Slate30,
-    onPrimaryContainer = Slate95,
-    secondary = NeutralVariant80,
-    onSecondary = Slate20,
-    secondaryContainer = NeutralVariant30,
-    onSecondaryContainer = NeutralVariant90,
-    background = Neutral10,
-    onBackground = Neutral90,
-    surface = Neutral10,
-    onSurface = Neutral90,
-    surfaceVariant = NeutralVariant30,
-    onSurfaceVariant = NeutralVariant80,
-    outline = NeutralVariant50,
-    surfaceContainerLowest = Neutral4,
-    surfaceContainerLow = Neutral12,
-    surfaceContainer = Neutral17,
-    surfaceContainerHigh = Neutral22,
-    surfaceContainerHighest = Neutral24,
+    primary = Ink80,
+    onPrimary = Ink20,
+    primaryContainer = Ink30,
+    onPrimaryContainer = Ink90,
+    secondary = Slate75,
+    onSecondary = Slate8,
+    // Selected chips and the navigation indicator use the same container as primary.
+    secondaryContainer = Ink30,
+    onSecondaryContainer = Ink90,
+    background = Slate8,
+    onBackground = Slate90,
+    surface = Slate10,
+    onSurface = Slate90,
+    surfaceVariant = Slate22,
+    onSurfaceVariant = Slate75,
+    // Component outlines need 3:1 against the surface; dividers use outlineVariant.
+    outline = SlateOutline,
+    outlineVariant = SlateOutlineVariant,
+    surfaceContainerLowest = Slate4,
+    surfaceContainerLow = Slate12,
+    surfaceContainer = Slate17,
+    surfaceContainerHigh = Slate22,
+    surfaceContainerHighest = Slate27,
 )
 
+/** Colours that have no Material role. */
+@Immutable
+class CitoyenColors(
+    /** Background of anything written by the local LLM. */
+    val generatedContainer: Color,
+    val onGeneratedContainer: Color,
+)
+
+internal val DarkCitoyenColors = CitoyenColors(generatedContainer = Sand20, onGeneratedContainer = Sand90)
+
+private val LocalCitoyenColors = staticCompositionLocalOf { DarkCitoyenColors }
+
+val MaterialTheme.citoyenColors: CitoyenColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalCitoyenColors.current
+
 /**
- * App theme. Dynamic (wallpaper) colours are deliberately disabled so that every user sees the
- * same neutral palette. Typography uses Material defaults, which scale with the system font size.
+ * App theme. The app is dark only, so every user sees the same neutral palette. Dynamic
+ * (wallpaper) colours are deliberately disabled. Typography scales with the system font size.
  */
 @Composable
-fun CitoyenTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
-        content = content,
-    )
+fun CitoyenTheme(content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalCitoyenColors provides DarkCitoyenColors) {
+        MaterialTheme(
+            colorScheme = DarkColors,
+            typography = CitoyenTypography,
+            shapes = CitoyenShapes,
+            content = content,
+        )
+    }
 }

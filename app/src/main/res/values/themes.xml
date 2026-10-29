@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Window theme only; all UI colours come from the Compose CitoyenTheme. -->
-    <style name="Theme.Citoyen" parent="android:Theme.DeviceDefault.DayNight">
+    <!-- Window theme only (dark, like the app); all UI colours come from the Compose CitoyenTheme. -->
+    <style name="Theme.Citoyen" parent="android:Theme.DeviceDefault">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>

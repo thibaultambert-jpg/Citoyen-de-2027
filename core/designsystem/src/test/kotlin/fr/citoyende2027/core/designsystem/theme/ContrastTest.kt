@@ -4,10 +4,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.api.Test
 
-/** WCAG 2.1 AA (AGENTS.md §11): 4.5:1 for text, 3:1 for component outlines, in both themes. */
+/** WCAG 2.1 AA (AGENTS.md §11): 4.5:1 for text, 3:1 for component outlines, in the dark theme. */
 class ContrastTest {
     private fun ratio(a: Color, b: Color): Double {
         val (light, dark) = listOf(a.luminance(), b.luminance()).sortedDescending()
@@ -31,17 +30,26 @@ class ContrastTest {
         "onSurface / surfaceContainerHighest" to (onSurface to surfaceContainerHighest),
         "onSurfaceVariant / surfaceContainerHighest" to (onSurfaceVariant to surfaceContainerHighest),
         "primary / surfaceContainerHighest" to (primary to surfaceContainerHighest),
+        "onSurfaceVariant / surfaceContainerLow" to (onSurfaceVariant to surfaceContainerLow),
+        "onSurfaceVariant / surfaceContainer" to (onSurfaceVariant to surfaceContainer),
+        "primary / surfaceContainerLow" to (primary to surfaceContainerLow),
     )
 
-    @ParameterizedTest
-    @ValueSource(booleans = [false, true])
-    fun `text colours reach 4,5 to 1 and outlines 3 to 1`(dark: Boolean) {
-        val scheme = if (dark) DarkColors else LightColors
+    @Test
+    fun `text colours reach 4,5 to 1 and outlines 3 to 1`() {
+        val scheme = DarkColors
         val failures = scheme.textPairs().mapNotNull { (name, pair) ->
             ratio(pair.first, pair.second).takeIf { it < 4.5 }?.let { "$name: %.2f".format(it) }
         } + listOfNotNull(
             ratio(scheme.outline, scheme.surface).takeIf { it < 3.0 }?.let { "outline / surface: %.2f".format(it) },
         )
-        assertTrue(failures.isEmpty(), "Contrast below WCAG AA (dark=$dark): $failures")
+        assertTrue(failures.isEmpty(), "Contrast below WCAG AA: $failures")
+    }
+
+    @Test
+    fun `generated text on the sand surface reaches 4,5 to 1`() {
+        val colors = DarkCitoyenColors
+        val value = ratio(colors.onGeneratedContainer, colors.generatedContainer)
+        assertTrue(value >= 4.5, "onGeneratedContainer / generatedContainer: %.2f".format(value))
     }
 }

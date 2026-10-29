@@ -20,4 +20,6 @@ object CitoyenIcons {
     @DrawableRes val Search = R.drawable.core_designsystem_ic_search
 
     @DrawableRes val Clear = R.drawable.core_designsystem_ic_close
+
+    @DrawableRes val ChevronRight = R.drawable.core_designsystem_ic_chevron_right
 }
