@@ -31,6 +31,9 @@ jobs:
     timeout-minutes: 300
     permissions:
       contents: write
+    env:
+      # Progress lines reach the log as they happen (three runs were killed without any).
+      PYTHONUNBUFFERED: '1'
 
     steps:
       - uses: actions/checkout@v7
@@ -39,6 +42,11 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+
+      - name: Free disk space (unused preinstalled toolchains; the Android SDK is kept)
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          df -h /
 
       - name: Install the pipeline
         working-directory: pipeline
@@ -80,9 +88,38 @@ jobs:
           key: legi-v1-${{ github.run_id }}
           restore-keys: legi-v1-
 
+      - name: Restore settled European Parliament files (past years and sittings)
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            pipeline/cache/pe/decisions
+            pipeline/cache/pe/meetings-*
+          key: pe-v1-${{ github.run_id }}
+          restore-keys: pe-v1-
+
       - name: Fetch official sources (a failing source is reported and left out)
         working-directory: pipeline
-        run: python -m citoyen_pipeline fetch --inputs inputs --cache cache --keep-going
+        # Hard limit: the European Parliament comes last, so stopping here only leaves out some of its
+        # votes (reported in report.json, fetched by a later run); the packs are still built.
+        run: |
+          timeout --signal=INT 50m python -m citoyen_pipeline fetch --inputs inputs --cache cache --keep-going \
+            || echo "Fetch stopped (exit $?): the sources not downloaded are reported by the build."
+
+      - name: Disk use after fetch
+        if: always()
+        run: |
+          df -h /
+          du -sh pipeline/cache/* 2>/dev/null || true
+
+      # Saved even when a later step fails, so the next run starts from what was downloaded.
+      - name: Save settled European Parliament files
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            pipeline/cache/pe/decisions
+            pipeline/cache/pe/meetings-*
+          key: pe-v1-${{ github.run_id }}
 
       - name: Build, sign and check as the app will
         working-directory: pipeline

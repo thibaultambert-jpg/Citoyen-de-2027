@@ -24,7 +24,8 @@ correspondants des sections 3 à 13 ; les principes du §2 restent inchangés :
 - écrans abandonnés : calendrier officiel, « Comment voter », résultats 2017 et 2022 ;
 - parrainages affichés sur la fiche candidat ;
 - nom « Citoyen de 2027 » et identifiant `fr.citoyende2027` conservés ; pas d’avis de nouvelle
-  version dans l’app.
+  version dans l’app ;
+- pas de drapeau de période de réserve électorale (§10, retiré le 29/10/2026).
 
 ## 2. Principes non négociables (priment sur toute autre instruction)
 

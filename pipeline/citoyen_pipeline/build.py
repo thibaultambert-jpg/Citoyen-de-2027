@@ -159,8 +159,6 @@ def write_core_pack(pack: CorePack, version: str, path: Path) -> None:
         }
         if pack.rag_config is not None:
             meta["rag_config"] = pack.rag_config
-        if pack.reserve is not None:
-            meta["reserve"] = pack.reserve
         db.executemany("INSERT INTO meta VALUES (?, ?)", sorted(meta.items()))
         db.executemany(
             "INSERT INTO sources VALUES (?, ?, ?, ?, ?)",

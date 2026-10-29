@@ -14,6 +14,7 @@ Structure verified on 2026-10-21 with tools/probe_sources.py:
 from __future__ import annotations
 
 import json
+import time
 from datetime import UTC, datetime
 
 from citoyen_pipeline.fetch import Cache
@@ -27,6 +28,15 @@ LICENSE = "CC BY 4.0 (Parlement européen)"
 PAGE = 500
 # Roll-call list -> position name as published (suffix of the list property).
 POSITIONS = {"had_voter_favor": "favor", "had_voter_against": "against", "had_voter_abstention": "abstention"}
+
+
+# Consecutive refused sittings after which the rest of a year is skipped for this run.
+MAX_FAILED_SITTINGS = 5
+# Time after which the votes of the remaining sittings are left out for this run (reported, tried
+# again at the next run): the API can be very slow, and a CI run must end.
+DECISIONS_BUDGET_SECONDS = 45 * 60
+# Days after which the published votes of a sitting are taken as final and kept between runs.
+SETTLED_DAYS = 60
 
 
 def mep_url(mep_id: str) -> str:
@@ -74,11 +84,11 @@ def _years(mandates: list[dict]) -> set[int]:
     return years
 
 
-def _pages(cache: Cache, prefix: str, url_for) -> list[dict]:
+def _pages(cache: Cache, prefix: str, url_for, refresh: bool = False, stable: bool = False) -> list[dict]:
     items, offset = [], 0
     while True:
         key = f"{prefix}-{offset}.json"
-        cache.fetch(key, url_for(offset))
+        cache.fetch(key, url_for(offset), refresh=refresh, stable=stable)
         page = as_list(_load(cache, key).get("data"))
         items.extend(page)
         if len(page) < PAGE:
@@ -95,20 +105,45 @@ def fetch(cache: Cache, identities: list[Identity]) -> None:
             years |= _years(_mandates(mep))
             # /speeches?person-id= : plenary interventions (verified 2026-10-21, ELI event ids).
             _pages(cache, f"pe/speeches-{identity.pe_id}", lambda o, m=identity.pe_id: speeches_url(m, o))
+    today = datetime.now(UTC).date()
+    stop_at = time.monotonic() + DECISIONS_BUDGET_SECONDS
     for year in sorted(years):
-        for meeting in _pages(cache, f"pe/meetings-{year}", lambda offset, y=year: meetings_url(y, offset)):
+        # Past years and sittings no longer change: kept between CI runs (see Cache.fetch).
+        past_year = year < today.year
+        meetings = _pages(
+            cache,
+            f"pe/meetings-{year}",
+            lambda offset, y=year: meetings_url(y, offset),
+            refresh=not past_year,
+            stable=past_year,
+        )
+        failures = 0
+        for meeting in meetings:
             meeting_id = text(meeting.get("activity_id")) or ""
-            if meeting_id.startswith("MTG-PL-"):
-                try:
-                    _pages(
-                        cache,
-                        f"pe/decisions/{meeting_id}",
-                        lambda offset, m=meeting_id: decisions_url(m, offset),
-                    )
-                except RuntimeError as error:
-                    # Some older sittings are refused by the API (seen for 2014 in CI, 2026-10-28):
-                    # their votes are left out and listed in report.json, the rest is kept.
-                    print(f"European Parliament: {error}")
+            if not meeting_id.startswith("MTG-PL-"):
+                continue
+            if time.monotonic() > stop_at:
+                print(f"European Parliament: {year}: time budget spent, remaining sittings skipped")
+                break
+            if failures >= MAX_FAILED_SITTINGS:
+                # The API refuses this year (or is down): the remaining sittings are left out too,
+                # listed in report.json, and tried again at the next run.
+                print(f"European Parliament: {year}: {MAX_FAILED_SITTINGS} refused in a row, rest skipped")
+                break
+            sitting = parse_date(meeting_id.removeprefix("MTG-PL-"))
+            try:
+                _pages(
+                    cache,
+                    f"pe/decisions/{meeting_id}",
+                    lambda offset, m=meeting_id: decisions_url(m, offset),
+                    stable=sitting is not None and (today - sitting).days > SETTLED_DAYS,
+                )
+                failures = 0
+            except RuntimeError as error:
+                # Some older sittings are refused by the API (seen for 2014 in CI, 2026-10-28):
+                # their votes are left out and listed in report.json, the rest is kept.
+                print(f"European Parliament: {error}")
+                failures += 1
 
 
 def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
@@ -127,6 +162,7 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
                 source_person_id=mep_id,
                 family_name=text(mep.get("familyName")) or "",
                 birth_date=parse_date(mep.get("bday")),
+                given_name=text(mep.get("givenName")),
             )
         )
         source = Source(

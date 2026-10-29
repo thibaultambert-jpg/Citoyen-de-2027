@@ -6,12 +6,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import fr.citoyende2027.core.data.repository.AppInfoRepository
-import fr.citoyende2027.core.data.repository.CandidatesRepository
 import fr.citoyende2027.core.data.repository.InstalledPack
 import fr.citoyende2027.core.data.repository.PackUpdate
 import fr.citoyende2027.core.data.repository.TextScale
 import fr.citoyende2027.core.model.DataPackInfo
-import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.llm.assistant.Assistant
 import fr.citoyende2027.llm.assistant.AssistantStatus
 import java.io.File
@@ -35,7 +33,6 @@ data class AboutUiState(
     val history: List<PackUpdate> = emptyList(),
     val textScale: TextScale = TextScale.SYSTEM,
     val assistant: AssistantStatus? = null,
-    val reserve: ReservePeriod = ReservePeriod.NONE,
     val syncRequested: Boolean = false,
     val storage: StorageUse = StorageUse(0, 0),
 ) {
@@ -46,7 +43,6 @@ data class AboutUiState(
 class AboutViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val appInfo: AppInfoRepository,
-    candidates: CandidatesRepository,
     private val assistant: Assistant,
 ) : ViewModel() {
     private val syncRequested = MutableStateFlow(false)
@@ -56,9 +52,9 @@ class AboutViewModel @Inject constructor(
         appInfo.observeHistory(),
         appInfo.textScale,
         assistant.status.onStart<AssistantStatus?> { emit(null) },
-        combine(candidates.observeReserve(), syncRequested, ::Pair),
-    ) { packs, history, scale, assistantStatus, (reserve, requested) ->
-        AboutUiState(packs, history, scale, assistantStatus, reserve, requested, storage())
+        syncRequested,
+    ) { packs, history, scale, assistantStatus, requested ->
+        AboutUiState(packs, history, scale, assistantStatus, requested, storage())
     }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AboutUiState())
 
     fun setTextScale(scale: TextScale) {

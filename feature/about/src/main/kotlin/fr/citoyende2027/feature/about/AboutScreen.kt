@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -69,7 +68,6 @@ internal fun AboutContent(state: AboutUiState, onOpenPage: (InfoPage) -> Unit, m
                 .padding(16.dp)
                 .semantics { heading() },
         )
-        if (state.reserve.hideCampaignContent) ReserveCard()
         InfoPage.entries.forEach { page ->
             ListItem(
                 headlineContent = { Text(stringResource(page.title)) },
@@ -90,13 +88,6 @@ internal fun AboutContent(state: AboutUiState, onOpenPage: (InfoPage) -> Unit, m
                 modifier = Modifier.padding(16.dp),
             )
         }
-    }
-}
-
-@Composable
-internal fun ReserveCard() {
-    Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Text(stringResource(R.string.feature_about_reserve), modifier = Modifier.padding(12.dp))
     }
 }
 

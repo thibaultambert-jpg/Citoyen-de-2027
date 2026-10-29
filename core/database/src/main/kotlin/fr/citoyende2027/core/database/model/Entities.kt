@@ -62,9 +62,6 @@ data class DataPackEntity(
     @ColumnInfo(name = "is_fictional") val isFictional: Boolean,
     /** Retrieval thresholds shipped in the `core` pack (null for other packs). */
     @ColumnInfo(name = "rag_config") val ragConfig: String? = null,
-    /** Reserve period of the `core` pack (AGENTS.md §10): campaign content hidden while true. */
-    @ColumnInfo(name = "hide_campaign_content") val hideCampaignContent: Boolean = false,
-    @ColumnInfo(name = "reserve_since") val reserveSince: LocalDate? = null,
     @ColumnInfo(name = "inclusion_policy_date") val inclusionPolicyDate: LocalDate? = null,
 )
 

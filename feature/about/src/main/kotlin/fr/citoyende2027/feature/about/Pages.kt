@@ -57,7 +57,6 @@ private fun megabytes(bytes: Long) = String.format(Locale.FRANCE, "%.1f", bytes 
 
 @Composable
 internal fun DataPage(state: AboutUiState, onCheckForUpdates: () -> Unit) {
-    if (state.reserve.hideCampaignContent) ReserveCard()
     Heading(stringResource(R.string.feature_about_data_installed))
     if (state.packs.isEmpty()) Text(stringResource(R.string.feature_about_data_none))
     state.packs.forEach { pack ->

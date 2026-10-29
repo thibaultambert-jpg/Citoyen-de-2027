@@ -3,7 +3,11 @@
 CSV files (';' separated, UTF-8 with BOM) verified on 2026-10-21 with tools/probe_sources.py. They hold
 current mandates only, without any identifier: a row is attached to a candidate only when family
 name, given name AND birth date all match the hand-validated identity (AGENTS.md §7.2).
-Parliamentary files (deputies, senators, MEPs) are skipped: AN, Sénat and PE data are authoritative.
+Parliamentary files (deputies, senators, MEPs) give no mandate: AN, Sénat and PE data are
+authoritative. The MEP file is read for one thing only: the European Parliament API does not publish
+every birth date, and a row of that file matching an identity on names and birth date confirms it
+(BirthRecord, see identity.py). TODO(verify): the MEP file is assumed to use the same column names as
+the other RNE files; if not, nothing is confirmed and report.json still lists the identity.
 """
 
 from __future__ import annotations
@@ -14,7 +18,7 @@ import json
 
 from citoyen_pipeline.fetch import Cache
 from citoyen_pipeline.identity import normalize_name
-from citoyen_pipeline.model import Body, Identity, Mandate, Source, SourceExtract
+from citoyen_pipeline.model import BirthRecord, Body, Identity, Mandate, Source, SourceExtract
 from citoyen_pipeline.sources.common import parse_date, short_hash
 
 LICENSE = "Licence Ouverte v2.0 (Etalab)"
@@ -32,6 +36,10 @@ ROLES = {
     "conseillers-des-francais-de-letranger-cons": "conseiller des Français de l'étranger",
     "assemblee-des-francais-de-letranger-afe": "membre de l'Assemblée des Français de l'étranger",
 }
+# File-name marker of the MEP file, read for birth dates only.
+MEP_MARKER = "parlement-europeen"
+MEP_KEY = "rne/parlement-europeen.csv"
+
 # Most specific place first. Header names are compared after whitespace normalisation.
 PLACE_COLUMNS = (
     "Libellé de la commune",
@@ -54,6 +62,8 @@ def fetch(cache: Cache) -> None:
         marker = _marker(url)
         if marker:
             cache.fetch(f"rne/{marker}.csv", url, refresh=True)
+        elif MEP_MARKER in url.rsplit("/", 1)[-1] and url.endswith(".csv"):
+            cache.fetch(MEP_KEY, url, refresh=True)
 
 
 def _marker(url: str) -> str | None:
@@ -81,16 +91,8 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
             license=LICENSE,
         )
         used = False
-        text = cache.path(key).read_bytes().decode("utf-8-sig")
-        for row in csv.DictReader(io.StringIO(text), delimiter=";"):
-            row = {" ".join(k.split()): (v or "").strip() for k, v in row.items() if k}
-            identity = by_person.get(
-                (
-                    normalize_name(row.get("Nom de l'élu", "")),
-                    normalize_name(row.get("Prénom de l'élu", "")),
-                    parse_date(row.get("Date de naissance")),
-                )
-            )
+        for row in _rows(cache, key):
+            identity = by_person.get(_person(row))
             start = parse_date(row.get("Date de début du mandat"))
             if identity is None or start is None:
                 continue
@@ -108,7 +110,37 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
             )
         if used:
             result.sources.append(source)
+    _mep_birth_records(cache, identities, by_person, result)
     return result
+
+
+def _mep_birth_records(cache: Cache, identities, by_person, result: SourceExtract) -> None:
+    if not cache.has(MEP_KEY) or not any(i.pe_id for i in identities):
+        return
+    for row in _rows(cache, MEP_KEY):
+        identity = by_person.get(_person(row))
+        if identity is None or not identity.pe_id:
+            continue
+        result.birth_records.append(
+            BirthRecord(Body.PE, identity.family_name, identity.given_name, identity.birth_date)
+        )
+        result.review.setdefault("RNE rows matching a European Parliament identity", []).append(
+            f"{identity.candidate_id}: birth date {identity.birth_date} listed by the RNE MEP file"
+        )
+
+
+def _rows(cache: Cache, key: str):
+    text = cache.path(key).read_bytes().decode("utf-8-sig")
+    for row in csv.DictReader(io.StringIO(text), delimiter=";"):
+        yield {" ".join(k.split()): (v or "").strip() for k, v in row.items() if k}
+
+
+def _person(row: dict[str, str]):
+    return (
+        normalize_name(row.get("Nom de l'élu", "")),
+        normalize_name(row.get("Prénom de l'élu", "")),
+        parse_date(row.get("Date de naissance")),
+    )
 
 
 def _label(role: str, row: dict[str, str]) -> str:
