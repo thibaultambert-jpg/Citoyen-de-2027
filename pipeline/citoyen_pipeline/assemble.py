@@ -156,6 +156,7 @@ def assemble_packs(
             combined.votes += part.votes
             combined.speeches += part.speeches
             combined.review.update(part.review)
+    combined.votes = _unique_votes(combined.votes, combined.review)
     # Every identifier written by hand must agree with its official source (AGENTS.md §7.2).
     if rejected := identity_problems(identities, combined.people, combined.birth_records):
         if not lenient_identities:
@@ -231,3 +232,22 @@ def _unique(sources):
 def assemble_legal(inputs: Path, cache: Cache, generated_on: date):
     """The legal pack has its own content-based version: it does not change the core version."""
     return legal.assemble(cache, legal.load_inputs(inputs / LEGAL_TEXTS), generated_on)
+
+
+def _unique_votes(votes: list, review: dict[str, list[str]]) -> list:
+    """One vote per (ballot, person): a source may list the same ballot twice (re-published sittings).
+
+    Identical repeats are merged; repeats that disagree on the position are left out and reported,
+    never resolved by a guess (AGENTS.md §2.2).
+    """
+    first: dict[str, object] = {}
+    conflicting: dict[str, set[str]] = {}
+    for vote in votes:
+        kept = first.setdefault(vote.id, vote)
+        if kept.position != vote.position:
+            conflicting.setdefault(vote.id, {kept.position}).add(vote.position)
+    if conflicting:
+        review["votes left out (contradictory positions for the same ballot)"] = [
+            f"{vote_id}: {', '.join(sorted(positions))}" for vote_id, positions in sorted(conflicting.items())
+        ]
+    return [v for vote_id, v in first.items() if vote_id not in conflicting]
