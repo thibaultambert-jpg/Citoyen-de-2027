@@ -2,7 +2,7 @@ package fr.citoyende2027.feature.candidate
 
 import android.content.Context
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
@@ -53,7 +53,7 @@ class CandidateAccessibilityTest {
             CitoyenTheme { CandidateContent(uiState = state(FictionalCandidates.candidateA), onBack = {}) }
         }
         CandidateSheetTab.entries.forEach { tab ->
-            composeRule.onNodeWithText(context.getString(tab.label)).performScrollTo().performClick()
+            composeRule.onAllNodesWithText(context.getString(tab.label))[0].performScrollTo().performClick()
             composeRule.waitForIdle()
             assertEquals("Tab ${tab.name}", emptyList<String>(), composeRule.accessibilityProblems())
         }

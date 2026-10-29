@@ -3,7 +3,9 @@ package fr.citoyende2027.core.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,10 +41,14 @@ fun VoteItem(vote: Vote, modifier: Modifier = Modifier, themeLabels: Map<ThemeId
         vote.ballotType?.let {
             Text(stringResource(R.string.core_ui_vote_type, it), style = MaterialTheme.typography.bodyMedium)
         }
-        Text(
-            text = stringResource(R.string.core_ui_vote_position, positionLabel(vote.positionCategory, vote)),
-            style = MaterialTheme.typography.titleSmall,
-        )
+        // One chip for every position: same colours, same size (AGENTS.md §2.1, §10).
+        Surface(color = MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.extraSmall) {
+            Text(
+                text = stringResource(R.string.core_ui_vote_position, positionLabel(vote.positionCategory, vote)),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            )
+        }
         if (themeLabels.isNotEmpty()) ThemesLine(vote.themes, themeLabels)
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { uriHandler.openUri(vote.ballotUrl) }) {

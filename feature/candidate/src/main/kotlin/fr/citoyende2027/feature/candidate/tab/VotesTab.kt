@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,8 +52,12 @@ internal fun VotesTab(
             )
         }
         items(state.votes, key = { it.id }) { vote ->
-            VoteItem(vote, themeLabels = themeLabels)
-            HorizontalDivider()
+            Card(
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            ) {
+                VoteItem(vote, themeLabels = themeLabels, modifier = Modifier.padding(14.dp))
+            }
         }
     }
 }
@@ -61,7 +65,7 @@ internal fun VotesTab(
 /** Limits of the data, always visible (AGENTS.md §7.3, §10). */
 @Composable
 private fun VotesLimitsNotice() {
-    Card {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
         Text(
             text = stringResource(R.string.feature_candidate_votes_limits),
             style = MaterialTheme.typography.bodyMedium,

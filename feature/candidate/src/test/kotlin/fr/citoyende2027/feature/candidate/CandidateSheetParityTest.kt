@@ -82,15 +82,15 @@ class CandidateSheetParityTest {
         FictionalCandidates.all.forEach { current ->
             candidate = current
             CandidateSheetTab.entries.forEach { tab ->
-                composeRule.onNodeWithText(context.getString(tab.label)).performScrollTo().performClick()
+                composeRule.onAllNodesWithText(context.getString(tab.label))[0].performScrollTo().performClick()
                 composeRule.waitForIdle()
             }
-            composeRule.onNodeWithText(
-                context.getString(CandidateSheetTab.OVERVIEW.label),
-            ).performScrollTo().performClick()
+            composeRule.onAllNodesWithText(context.getString(CandidateSheetTab.OVERVIEW.label))[0]
+                .performScrollTo().performClick()
         }
         candidate = FictionalCandidates.candidateA
-        composeRule.onNodeWithText(context.getString(CandidateSheetTab.PROGRAM.label)).performScrollTo().performClick()
+        composeRule.onAllNodesWithText(context.getString(CandidateSheetTab.PROGRAM.label))[0]
+            .performScrollTo().performClick()
         composeRule.onNodeWithText(context.getString(CoreUiR.string.core_ui_program_status_complete)).assertExists()
     }
 

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,10 +36,14 @@ fun FacetTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     detail: String? = null,
+    description: String? = null,
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.semantics { role = Role.Button },
+        modifier = modifier.semantics {
+            role = Role.Button
+            description?.let { contentDescription = it }
+        },
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
