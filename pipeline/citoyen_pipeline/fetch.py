@@ -136,14 +136,33 @@ def _sidecar(target: Path) -> Path:
     return target.with_name(target.name + ".fetched.json")
 
 
+# A stalled read gives up after SOCKET_TIMEOUT; a response trickling in gives up after DEADLINE (one
+# European Parliament request kept a CI run waiting for 39 minutes on 2026-10-29).
+SOCKET_TIMEOUT = 60
+DEADLINE = 600
+
+
+class DownloadTooSlow(TimeoutError):
+    pass
+
+
 def _download(url: str, attempts: int = 3) -> bytes:
     last_error: Exception | None = None
     for attempt in range(attempts):
         try:
             request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(request, timeout=300) as response:
-                return response.read()
+            with urllib.request.urlopen(request, timeout=SOCKET_TIMEOUT) as response:
+                return _read_before_deadline(response, time.monotonic() + DEADLINE)
         except Exception as error:  # noqa: BLE001 - retried, then re-raised
             last_error = error
             time.sleep(2 * (attempt + 1))
     raise RuntimeError(f"Download failed after {attempts} attempts: {url}") from last_error
+
+
+def _read_before_deadline(response, deadline: float) -> bytes:
+    chunks = []
+    while chunk := response.read1(1 << 16):
+        chunks.append(chunk)
+        if time.monotonic() > deadline:
+            raise DownloadTooSlow(f"still downloading after {DEADLINE} s")
+    return b"".join(chunks)

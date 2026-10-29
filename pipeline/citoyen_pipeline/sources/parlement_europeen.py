@@ -14,6 +14,7 @@ Structure verified on 2026-10-21 with tools/probe_sources.py:
 from __future__ import annotations
 
 import json
+import time
 from datetime import UTC, datetime
 
 from citoyen_pipeline.fetch import Cache
@@ -31,6 +32,9 @@ POSITIONS = {"had_voter_favor": "favor", "had_voter_against": "against", "had_vo
 
 # Consecutive refused sittings after which the rest of a year is skipped for this run.
 MAX_FAILED_SITTINGS = 5
+# Time after which the votes of the remaining sittings are left out for this run (reported, tried
+# again at the next run): the API can be very slow, and a CI run must end.
+DECISIONS_BUDGET_SECONDS = 45 * 60
 # Days after which the published votes of a sitting are taken as final and kept between runs.
 SETTLED_DAYS = 60
 
@@ -102,6 +106,7 @@ def fetch(cache: Cache, identities: list[Identity]) -> None:
             # /speeches?person-id= : plenary interventions (verified 2026-10-21, ELI event ids).
             _pages(cache, f"pe/speeches-{identity.pe_id}", lambda o, m=identity.pe_id: speeches_url(m, o))
     today = datetime.now(UTC).date()
+    stop_at = time.monotonic() + DECISIONS_BUDGET_SECONDS
     for year in sorted(years):
         # Past years and sittings no longer change: kept between CI runs (see Cache.fetch).
         past_year = year < today.year
@@ -117,6 +122,9 @@ def fetch(cache: Cache, identities: list[Identity]) -> None:
             meeting_id = text(meeting.get("activity_id")) or ""
             if not meeting_id.startswith("MTG-PL-"):
                 continue
+            if time.monotonic() > stop_at:
+                print(f"European Parliament: {year}: time budget spent, remaining sittings skipped")
+                break
             if failures >= MAX_FAILED_SITTINGS:
                 # The API refuses this year (or is down): the remaining sittings are left out too,
                 # listed in report.json, and tried again at the next run.

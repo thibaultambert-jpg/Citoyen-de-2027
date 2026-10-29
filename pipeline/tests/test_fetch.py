@@ -60,3 +60,25 @@ def test_european_parliament_skips_the_rest_of_a_year_after_refused_sittings(tmp
         Cache(tmp_path), [Identity("fictif-a", "Exemple", "Alpha", datetime(1970, 1, 1).date(), pe_id="1")]
     )
     assert sum("/decisions" in url for url in asked) == pe.MAX_FAILED_SITTINGS
+
+
+def test_a_trickling_response_is_abandoned_at_the_deadline(monkeypatch):
+    import pytest
+
+    class Trickle:
+        def read1(self, size):
+            return b"x"
+
+    clock = iter(range(0, 10_000, 100))
+    monkeypatch.setattr(fetch_module.time, "monotonic", lambda: next(clock))
+    with pytest.raises(fetch_module.DownloadTooSlow):
+        fetch_module._read_before_deadline(Trickle(), deadline=fetch_module.DEADLINE)
+
+
+def test_a_complete_response_is_read_in_full():
+    import io
+
+    assert (
+        fetch_module._read_before_deadline(io.BufferedReader(io.BytesIO(b"abc" * 50_000)), 1e18)
+        == b"abc" * 50_000
+    )
