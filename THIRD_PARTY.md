@@ -17,6 +17,7 @@ chaque ajout est justifié ici. Versions : `gradle/libs.versions.toml`.
 | Dagger Hilt, AndroidX Hilt Navigation Compose | Apache-2.0 | Injection de dépendances. |
 | Material Symbols (google/material-design-icons), 8 icônes en vecteurs XML | Apache-2.0 | Icônes de navigation, copiées dans `core/designsystem/src/main/res/drawable` (pas de dépendance à `material-icons-extended`). |
 
+| Roboto Flex (Type Network), `core/designsystem/src/main/res/font/roboto_flex.ttf` | SIL OFL 1.1 | Police variable des titres et du texte, embarquée pour le hors ligne. Licence hors règle Apache/MIT/BSD : acceptée par l’utilisateur (usage personnel, §1 bis). Texte de licence : `ROBOTO_FLEX_OFL.txt`. |
 | AndroidX Room (runtime, ktx) | Apache-2.0 | Base locale SQLite des packs (J1). |
 | AndroidX DataStore (preferences) | Apache-2.0 | Préférences locales (ordre des candidats). |
 
