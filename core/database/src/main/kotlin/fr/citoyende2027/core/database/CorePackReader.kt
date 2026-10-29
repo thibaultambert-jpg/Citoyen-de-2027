@@ -22,7 +22,6 @@ import fr.citoyende2027.core.model.ProgramChunk
 import fr.citoyende2027.core.model.ProgramDocument
 import fr.citoyende2027.core.model.ProgramStatus
 import fr.citoyende2027.core.model.ProgramsPackContent
-import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.SpeechKind
@@ -166,7 +165,6 @@ class CorePackReader @Inject constructor() {
                 themes = themes,
                 sponsorships = sponsorships,
                 ragConfig = meta["rag_config"],
-                reserve = ReservePeriod.parse(meta["reserve"]),
                 inclusionPolicyDate = meta["inclusion_policy_date"]?.let(LocalDate::parse),
             )
         } finally {

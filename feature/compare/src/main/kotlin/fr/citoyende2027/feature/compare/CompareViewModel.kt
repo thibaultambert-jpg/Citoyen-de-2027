@@ -9,7 +9,6 @@ import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.CandidateOrder
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.ProgramDocument
-import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.Theme
 import fr.citoyende2027.core.model.ThemeFacts
 import fr.citoyende2027.core.model.ThemeId
@@ -37,8 +36,6 @@ data class CompareUiState(
     /** One column per selected candidate, alphabetical, same template; empty until 2 are chosen. */
     val columns: List<CandidateColumn> = emptyList(),
     val dataInfo: DataPackInfo? = null,
-    /** Reserve period: programme excerpts are replaced by a notice, votes stay (AGENTS.md §10). */
-    val reserve: ReservePeriod = ReservePeriod.NONE,
 ) {
     val canSelectMore: Boolean get() = selected.size < MAX_CANDIDATES
 
@@ -77,8 +74,8 @@ class CompareViewModel @Inject constructor(private val repository: CandidatesRep
         themes,
         selection,
         columns,
-        combine(repository.observeCorePackInfo(), repository.observeReserve(), ::Pair),
-    ) { all, themes, s, columns, (info, reserve) ->
+        repository.observeCorePackInfo(),
+    ) { all, themes, s, columns, info ->
         val comparable = themes.filterNot { it.id.isUnknown }.alphabetical()
         CompareUiState(
             candidates = all.orderedBy(CandidateOrder.Alphabetical),
@@ -87,7 +84,6 @@ class CompareViewModel @Inject constructor(private val repository: CandidatesRep
             theme = comparable.firstOrNull { it.id == s.theme },
             columns = columns,
             dataInfo = info,
-            reserve = reserve,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CompareUiState())
 

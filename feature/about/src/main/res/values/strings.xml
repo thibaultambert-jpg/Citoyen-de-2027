@@ -87,7 +87,4 @@
     <string name="feature_about_s_each">Chaque information affichée renvoie à sa source exacte (adresse, date de récupération, licence) par son bouton « Source ».</string>
     <string name="feature_about_s_software">Logiciels</string>
     <string name="feature_about_s_software_text">Application écrite en Kotlin avec Jetpack Compose et les bibliothèques AndroidX (Apache-2.0). Assistant IA : llama.cpp et ggml (MIT), modèle Ministral 3 3B Instruct (Apache-2.0), téléchargé à la demande. Vérification des signatures : Tink (Apache-2.0). La liste complète figure dans le fichier THIRD_PARTY.md du code source.</string>
-
-    <!-- Electoral reserve period -->
-    <string name="feature_about_reserve">Période de réserve électorale : les contenus de campagne (programmes, prises de parole) sont masqués. Les mandats, les votes enregistrés et les textes juridiques restent consultables.</string>
 </resources>

@@ -4,7 +4,6 @@ import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.model.CandidateProgram
 import fr.citoyende2027.core.model.DataPackInfo
 import fr.citoyende2027.core.model.Mandate
-import fr.citoyende2027.core.model.ReservePeriod
 import fr.citoyende2027.core.model.SourceRef
 import fr.citoyende2027.core.model.Speech
 import fr.citoyende2027.core.model.Sponsorships
@@ -30,8 +29,6 @@ sealed interface CandidateUiState {
         val themes: List<Theme> = emptyList(),
         /** All votes, unfiltered (side by side with the programme). */
         val allVotes: List<Vote> = emptyList(),
-        /** Reserve period: programme, speeches and their side-by-side view are replaced by a notice. */
-        val reserve: ReservePeriod = ReservePeriod.NONE,
         /** Published sponsorships (parrainages); null when the installed data has none. */
         val sponsorships: Sponsorships? = null,
     ) : CandidateUiState {

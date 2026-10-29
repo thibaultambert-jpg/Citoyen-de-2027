@@ -32,8 +32,6 @@ class CorePackStore @Inject internal constructor(private val dao: CorePackDao) {
         dao.replaceCorePack(
             pack = core.info.asEntity().copy(
                 ragConfig = core.ragConfig,
-                hideCampaignContent = core.reserve.hideCampaignContent,
-                reserveSince = core.reserve.since,
                 inclusionPolicyDate = core.inclusionPolicyDate,
             ),
             candidates = core.candidates.map { it.asEntity() },

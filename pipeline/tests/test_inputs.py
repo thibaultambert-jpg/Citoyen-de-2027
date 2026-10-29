@@ -52,18 +52,3 @@ def test_rag_config_is_validated_and_compacted(tmp_path, fixtures):
     bad.write_text('{"top_k": 0, "pool_size": 30, "rrf_k": 60, "min_matched_terms": 1, "min_coverage": 2}')
     with pytest.raises(InputError):
         load_rag_config(bad)
-
-
-def test_reserve_flag_is_validated_and_compacted(tmp_path, fixtures):
-    import json
-
-    import pytest
-
-    from citoyen_pipeline.inputs import InputError, load_reserve
-
-    reserve = json.loads(load_reserve(fixtures / "reserve.json"))
-    assert reserve == {"hide_campaign_content": False, "since": None}
-    bad = tmp_path / "reserve.json"
-    bad.write_text('{"hide_campaign_content": "oui"}')
-    with pytest.raises(InputError):
-        load_reserve(bad)

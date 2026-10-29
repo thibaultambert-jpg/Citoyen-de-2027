@@ -16,7 +16,6 @@ from citoyen_pipeline.inputs import (
     load_candidates,
     load_identities,
     load_rag_config,
-    load_reserve,
     load_sponsorship_names,
 )
 from citoyen_pipeline.model import CorePack, Identity, ProgramsPack, SourceExtract, ThemeTag
@@ -141,12 +140,13 @@ def assemble_packs(
                 continue
             combined.sources += part.sources
             combined.people += part.people
+            combined.birth_records += part.birth_records
             combined.mandates += part.mandates
             combined.votes += part.votes
             combined.speeches += part.speeches
             combined.review.update(part.review)
     # Every identifier written by hand must agree with its official source (AGENTS.md §7.2).
-    if rejected := identity_problems(identities, combined.people):
+    if rejected := identity_problems(identities, combined.people, combined.birth_records):
         if not lenient_identities:
             lines = [p for found in rejected.values() for p in found]
             raise IdentityMismatch("Identity links rejected:\n" + "\n".join(f"- {p}" for p in lines))
@@ -188,7 +188,6 @@ def assemble_packs(
         themes=taxonomy.all_themes,
         vote_themes=vote_themes,
         rag_config=load_rag_config(inputs / "rag_config.json"),
-        reserve=load_reserve(inputs / "reserve.json"),
         sponsorships=sponsorship_counts,
     )
     return pack, programs_pack, {**combined.review, **programs_review}
@@ -203,7 +202,6 @@ def inputs_digest(inputs: Path, cache: Cache) -> str:
         "theme_overrides.yaml",
         str(PROGRAMS_MANIFEST),
         "rag_config.json",
-        "reserve.json",
         SPONSORSHIPS,
     )
     for path in [*(inputs / name for name in names), cache.root / "fetch_log.json"]:

@@ -127,6 +127,7 @@ def extract(cache: Cache, identities: list[Identity]) -> SourceExtract:
                 source_person_id=mep_id,
                 family_name=text(mep.get("familyName")) or "",
                 birth_date=parse_date(mep.get("bday")),
+                given_name=text(mep.get("givenName")),
             )
         )
         source = Source(
