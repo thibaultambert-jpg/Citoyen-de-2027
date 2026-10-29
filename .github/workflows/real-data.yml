@@ -99,7 +99,11 @@ jobs:
 
       - name: Fetch official sources (a failing source is reported and left out)
         working-directory: pipeline
-        run: python -m citoyen_pipeline fetch --inputs inputs --cache cache --keep-going
+        # Hard limit: the European Parliament comes last, so stopping here only leaves out some of its
+        # votes (reported in report.json, fetched by a later run); the packs are still built.
+        run: |
+          timeout --signal=INT 50m python -m citoyen_pipeline fetch --inputs inputs --cache cache --keep-going \
+            || echo "Fetch stopped (exit $?): the sources not downloaded are reported by the build."
 
       - name: Disk use after fetch
         if: always()

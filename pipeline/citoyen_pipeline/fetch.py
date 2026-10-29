@@ -117,10 +117,13 @@ class Cache:
 
     def record(self, entry: Fetched) -> None:
         self._log[entry.key] = entry
-        self._log_path.write_text(
+        # Written aside then renamed: a fetch stopped by a CI time limit never leaves a truncated log.
+        partial = self._log_path.with_name(self._log_path.name + ".part")
+        partial.write_text(
             json.dumps({k: asdict(v) for k, v in sorted(self._log.items())}, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        partial.replace(self._log_path)
 
     def put(self, key: str, url: str, body: bytes, retrieved_on: str) -> Fetched:
         """Stores content obtained elsewhere (tests, manual imports) with the same bookkeeping."""

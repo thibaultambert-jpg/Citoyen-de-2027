@@ -71,17 +71,26 @@ ADAPTER_ID_FIELDS = {
 }
 
 
+SLOW_ADAPTERS = ("parlement_europeen",)
+
+
 def fetch_all(inputs: Path, cache: Cache, keep_going: bool = False) -> list[str]:
     """With [keep_going] (personal use), a source that cannot be downloaded is reported and left out."""
     _, candidates, _, identities = load_inputs(inputs)
     used = [a for a in ADAPTERS if a.needed(identities)]
-    for adapter in used:
-        try:
-            adapter.fetch(cache, identities)
-        except Exception as error:  # noqa: BLE001 - reported, the other sources go on
-            if not keep_going:
-                raise
-            print(f"SOURCE LEFT OUT: {adapter.name}: {type(error).__name__}: {error}")
+
+    def fetch_adapters(adapters) -> None:
+        for adapter in adapters:
+            try:
+                adapter.fetch(cache, identities)
+            except Exception as error:  # noqa: BLE001 - reported, the other sources go on
+                if not keep_going:
+                    raise
+                print(f"SOURCE LEFT OUT: {adapter.name}: {type(error).__name__}: {error}", flush=True)
+
+    # The European Parliament API is by far the slowest source (thousands of requests, sometimes
+    # stalled for hours): it comes last, so that a CI time limit only cuts some of its votes.
+    fetch_adapters([a for a in used if a.name not in SLOW_ADAPTERS])
     entries = programs.load_manifest(inputs / PROGRAMS_MANIFEST, {c.id for c in candidates})
     programs.fetch(cache, entries)
     legal_inputs = legal.load_inputs(inputs / LEGAL_TEXTS)
@@ -89,6 +98,8 @@ def fetch_all(inputs: Path, cache: Cache, keep_going: bool = False) -> list[str]
     dataset, _ = load_sponsorship_names(inputs / SPONSORSHIPS, {c.id for c in candidates})
     if dataset:
         sponsorships.fetch(cache, dataset)
+    print("All sources but the European Parliament fetched.", flush=True)
+    fetch_adapters([a for a in used if a.name in SLOW_ADAPTERS])
     return (
         [a.name for a in used]
         + (["programs"] if entries else [])
