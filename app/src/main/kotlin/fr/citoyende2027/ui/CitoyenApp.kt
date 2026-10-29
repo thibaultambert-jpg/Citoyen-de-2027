@@ -41,6 +41,7 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
     // navigationSuiteItems is not a composable scope: resolve labels beforehand.
     val labels = TopLevelDestination.entries.associateWith { stringResource(it.label) }
 
+    val openInfo = { navController.navigate(AboutRoute) { launchSingleTop = true } }
     val barColor = MaterialTheme.colorScheme.surfaceContainerLow
     NavigationSuiteScaffold(
         navigationSuiteColors = NavigationSuiteDefaults.colors(
@@ -72,15 +73,16 @@ fun CitoyenApp(navController: NavHostController = rememberNavController()) {
             composable<CandidatesRoute> {
                 CandidatesHome(
                     onCandidateClick = navController::navigateToCandidate,
-                    onInfoClick = { navController.navigate(AboutRoute) { launchSingleTop = true } },
+                    onInfoClick = openInfo,
                 )
             }
             candidateScreen(onBack = { navController.popBackStack() })
-            compareScreen()
-            askScreen()
+            compareScreen(onInfoClick = openInfo)
+            askScreen(onInfoClick = openInfo)
             institutionsScreen(
                 onOpenText = navController::navigateToLegalText,
                 onBack = { navController.popBackStack() },
+                onInfoClick = openInfo,
             )
             aboutScreen(
                 onOpenPage = navController::navigateToInfoPage,

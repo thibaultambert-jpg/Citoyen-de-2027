@@ -51,6 +51,7 @@ import fr.citoyende2027.core.model.CandidateOrder
 import fr.citoyende2027.core.ui.CandidateStatusText
 import fr.citoyende2027.core.ui.CoverageGlyphRow
 import fr.citoyende2027.core.ui.DataDateBanner
+import fr.citoyende2027.core.ui.InfoActionButton
 import java.text.Normalizer
 
 /**
@@ -97,11 +98,7 @@ internal fun CandidatesContent(
             title = {
                 Text(stringResource(R.string.feature_candidates_title), modifier = Modifier.semantics { heading() })
             },
-            actions = {
-                IconButton(onClick = onInfoClick) {
-                    Icon(painterResource(CitoyenIcons.About), stringResource(R.string.feature_candidates_info))
-                }
-            },
+            actions = { InfoActionButton(onInfoClick) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,

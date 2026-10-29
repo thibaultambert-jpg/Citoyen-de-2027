@@ -38,14 +38,19 @@ import fr.citoyende2027.core.model.CandidateId
 import fr.citoyende2027.core.model.ThemeId
 import fr.citoyende2027.core.ui.DataDateBanner
 import fr.citoyende2027.core.ui.DropdownFilterChip
+import fr.citoyende2027.core.ui.InfoActionButton
 import fr.citoyende2027.core.ui.ProgramExcerptCard
 import fr.citoyende2027.core.ui.ProgramStatusText
 import fr.citoyende2027.core.ui.VoteItem
 
 @Composable
-internal fun CompareScreen(modifier: Modifier = Modifier, viewModel: CompareViewModel = hiltViewModel()) {
+internal fun CompareScreen(
+    onInfoClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: CompareViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    CompareContent(uiState, viewModel::toggleCandidate, viewModel::selectTheme, modifier)
+    CompareContent(uiState, viewModel::toggleCandidate, viewModel::selectTheme, modifier, onInfoClick)
 }
 
 /** Width from which the candidate columns sit side by side instead of scrolling sideways. */
@@ -61,6 +66,7 @@ internal fun CompareContent(
     onToggleCandidate: (CandidateId) -> Unit,
     onSelectTheme: (ThemeId?) -> Unit,
     modifier: Modifier = Modifier,
+    onInfoClick: () -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Column(modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)) {
@@ -68,6 +74,7 @@ internal fun CompareContent(
             title = {
                 Text(stringResource(R.string.feature_compare_title), modifier = Modifier.semantics { heading() })
             },
+            actions = { InfoActionButton(onInfoClick) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,

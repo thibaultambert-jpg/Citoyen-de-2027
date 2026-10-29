@@ -25,6 +25,7 @@
     <string name="core_ui_source_license">Licence : %1$s</string>
     <string name="core_ui_source_pack_version">Version des données : %1$s</string>
     <string name="core_ui_close">Fermer</string>
+    <string name="core_ui_info_action">Infos et réglages</string>
     <string name="core_ui_source_open">Ouvrir la source officielle</string>
 
     <string name="core_ui_body_an">Assemblée nationale</string>

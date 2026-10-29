@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object CompareRoute
 
-fun NavGraphBuilder.compareScreen() {
+fun NavGraphBuilder.compareScreen(onInfoClick: () -> Unit) {
     composable<CompareRoute> {
-        CompareScreen()
+        CompareScreen(onInfoClick = onInfoClick)
     }
 }

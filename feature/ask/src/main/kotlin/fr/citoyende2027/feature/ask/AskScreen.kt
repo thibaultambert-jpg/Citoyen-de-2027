@@ -51,6 +51,7 @@ import fr.citoyende2027.core.data.repository.AskAnswer
 import fr.citoyende2027.core.data.repository.LegalPassage
 import fr.citoyende2027.core.model.Candidate
 import fr.citoyende2027.core.ui.DropdownFilterChip
+import fr.citoyende2027.core.ui.InfoActionButton
 import fr.citoyende2027.core.ui.MandateItem
 import fr.citoyende2027.core.ui.ProgramExcerptCard
 import fr.citoyende2027.core.ui.SourceButton
@@ -60,7 +61,11 @@ import fr.citoyende2027.rag.RefusalCategory
 import fr.citoyende2027.rag.answer.GroundedAnswer
 
 @Composable
-internal fun AskScreen(modifier: Modifier = Modifier, viewModel: AskViewModel = hiltViewModel()) {
+internal fun AskScreen(
+    onInfoClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: AskViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // The model file can also be copied from the device (Storage Access Framework), then verified.
     val modelPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -82,6 +87,7 @@ internal fun AskScreen(modifier: Modifier = Modifier, viewModel: AskViewModel = 
             onExtractsOnly = viewModel::showExtractsOnly,
         ),
         modifier = modifier,
+        onInfoClick = onInfoClick,
         footer = { BenchmarkSection() },
     )
 }
@@ -96,12 +102,14 @@ internal fun AskContent(
     onSubmit: (String) -> Unit,
     actions: AssistantActions,
     modifier: Modifier = Modifier,
+    onInfoClick: () -> Unit = {},
     footer: @Composable () -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Column(modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)) {
         LargeTopAppBar(
             title = { Text(stringResource(R.string.feature_ask_title), modifier = Modifier.semantics { heading() }) },
+            actions = { InfoActionButton(onInfoClick) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,

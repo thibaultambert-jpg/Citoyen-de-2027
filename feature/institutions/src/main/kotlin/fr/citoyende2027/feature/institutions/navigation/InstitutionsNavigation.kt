@@ -22,9 +22,13 @@ data class LegalTextRoute(val textId: String, val articleId: String? = null) {
 
 fun NavController.navigateToLegalText(textId: String, articleId: String?) = navigate(LegalTextRoute(textId, articleId))
 
-fun NavGraphBuilder.institutionsScreen(onOpenText: (textId: String, articleId: String?) -> Unit, onBack: () -> Unit) {
+fun NavGraphBuilder.institutionsScreen(
+    onOpenText: (textId: String, articleId: String?) -> Unit,
+    onBack: () -> Unit,
+    onInfoClick: () -> Unit,
+) {
     composable<InstitutionsRoute> {
-        InstitutionsScreen(onOpenText = onOpenText)
+        InstitutionsScreen(onOpenText = onOpenText, onInfoClick = onInfoClick)
     }
     composable<LegalTextRoute> {
         LegalTextScreen(onBack = onBack)

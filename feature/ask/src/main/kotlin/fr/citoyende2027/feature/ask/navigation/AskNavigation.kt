@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object AskRoute
 
-fun NavGraphBuilder.askScreen() {
+fun NavGraphBuilder.askScreen(onInfoClick: () -> Unit) {
     composable<AskRoute> {
-        AskScreen()
+        AskScreen(onInfoClick = onInfoClick)
     }
 }
