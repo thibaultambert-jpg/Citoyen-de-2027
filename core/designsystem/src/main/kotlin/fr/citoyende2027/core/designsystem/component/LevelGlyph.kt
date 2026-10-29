@@ -38,6 +38,7 @@ fun LevelGlyph(
         val topLeft = Offset(inset, inset)
         when (shape) {
             GlyphShape.Full -> drawCircle(color)
+
             GlyphShape.Half -> {
                 drawCircle(color, radius = diameter.width / 2, style = Stroke(stroke))
                 drawArc(
@@ -49,11 +50,13 @@ fun LevelGlyph(
                     size = diameter,
                 )
             }
+
             GlyphShape.Slashed -> {
                 drawCircle(color, radius = diameter.width / 2, style = Stroke(stroke))
                 val y = this.size.height / 2
                 drawLine(color, Offset(this.size.width * 0.25f, y), Offset(this.size.width * 0.75f, y), stroke)
             }
+
             GlyphShape.Dashed -> drawCircle(
                 color,
                 radius = diameter.width / 2,
