@@ -64,3 +64,21 @@ def test_birth_date_missing_from_the_body_may_be_confirmed_by_another_official_s
 def test_birth_date_confirmation_needs_names_birth_date_and_body(facts, record):
     with pytest.raises(IdentityMismatch):
         check_identities([MEP], [facts], [record] if record else [])
+
+
+def _vote(vote_id, position):
+    from citoyen_pipeline.model import Vote
+
+    return Vote(
+        vote_id, "fictif-a", Body.PE, "scrutin-fictif", date(2025, 1, 1), "Scrutin fictif", None,
+        position, "https://example.invalid/s", "fictif-source",
+    )  # fmt: skip
+
+
+def test_a_ballot_listed_twice_is_merged_and_contradictions_are_left_out():
+    from citoyen_pipeline.assemble import _unique_votes
+
+    review: dict[str, list[str]] = {}
+    votes = [_vote("v1", "pour"), _vote("v1", "pour"), _vote("v2", "pour"), _vote("v2", "contre")]
+    assert [v.id for v in _unique_votes(votes, review)] == ["v1"]
+    assert list(review.values()) == [["v2: contre, pour"]]
